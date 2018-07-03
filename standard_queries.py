@@ -20,12 +20,13 @@ def compile_generic(start_time, end_time, table_name, raw_data_location, date_fi
     start_time = datetime.strptime(start_time, '%Y/%m/%d %H:%M:%S')
     end_time = datetime.strptime(end_time, '%Y/%m/%d %H:%M:%S')
     start_search = datetime.strptime(start_search, '%Y/%m/%d %H:%M:%S')
-    all_data = pd.DataFrame()
+    data_tables = []
     for year, month in year_and_month_gen(start_search, end_time):
         data = pre_compile_setup(table_name, month, year, raw_data_location, select_columns)
         if date_filter is not None:
             data = date_filter(data, start_time, end_time)
-        all_data = pd.concat([all_data, data])
+        data_tables.append(data)
+    all_data = pd.concat(data_tables)
     if filter_cols is not None:
         all_data = filters(all_data, filter_cols, filter_values)
     return all_data
@@ -35,12 +36,13 @@ def compile_generic_fcas(start_time, end_time, table_name, raw_data_location, da
                          search='all', filter_cols=None, filter_values=None):
     start_time = datetime.strptime(start_time, '%Y/%m/%d %H:%M:%S')
     end_time = datetime.strptime(end_time, '%Y/%m/%d %H:%M:%S')
-    all_data = pd.DataFrame()
+    data_tables = []
     for year, month, day, index in year_month_day_index_gen(start_time, end_time):
         data = pre_compile_setup_fcas(table_name, month, year, day, index, raw_data_location, select_columns)
         if date_filter is not None:
             data = date_filter(data, start_time, end_time)
-        all_data = pd.concat([all_data, data])
+        data_tables.append(data)
+    all_data = pd.concat(data_tables)
     if filter_cols is not None:
         all_data = filters(all_data, filter_cols, filter_values)
     for column in all_data.select_dtypes(['object']).columns:
@@ -221,8 +223,8 @@ def pre_compile_setup_fcas(name, month, year, day, index, raw_data_location, use
         if os.path.isfile(path_and_name_feather):
             os.unlink(path_and_name_feather)
         data.to_feather(path_and_name_feather)
-
-    data = data.loc[:, usecols]
+    if usecols is not None:
+        data = data.loc[:, usecols]
     return data
 
 
