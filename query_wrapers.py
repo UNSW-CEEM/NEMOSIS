@@ -129,6 +129,15 @@ def fcas4s(start_time, end_time, table_name, raw_data_location, select_columns=N
     return table
 
 
+def fcas4s_scada_match(start_time, end_time, table_name, raw_data_location, select_columns=None, filter_cols=None,
+                       filter_values=None):
+    table = standard_queries.compile_generic_fcas(start_time, end_time, table_name, raw_data_location,
+                                                  standard_queries.filter_on_timestamp,select_columns,
+                                                  search='start_to_end', filter_cols=filter_cols,
+                                                  filter_values=filter_values)
+    return table
+
+
 def static_table(start_time, end_time, table_name, raw_data_location, select_columns=None, filter_cols=None,
                                filter_values=None):
 
