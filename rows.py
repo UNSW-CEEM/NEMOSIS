@@ -26,7 +26,7 @@ class Query:
         self.tables_label = Label(self.master, text='Select table')
         self.tables = Listbox(self.master, exportselection=False, width=35)
         self.tables.bind('<<ListboxSelect>>', self.add_column_selection)
-        for item in defaults.return_tables:
+        for item in defaults.display_in_gui:
             self.tables.insert(END, item)
 
         # Create a button to delete the row.
