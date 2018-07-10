@@ -3,7 +3,6 @@ import defaults
 import pandas as pd
 import downloader
 import os
-from datetime import timedelta
 
 
 def dispatch(start_time, end_time, table_name, raw_data_location, select_columns=None, filter_cols=None,
@@ -128,52 +127,6 @@ def fcas4s(start_time, end_time, table_name, raw_data_location, select_columns=N
                                                   search='start_to_end', filter_cols=filter_cols,
                                                   filter_values=filter_values)
     return table
-
-
-def fcas4s_scada_match(start_time, end_time, table_name, raw_data_location, select_columns=None, filter_cols=None,
-                       filter_values=None):
-    table_name_fcas4s = 'FCAS_4_SECOND'
-    fcas4s = standard_queries.compile_generic_fcas(start_time, end_time, table_name_fcas4s, raw_data_location,
-                                                  standard_queries.filter_on_timestamp, search='start_to_end')
-    print('fcas')
-    table_name_variable_types = 'VARIABLES_FCAS_4_SECOND'
-    fcas4s_variable_types = static_table(start_time, end_time, table_name_variable_types, raw_data_location)
-    fcas4s_variable_types = fcas4s_variable_types[fcas4s_variable_types['VARIABLETYPE'].isin(['MW', 'Gen_MW'])]
-    fcas4s = fcas4s[fcas4s['VARIABLENUMBER'].isin(fcas4s_variable_types['VARIABLENUMBER'])]
-    fcas4s = fcas4s.loc[:, ('TIMESTAMP', 'ELEMENTNUMBER', 'VALUE')]
-    table_name_scada = 'DISPATCH_UNIT_SCADA'
-    print('compiling scada')
-    scada = dispatch(start_time, end_time, table_name_scada, raw_data_location)
-    scada['SETTLEMENTDATE'] = scada['SETTLEMENTDATE'] - timedelta(minutes=5)
-    scada = scada.loc[:, ('SETTLEMENTDATE', 'DUID', 'SCADAVALUE')]
-    scada.columns = ['SETTLEMENTDATE', 'SCADA_ELEMENT', 'SCADAVALUE']
-    table_name_inter_flow = 'DISPATCHINTERCONNECTORRES'
-    inter_flows = dispatch(start_time, end_time, table_name_inter_flow, raw_data_location)
-    inter_flows = inter_flows.loc[:, ('SETTLEMENTDATE', 'INTERCONNECTORID', 'METEREDMWFLOW')]
-    inter_flows.columns = ['SETTLEMENTDATE', 'SCADA_ELEMENT', 'SCADAVALUE']
-    scada_elements = pd.concat([scada, inter_flows])
-    scada_elements['SCADAVALUE'] = pd.to_numeric(scada_elements['SCADAVALUE'])
-    number_of_active_scada_elements = scada_elements[scada_elements['SCADAVALUE'].abs() >  0 ]['SCADA_ELEMENT'].nunique()
-    print(number_of_active_scada_elements)
-    active_scada_elements = scada_elements
-    number_of_active_scada_elements = active_scada_elements['SCADA_ELEMENT'].nunique()
-    fcas4s['VALUE'] = pd.to_numeric(fcas4s['VALUE'])
-    active_fcas_elements = fcas4s
-    number_of_active_fcas_elements = active_fcas_elements[active_fcas_elements['VALUE'].abs() >  0 ]['ELEMENTNUMBER'].nunique()
-    print(number_of_active_fcas_elements)
-    profile_comp = pd.merge(active_fcas_elements, active_scada_elements, 'inner', left_on='TIMESTAMP', right_on='SETTLEMENTDATE')
-    profile_comp['ERROR'] = profile_comp['VALUE'] - profile_comp['SCADAVALUE']
-    profile_comp['ERROR'] = profile_comp['ERROR'].abs()
-    error_comp = profile_comp.groupby(['SCADA_ELEMENT', 'ELEMENTNUMBER'], as_index=False).sum()
-    error_comp = error_comp.sort_values('ERROR')
-    error_comp = error_comp.drop_duplicates('ELEMENTNUMBER', keep='first')
-    #best_matches_scada = error_comp.groupby('SCADA_ELEMENT', as_index=False).first()
-    best_matches_scada = error_comp.sort_values('SCADA_ELEMENT')
-    best_matches_scada = best_matches_scada[best_matches_scada['SCADAVALUE'].abs() > 0]
-    best_matches_scada['ELEMENTNUMBER'] = pd.to_numeric(best_matches_scada['ELEMENTNUMBER'])
-    best_matches_scada = best_matches_scada.sort_values('ELEMENTNUMBER')
-    best_matches_scada['ERROR'] = best_matches_scada['ERROR'] / best_matches_scada['SCADAVALUE']
-    return best_matches_scada
 
 
 def static_table(start_time, end_time, table_name, raw_data_location, select_columns=None, filter_cols=None,
