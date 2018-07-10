@@ -72,7 +72,7 @@ class App(ttk.Frame):
         ttk.Frame.__init__(self, parent=None, style='App.TFrame', borderwidth=0, relief='raised', width=890, height=590)
         self.parent = parent
         self.parent.title('CEEM NEM Data Access Tool')
-        self.parent.geometry('850x550')
+        self.parent.geometry('900x550')
         self.setStyle()
         self.createWidgets()
         self.rowconfigure(0, weight=1)
@@ -96,43 +96,43 @@ class App(ttk.Frame):
         # Create the default starting widgets that appear at the top of the gui.
 
         # Button to run the app.
-        self.run = tk.Button(self.frame.interior, text='Run queries', command=self.run_queries)
+        self.run = ttk.Button(self.frame.interior, text='Run queries', command=self.run_queries)
         self.run.grid(row=0, column=0)
         self.run.config(width=20)
         self.run.update()
 
         # Label for save location entry box.
-        self.save_label = tk.Label(self.frame.interior, text='Output data to:', anchor='w')
+        self.save_label = tk.Label(self.frame.interior, text='  Output data to:', anchor='w')
         self.save_label.grid(row=0, column=1)
         self.save_label.config(width=15)
         self.save_label.update()
 
         # Text entry that specifies the location to save query results.
-        self.save_location = tk.Entry(self.frame.interior)
+        self.save_location = ttk.Entry(self.frame.interior)
         self.save_location.grid(row=0, column=2, columnspan=defaults.save_field_column_span)
         self.save_location.config(width=50)
         self.save_location.update()
 
         # Label for the raw data location entry box.
-        self.raw_data_label = tk.Label(self.frame.interior, text='Raw data cache:', anchor='w')
+        self.raw_data_label = ttk.Label(self.frame.interior, text='Raw data cache:', anchor='w')
         self.raw_data_label.grid(row=1, column=1)
         self.raw_data_label.config(width=15)
         self.raw_data_label.update()
 
         # Text entry that specifies the location of the raw aemo data cache.
-        self.raw_data_location = tk.Entry(self.frame.interior)
+        self.raw_data_location = ttk.Entry(self.frame.interior)
         self.raw_data_location.grid(row=1, column=2, columnspan=defaults.save_field_column_span)
         self.raw_data_location.config(width=50)
         self.raw_data_location.update()
 
         # Button to save current state of the gui.
-        self.save = tk.Button(self.frame.interior, text='Save session', command=self.save_session)
+        self.save = ttk.Button(self.frame.interior, text='Save session', command=self.save_session)
         self.save.grid(row=0, column=5, padx = 10)
         self.save.config(width=20)
         self.save.update()
 
         # Button to load a previous state of the gui.
-        self.load = tk.Button(self.frame.interior, text='Load session', command=self.load_session)
+        self.load = ttk.Button(self.frame.interior, text='Load session', command=self.load_session)
         self.load.grid(row=1, column=5, padx = 10)
         self.load.config(width=20)
         self.load.update()
@@ -141,13 +141,13 @@ class App(ttk.Frame):
         # Add the button that added extra query and merge rows to the gui.
 
         # Button to add extra queries.
-        self.plus_query = tk.Button(self.frame.interior, text=u"\u2795" + ' Query', command=self.add_query, width=10)
+        self.plus_query = ttk.Button(self.frame.interior, text=u"\u2795" + ' Query', command=self.add_query, width=10)
         self.plus_query.grid(row=defaults.query_row_offset + len(self.rows) * defaults.row_height
                             + defaults.plus_internal_row, column=0, padx=defaults.standard_x_pad,sticky='w')
         self.plus_query.update()
 
         # Button to add extra merge.
-        self.plus_merge = tk.Button(self.frame.interior, text=u"\u2795" + ' Merge', command=self.add_merge, width=10)
+        self.plus_merge = ttk.Button(self.frame.interior, text=u"\u2795" + ' Merge', command=self.add_merge, width=10)
         self.plus_merge.grid(row=defaults.query_row_offset + len(self.rows) * defaults.row_height
                             + defaults.plus_merge_internal_row, column=0, padx=defaults.standard_x_pad, sticky='w')
         self.plus_merge.update()

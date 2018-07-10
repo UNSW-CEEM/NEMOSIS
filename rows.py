@@ -1,4 +1,5 @@
-from tkinter import *
+import tkinter as tk
+import tkinter.ttk as ttk
 import defaults
 
 
@@ -10,33 +11,34 @@ class Query:
         self.row_number = row_number
 
         # Make an label and entry box for the user to name the query result.
-        self.query_label = Label(self.master, text='Query name')
-        self.name = Entry(self.master)
+        self.query_label = ttk.Label(self.master, text='  Query name:')
+        self.name = ttk.Entry(self.master)
         self.name.config(width=26)
 
         # Make labels and entry boxes for the user to provide start and end time to filter the query based on.
-        self.start_time_label = Label(self.master, text='Select start time \n (YYYY/MM/DD HH:MM:SS)')
-        self.start_time = Entry(self.master)
+        self.start_time_label = ttk.Label(self.master, text='Start time:\n(YYYY/MM/DD HH:MM:SS)')
+        self.start_time = ttk.Entry(self.master)
         self.start_time.config(width=26)
-        self.end_time_label = Label(self.master, text='Select end time \n (YYYY/MM/DD HH:MM:SS)')
-        self.end_time = Entry(self.master)
+        self.end_time_label = ttk.Label(self.master, text='End time:\n(YYYY/MM/DD HH:MM:SS)')
+        self.end_time = ttk.Entry(self.master)
         self.end_time.config(width=26)
 
         # Create a label and a list of tables to choose from.
-        self.tables_label = Label(self.master, text='Select table')
-        self.tables = Listbox(self.master, exportselection=False, width=35)
+        self.tables_label = ttk.Label(self.master, text='Select table:')
+        self.tables = tk.Listbox(self.master, exportselection=False, width=35)
         self.tables.bind('<<ListboxSelect>>', self.add_column_selection)
         for item in defaults.return_tables:
-            self.tables.insert(END, item)
+            self.tables.insert(tk.END, item)
 
         # Create a button to delete the row.
-        self.delete = Button(self.master, text=u"\u274C", command= lambda: app.delete_row(self.row_number))
+        self.delete = ttk.Button(self.master, text=u"\u274C", command= lambda: app.delete_row(self.row_number))
 
         # Create empty attributes to fill up later on.
         self.filter_list = {}
         self.filter_label = {}
         self.filter_entry = {}
         self.col_list = None
+        self.cols_label = None
 
         # Position all the widgets in the row.
         self.position()
@@ -48,7 +50,7 @@ class Query:
         padx = defaults.standard_x_pad
 
         self.query_label.grid(row=defaults.query_row_offset + defaults.row_height * self.row_number,
-                              column=first_sub_column,pady=pady, padx=padx, sticky='ws')
+                              column=first_sub_column,pady=pady, padx=padx, sticky='sw')
         self.query_label.update()
 
         self.name.grid(row=defaults.query_row_offset + defaults.row_height * self.row_number
@@ -102,23 +104,23 @@ class Query:
         # Delete the previous list of columns.
         if self.col_list is not None:
             self.col_list.destroy()
+            self.cols_label.destroy()
 
         # Create a new label and list box.
-        self.cols_label = Label(self.master, text='Select columns')
-        self.col_list = Listbox(self.master, selectmode=MULTIPLE, exportselection=False, width=26)
+        self.cols_label = ttk.Label(self.master, text='Select columns:')
+        self.col_list = tk.Listbox(self.master, selectmode=tk.MULTIPLE, exportselection=False, width=26)
         self.col_list.bind('<<ListboxSelect>>', self.add_filters)
-        self.col_list.delete(0, END)
+        self.col_list.delete(0, tk.END)
 
         # Populate the list box with column names.
         for item in defaults.table_columns[table]:
-            self.col_list.insert(END, item)
+            self.col_list.insert(tk.END, item)
 
         # Position the column list.
         self.position_column_list()
 
         # Delete any filters that existed for previous column selections.
         self.remove_filters()
-
 
     def position_column_list(self):
         self.cols_label.grid(column=self.tables.grid_info()['column'] + defaults.list_column_span,
@@ -139,16 +141,17 @@ class Query:
         self.remove_filters_unselected()
 
         # Find which columns are currently selected.
-        select_cols = [self.col_list.get(0, END)[index] for index in self.col_list.curselection()]
+        select_cols = [self.col_list.get(0, tk.END)[index] for index in self.col_list.curselection()]
 
         # If a column is selected, and is filterable, but does not have a filter then add a filter for that column.
         for column in select_cols:
             if column in defaults.filterable_cols and column not in self.filter_label.keys():
-                self.filter_label[column] = Label(self.master, text='Add and select: \n {}\'s'.format(str(column)))
-                self.filter_entry[column] = Entry(self.master)
+                self.filter_label[column] = ttk.Label(self.master, text='Select {}\'s:'.format(str(column)))
+                self.filter_entry[column] = ttk.Entry(self.master, width=25)
                 self.filter_entry[column].bind('<Return>', self.add_to_list)
                 self.filter_entry[column].name = column
-                self.filter_list[column] = Listbox(self.master, selectmode=MULTIPLE, exportselection=False, height=8)
+                self.filter_list[column] = tk.Listbox(self.master, selectmode=tk.MULTIPLE, exportselection=False,
+                                                      height=8, width=25)
 
         # Position all the filters so there are no gaps in between them.
         self.position_filter_list()
@@ -165,7 +168,7 @@ class Query:
                 col = self.filter_label[last_filter].grid_info()['column'] + defaults.list_column_span
 
             self.filter_label[column].grid(row=defaults.query_row_offset+ defaults.row_height * self.row_number,
-                                           column=col, padx=defaults.standard_x_pad)
+                                           column=col, padx=defaults.standard_x_pad, sticky='sw')
             self.filter_label[column].update()
             self.filter_entry[column].grid(row=defaults.query_row_offset + defaults.row_height * self.row_number
                                                + defaults.names_internal_row,
@@ -180,12 +183,12 @@ class Query:
 
     def add_to_list(self, evt):
         # Add the item in the entry box of a filter to the list box below.
-        self.filter_list[evt.widget.name].insert(END, evt.widget.get())
+        self.filter_list[evt.widget.name].insert(tk.END, evt.widget.get())
         evt.widget.delete(0, 'end')
 
     def remove_filters_unselected(self):
         # Delete filter whoes columns are not selected.
-        select_cols = [self.col_list.get(0, END)[index] for index in self.col_list.curselection()]
+        select_cols = [self.col_list.get(0, tk.END)[index] for index in self.col_list.curselection()]
         existing_filters = list(self.filter_label.keys())
         for column in existing_filters:
             if column not in select_cols:
@@ -203,16 +206,14 @@ class Query:
             self.remove_filters()
         if self.col_list is not None:
             # Delete the column list.
-            self.remove_col_list()
+            self.col_list.destroy()
+            del self.col_list
+        if self.cols_label is not None:
+            print('bye label')
+            self.cols_label.destroy()
+            del self.cols_label
         # Delete the the row features that always exist.
         self.remove_initial_features()
-
-    def remove_col_list(self):
-        # Remove the column list widgets.
-        self.cols_label.destroy()
-        del self.cols_label
-        self.col_list.destroy()
-        del self.col_list
 
     def remove_initial_features(self):
         # Remove the initial widegts.
@@ -259,7 +260,7 @@ class Query:
         state['filters_contents'] = {}
         state['filters_selection'] = {}
         for column, filter_list in self.filter_list.items():
-            state['filters_contents'][column] = self.filter_list[column].get(0, END)
+            state['filters_contents'][column] = self.filter_list[column].get(0, tk.END)
             state['filters_selection'][column] = self.filter_list[column].curselection()
         return state
 
@@ -289,34 +290,34 @@ class Merge:
         self.master = master
         self.row_number = row_number
         # Create a label and entry box to name the result of the merge
-        self.merge_label = Label(self.master, text='Merge name')
-        self.name = Entry(self.master)
+        self.merge_label = ttk.Label(self.master, text='Merge name')
+        self.name = ttk.Entry(self.master)
         self.name.config(width=26)
         # Create entry box to provide the name of the left result to merge.
-        self.left_table_label = Label(self.master, text='Left table')
-        self.left_table = Entry(self.master)
+        self.left_table_label = ttk.Label(self.master, text='Left table')
+        self.left_table = ttk.Entry(self.master)
         self.left_table.config(width=26)
         # Create an entry box to provide the name of the right result to merge.
-        self.right_table_label = Label(self.master, text='Right table')
-        self.right_table = Entry(self.master)
+        self.right_table_label = ttk.Label(self.master, text='Right table')
+        self.right_table = ttk.Entry(self.master)
         self.right_table.config(width=26)
         # Create a list to select the merge type from.
-        self.join_types_label = Label(self.master, text='Select join type')
-        self.join_types = Listbox(self.master, exportselection=False, width=28)
+        self.join_types_label = ttk.Label(self.master, text='Select join type')
+        self.join_types = tk.Listbox(self.master, exportselection=False, width=28)
         for item in defaults.join_type:
-            self.join_types.insert(END, item)
+            self.join_types.insert(tk.END, item)
         # Create a button that deletes the row.
-        self.delete = Button(self.master, text=u"\u274C", command=lambda: app.delete_row(self.row_number))
+        self.delete = ttk.Button(self.master, text=u"\u274C", command=lambda: app.delete_row(self.row_number))
         # Create a entry box and list to provide the keys to the left result.
-        self.left_keys_label = Label(self.master, text='Left keys')
-        self.left_keys_entry = Entry(self.master)
+        self.left_keys_label = ttk.Label(self.master, text='Left keys')
+        self.left_keys_entry = ttk.Entry(self.master)
         self.left_keys_entry.bind('<Return>', self.add_to_list_left)
-        self.left_key_list = Listbox(self.master, selectmode=MULTIPLE, exportselection=False, height=8)
+        self.left_key_list = tk.Listbox(self.master, selectmode=tk.MULTIPLE, exportselection=False, height=8)
         # Create a entry box and list to provide the keys to the right result.
-        self.right_keys_label = Label(self.master, text='Right keys')
-        self.right_keys_entry = Entry(self.master)
+        self.right_keys_label = ttk.Label(self.master, text='Right keys')
+        self.right_keys_entry = ttk.Entry(self.master)
         self.right_keys_entry.bind('<Return>', self.add_to_list_right)
-        self.right_key_list = Listbox(self.master, selectmode=MULTIPLE, exportselection=False, height=8)
+        self.right_key_list = tk.Listbox(self.master, selectmode=tk.MULTIPLE, exportselection=False, height=8)
         # Position all the widgets.
         self.position()
 
@@ -371,12 +372,12 @@ class Merge:
 
     def add_to_list_left(self, evt):
         # Add key from entry box to list.
-        self.left_key_list.insert(END, evt.widget.get())
+        self.left_key_list.insert(tk.END, evt.widget.get())
         evt.widget.delete(0, 'end')
 
     def add_to_list_right(self, evt):
         # Add key from entry box to list.
-        self.right_key_list.insert(END, evt.widget.get())
+        self.right_key_list.insert(tk.END, evt.widget.get())
         evt.widget.delete(0, 'end')
 
     def empty(self):
@@ -421,10 +422,10 @@ class Merge:
         state['right_table'] = self.right_table.get()
         state['join_types'] = self.join_types.curselection()
         state['left_key_list'] = {}
-        state['left_key_list']['contents'] = self.left_key_list.get(0, END)
+        state['left_key_list']['contents'] = self.left_key_list.get(0, tk.END)
         state['left_key_list']['selection'] = self.left_key_list.curselection()
         state['right_key_list'] = {}
-        state['right_key_list']['contents'] = self.right_key_list.get(0, END)
+        state['right_key_list']['contents'] = self.right_key_list.get(0, tk.END)
         state['right_key_list']['selection'] = self.right_key_list.curselection()
         return state
 
