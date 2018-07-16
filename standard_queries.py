@@ -21,7 +21,7 @@ def compile_generic(start_time, end_time, table_name, raw_data_location, date_fi
     end_time = datetime.strptime(end_time, '%Y/%m/%d %H:%M:%S')
     start_search = datetime.strptime(start_search, '%Y/%m/%d %H:%M:%S')
     all_data = pd.DataFrame()
-    for year, month in year_and_month_gen(start_search, end_time):
+    for year, month in year_and_month_gen(start_search, end_time, search):
         data = pre_compile_setup(table_name, month, year, raw_data_location, select_columns)
         if date_filter is not None:
             data = date_filter(data, start_time, end_time)
@@ -98,9 +98,9 @@ def filter_on_date_and_interval(data, start_time, end_time):
     return data
 
 
-def year_and_month_gen(start_time, end_time):
+def year_and_month_gen(start_time, end_time, search):
 
-    if start_time.day == 1 and start_time.hour == 0 and start_time.minute == 0:
+    if start_time.day == 1 and start_time.hour == 0 and start_time.minute == 0 and search != 'last':
         if start_time.month == 1:
             start_time = start_time.replace(month=12)
             start_time = start_time.replace(year=start_time.year - 1)
