@@ -209,7 +209,6 @@ class Query:
             self.col_list.destroy()
             del self.col_list
         if self.cols_label is not None:
-            print('bye label')
             self.cols_label.destroy()
             del self.cols_label
         # Delete the the row features that always exist.
