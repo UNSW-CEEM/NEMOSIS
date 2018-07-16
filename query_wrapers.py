@@ -138,7 +138,8 @@ def static_table(start_time, end_time, table_name, raw_data_location, select_col
 
     table = pd.read_csv(raw_data_location + '/' + defaults.names[table_name], dtype=str,
                         names=defaults.table_columns[table_name])
-    table = table.loc[:, select_columns]
+    if select_columns is not None:
+        table = table.loc[:, select_columns]
     for column in table.select_dtypes(['object']).columns:
         table[column] = table[column].map(lambda x: x.strip())
     return table

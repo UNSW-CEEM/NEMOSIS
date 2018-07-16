@@ -1,4 +1,5 @@
 import query_wrapers
+import custom_query_wrapers
 
 map = {'DISPATCHLOAD': query_wrapers.dispatch,
        'DISPATCHPRICE': query_wrapers.dispatch,
@@ -18,4 +19,5 @@ map = {'DISPATCHLOAD': query_wrapers.dispatch,
        'VARIABLES_FCAS_4_SECOND': query_wrapers.static_table,
        'MASTER_REGISTRATION_LIST': query_wrapers.static_table_xl,
        'BIDDAYOFFER_D': query_wrapers.dispatch_date,
-       'BIDPEROFFER_D': query_wrapers.dispatch}
+       'BIDPEROFFER_D': query_wrapers.dispatch,
+       'FCAS_4s_SCADA_MAP': custom_query_wrapers.fcas4s_scada_match}

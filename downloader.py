@@ -21,7 +21,8 @@ def run_fcas4s(year, month, day, index, url_latest, url_hist, filename, down_loa
 
     # Add the year and month information to the generic AEMO data url
     url_formatted_latest = url_latest.format(year, month, day, index)
-    url_formatted_hist = url_hist.format(year, month, year, month, day, index)
+    url_formatted_hist = url_hist.format(year, year, month, year, month, day, index)
+
 
     # Perform the download, unzipping saving of the file
     try:

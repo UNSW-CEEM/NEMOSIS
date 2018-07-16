@@ -21,7 +21,9 @@ names = {'DISPATCHLOAD': 'PUBLIC_DVD_DISPATCHLOAD',
          'INTERCONNECTORCONSTRAINT': 'PUBLIC_DVD_INTERCONNECTORCONSTRAINT',
          'MNSP_DAYOFFER': 'PUBLIC_DVD_MNSP_DAYOFFER',
          'LOSSMODEL': 'PUBLIC_DVD_LOSSMODEL',
-         'LOSSFACTORMODEL': 'PUBLIC_DVD_LOSSFACTORMODEL'}
+         'LOSSFACTORMODEL': 'PUBLIC_DVD_LOSSFACTORMODEL',
+         'FCAS_4s_SCADA_MAP': ''}
+
 
 return_tables = list(names.keys())
 
@@ -41,7 +43,8 @@ aemo_data_url = 'http://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/MMS
 
 fcas_4_url = 'http://www.nemweb.com.au/Reports/Current/Causer_Pays/FCAS_{}{}{}{}.zip'
 
-fcas_4_url_hist = 'http://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/FCAS_Causer_Pays/2017/FCAS_Causer_Pays_{}_{}/FCAS_{}{}{}{}.zip'
+fcas_4_url_hist ='http://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/FCAS_Causer_Pays/{}/FCAS_Causer_Pays_{}_{}/FCAS_{}{}{}{}.zip'
+
 
 data_url = {'DISPATCHLOAD': 'aemo_data_url',
             'DUDETAILSUMMARY': 'aemo_data_url',
@@ -125,7 +128,8 @@ table_columns = {
                       'BANDAVAIL7', 'BANDAVAIL8', 'BANDAVAIL9', 'BANDAVAIL10', 'MAXAVAIL', 'RAMPUPRATE',
                       'RAMPDOWNRATE', 'BIDTYPE', 'SETTLEMENTDATE', 'ENABLEMENTMIN', 'ENABLEMENTMAX', 'LOWBREAKPOINT',
                       'HIGHBREAKPOINT', 'INTERVAL_DATETIME'],
-    'DISPATCHINTERCONNECTORRES': ['SETTLEMENTDATE', 'INTERCONNECTORID', 'DISPATCHINTERVAL', 'INTERVENTION', 'MWFLOW'],
+    'DISPATCHINTERCONNECTORRES': ['SETTLEMENTDATE', 'INTERCONNECTORID', 'DISPATCHINTERVAL', 'INTERVENTION', 'MWFLOW',
+                                  'METEREDMWFLOW', 'MWLOSSES'],
     'INTERCONNECTOR': ['INTERCONNECTORID', 'REGIONFROM', 'REGIONTO', 'LASTCHANGED'],
     'INTERCONNECTORCONSTRAINT': ['INTERCONNECTORID', 'FROMREGIONLOSSSHARE', 'EFFECTIVEDATE', 'VERSIONNO',
                                  'LOSSCONSTANT', 'LOSSFLOWCOEFFICIENT', 'ICTYPE'],
@@ -153,9 +157,11 @@ table_columns = {
     'FCAS_4_SECOND': ['TIMESTAMP', 'ELEMENTNUMBER', 'VARIABLENUMBER', 'VALUE', 'VALUEQUALITY'],
     'ELEMENTS_FCAS_4_SECOND': ['ELEMENTNUMBER', 'ELEMENTNAME', 'ELEMENTTYPE', 'NAME'],
     'VARIABLES_FCAS_4_SECOND': ['VARIABLENUMBER', 'VARIABLETYPE'],
-    'MASTER_REGISTRATION_LIST': ['Participant', 'Station Name', 'Region', 'Dispatch Type', 'Category', 'Classification',
-                                 'Fuel Source - Primary', 'Fuel Source - Descriptor', 'Technology Type - Primary',
-                                 'Technology Type - Descriptor', 'Aggregation', 'DUID']}
+    'MASTER_REGISTRATION_LIST': ['Participant', 'Station Name' ,'Region' ,'Dispatch Type', 'Category', 'Classification',
+         'Fuel Source - Primary', 'Fuel Source - Descriptor', 'Technology Type - Primary',
+         'Technology Type - Descriptor' , 'Aggregation', 'DUID'],
+    'FCAS_4s_SCADA_MAP': ['ELEMENTNUMBER', 'MARKETNAME']}
+
 
 table_primary_keys = {'DISPATCHCONSTRAINT': ['CONSTRAINTID', 'EFFECTIVEDATE', 'VERSIONNO'],
                       'DUDETAILSUMMARY': ['DUID', 'START_DATE'], 'STATION': ['STATIONID'],
