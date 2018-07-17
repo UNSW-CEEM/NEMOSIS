@@ -4,8 +4,33 @@ import pandas as pd
 import downloader
 import os
 
+def main_loop(start_time, end_time, table_name, raw_data_location, select_columns=None, filter_cols=None,
+             filter_values=None):
 
-def dispatch(start_time, end_time, table_name, raw_data_location, select_columns=None, filter_cols=None,
+    # Generic setup common to all tables.
+    if select_columns is None:
+        select_columns = defaults.table_columns[table_name]
+
+    # Pre loop setup, done a table type basis.
+    setup_function = defaults.table_setup[table_name]
+
+
+
+
+
+    return
+
+def dispatch_setup(start_time, end_time, table_name, raw_data_location, select_columns=None, filter_cols=None,
+             filter_values=None):
+    if select_columns is None:
+        select_columns = defaults.table_columns[table_name]
+    table = standard_queries.compile_generic(start_time, end_time, table_name, raw_data_location,
+                                             standard_queries.filter_on_settlementdate, select_columns,
+                                             search='start_to_end', filter_cols=filter_cols,
+                                             filter_values=filter_values)
+    return table
+
+def dispatch_final(start_time, end_time, table_name, raw_data_location, select_columns=None, filter_cols=None,
              filter_values=None):
     if select_columns is None:
         select_columns = defaults.table_columns[table_name]

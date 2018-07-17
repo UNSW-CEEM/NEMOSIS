@@ -4,7 +4,6 @@ import pandas as pd
 from datetime import datetime, timedelta
 import numpy as np
 import defaults
-from time import time
 import feather
 from calendar import monthrange
 
@@ -22,7 +21,7 @@ def compile_generic(start_time, end_time, table_name, raw_data_location, date_fi
     start_search = datetime.strptime(start_search, '%Y/%m/%d %H:%M:%S')
     data_tables = []
     for year, month in year_and_month_gen(start_search, end_time, search):
-        data = pre_compile_setup(table_name, month, year, raw_data_location, select_columns)
+        data = pre_compile_setup(table_name, month, year, raw_data_location, select_columns) # IO
         if date_filter is not None:
             data = date_filter(data, start_time, end_time)
         data_tables.append(data)
