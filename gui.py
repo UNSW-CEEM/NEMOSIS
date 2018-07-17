@@ -3,7 +3,7 @@
 
 import rows
 import defaults
-import maps
+import data_fetch_methods
 import pandas as pd
 import tkinter as tk
 import tkinter.ttk as ttk
@@ -211,8 +211,8 @@ class App(ttk.Frame):
         start_time = row.start_time.get()
         end_time = row.end_time.get()
         # Call the query using the tables predefined wraper function.
-        result = maps.map[table](start_time, end_time, table, raw_data_location, columns, filter_cols,
-                                 filter_values)
+        result = data_fetch_methods.method_map[table](start_time, end_time, table, raw_data_location, columns,
+                                                      filter_cols, filter_values)
         return result
 
     def run_merge(self, row, results):

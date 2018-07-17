@@ -11,12 +11,6 @@ def filter_on_start_and_end_date(data, start_time, end_time):
     return data
 
 
-def filter_on_last_changed(data, start_time, end_time):
-    data['LASTCHANGED'] = pd.to_datetime(data['LASTCHANGED'], format='%Y/%m/%d %H:%M:%S')
-    data = data[(data['LASTCHANGED'] < end_time) & (data['LASTCHANGED'] >= start_time)]
-    return data
-
-
 def filter_on_effective_date(data, start_time, end_time):
     data['EFFECTIVEDATE'] = pd.to_datetime(data['EFFECTIVEDATE'], format='%Y/%m/%d %H:%M:%S')
     data = data[data['EFFECTIVEDATE'] <= end_time]
