@@ -1,4 +1,4 @@
-import standard_queries
+import filters
 import pandas as pd
 from datetime import timedelta, datetime
 import query_wrapers
@@ -9,8 +9,8 @@ def fcas4s_scada_match(start_time, end_time, table_name, raw_data_location, sele
 
     # Pull in the 4 second fcas data.
     table_name_fcas4s = 'FCAS_4_SECOND'
-    fcas4s = standard_queries.compile_generic_fcas(start_time, end_time, table_name_fcas4s, raw_data_location,
-                                                   standard_queries.filter_on_timestamp, search='start_to_end')
+    fcas4s = filters.compile_generic_fcas(start_time, end_time, table_name_fcas4s, raw_data_location,
+                                          filters.filter_on_timestamp, search='start_to_end')
     # Pull in the 4 second fcas variable types.
     table_name_variable_types = 'VARIABLES_FCAS_4_SECOND'
     fcas4s_variable_types = query_wrapers.static_table(start_time, end_time, table_name_variable_types, raw_data_location)

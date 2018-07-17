@@ -1,11 +1,13 @@
 import requests
 import zipfile
 import io
+import defaults
 
 
-def run(year, month, url, filename, down_load_to):
+def run(year, month, day, index, filename, down_load_to):
     """This function"""
 
+    url = defaults.aemo_data_url
     # Add the year and month information to the generic AEMO data url
     url_formatted = format_aemo_url(url, year, month, filename)
 
@@ -16,12 +18,12 @@ def run(year, month, url, filename, down_load_to):
         print('Warning {} not downloaded'.format(filename))
 
 
-def run_fcas4s(year, month, day, index, url_latest, url_hist, filename, down_load_to):
+def run_fcas4s(year, month, day, index, filename, down_load_to):
     """This function"""
 
     # Add the year and month information to the generic AEMO data url
-    url_formatted_latest = url_latest.format(year, month, day, index)
-    url_formatted_hist = url_hist.format(year, year, month, year, month, day, index)
+    url_formatted_latest = defaults.fcas_4_url.format(year, month, day, index)
+    url_formatted_hist = defaults.fcas_4_url_hist.format(year, year, month, year, month, day, index)
 
 
     # Perform the download, unzipping saving of the file

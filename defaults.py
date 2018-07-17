@@ -24,6 +24,34 @@ names = {'DISPATCHLOAD': 'PUBLIC_DVD_DISPATCHLOAD',
          'LOSSFACTORMODEL': 'PUBLIC_DVD_LOSSFACTORMODEL',
          'FCAS_4s_SCADA_MAP': ''}
 
+
+table_types = {'DISPATCHLOAD': 'MMS',
+         'DUDETAILSUMMARY': 'MMS',
+         'DISPATCHCONSTRAINT': 'MMS',
+         'GENCONDATA': 'MMS',
+         'DISPATCH_UNIT_SCADA': 'MMS',
+         'DISPATCHPRICE': 'MMS',
+         'SPDREGIONCONSTRAINT': 'MMS',
+         'SPDCONNECTIONPOINTCONSTRAINT': 'MMS',
+         'SPDINTERCONNECTORCONSTRAINT': 'MMS',
+         'BIDPEROFFER_D': 'MMS',
+         'DISPATCHINTERCONNECTORRES': 'MMS',
+         'BIDDAYOFFER_D': 'MMS',
+         'DISPATCHREGIONSUM': 'MMS',
+         'FCAS_4_SECOND': 'FCAS',
+         'ELEMENTS_FCAS_4_SECOND': 'STATIC',
+         'VARIABLES_FCAS_4_SECOND': 'STATIC',
+         'MASTER_REGISTRATION_LIST': 'STATIC',
+         'MNSP_INTERCONNECTOR': 'MMS',
+         'MNSP_PEROFFER': 'MMS',
+         'INTERCONNECTOR': 'MMS',
+         'INTERCONNECTORCONSTRAINT': 'MMS',
+         'MNSP_DAYOFFER': 'MMS',
+         'LOSSMODEL': 'MMS',
+         'LOSSFACTORMODEL': 'MMS',
+         'FCAS_4s_SCADA_MAP': 'CUSTOM'}
+
+
 return_tables = list(names.keys())
 
 display_in_gui = ['DISPATCHLOAD', 'DUDETAILSUMMARY', 'DISPATCHCONSTRAINT', 'GENCONDATA', 'DISPATCH_UNIT_SCADA',
@@ -198,31 +226,6 @@ effective_date_group_col = {'SPDREGIONCONSTRAINT': ['GENCONID'],
                             'MNSP_PEROFFER': ['LINKID'],
                             'MNSP_DAYOFFER': ['LINKID']}
 
-table_setup = {'DISPATCHLOAD': None,
-               'DUDETAILSUMMARY': None,
-               'DISPATCHCONSTRAINT': None,
-               'GENCONDATA': None,
-               'DISPATCH_UNIT_SCADA': None,
-               'DISPATCHPRICE': None,
-               'SPDREGIONCONSTRAINT': None,
-               'SPDCONNECTIONPOINTCONSTRAINT': None,
-               'SPDINTERCONNECTORCONSTRAINT': None,
-               'BIDPEROFFER_D': None,
-               'DISPATCHINTERCONNECTORRES': None,
-               'BIDDAYOFFER_D': None,
-               'DISPATCHREGIONSUM': None,
-               'FCAS_4_SECOND': None,
-               'ELEMENTS_FCAS_4_SECOND': None,
-               'VARIABLES_FCAS_4_SECOND': None,
-               'MASTER_REGISTRATION_LIST': None,
-               'MNSP_INTERCONNECTOR': None,
-               'MNSP_PEROFFER': None,
-               'INTERCONNECTOR': None,
-               'INTERCONNECTORCONSTRAINT': None,
-               'MNSP_DAYOFFER': None,
-               'LOSSMODEL': None,
-               'LOSSFACTORMODEL': None,
-               'FCAS_4s_SCADA_MAP': None}
 
 months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
 
