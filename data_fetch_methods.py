@@ -85,7 +85,8 @@ def main_data_compiling_loop(start_time, end_time, table_name, raw_data_location
         all_data = pd.concat(data_tables)
 
         if finalise_data is not None:
-            all_data = finalise_data(all_data, table_name, start_time)
+            all_data = finalise_data(all_data, start_time, defaults.primary_date_columns[table_name],
+                                     defaults.effective_date_group_col[table_name])
 
         if filter_cols is not None:
             all_data = filters.filter_on_column_value(all_data, filter_cols, filter_values)

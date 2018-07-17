@@ -3,6 +3,7 @@ import pandas as pd
 import filters
 from pandas.util.testing import assert_frame_equal
 from datetime import datetime
+import numpy as np
 
 
 class TestFiltersStartDate(unittest.TestCase):
@@ -287,6 +288,63 @@ class TestFiltersIntervalDatetime(unittest.TestCase):
             .reset_index(drop=True)
         aim = pd.DataFrame({'INTERVAL_DATETIME': []})
         aim['INTERVAL_DATETIME'] = pd.to_datetime(aim['INTERVAL_DATETIME'], format='%Y/%m/%d %H:%M:%S')
+        assert_frame_equal(aim, result)
+
+
+class TestFiltersColumnValue(unittest.TestCase):
+    def setUp(self):
+        self.int_filter_data = pd.DataFrame({'INTCOL': [1, 10, 100, -5, 0, 10, 10]})
+        self.int_and_string_filter_data = pd.DataFrame({'INTCOL': [1, 10, 100, -5, 0, 10, 10],
+                                                        'STRINGCOL': ['1', '10', '100', '-5', '0', '10', '10']})
+
+    def test_filter_one_col_one_value_positive_ints(self):
+        filter_cols = ('INTCOL', )
+        filter_values = ([10],)
+        result = \
+            filters.filter_on_column_value(self.int_filter_data, filter_cols, filter_values).reset_index(drop=True)
+        aim = pd.DataFrame({'INTCOL': [10, 10, 10]})
+        assert_frame_equal(aim, result)
+
+    def test_filter_one_col_two_values_positive_and_negative_ints(self):
+        filter_cols = ('INTCOL', )
+        filter_values = ([10, -5],)
+        result = \
+            filters.filter_on_column_value(self.int_filter_data, filter_cols, filter_values).reset_index(drop=True)
+        aim = pd.DataFrame({'INTCOL': [10, -5, 10, 10]})
+        assert_frame_equal(aim, result)
+
+    def test_filter_two_cols_one_value_each_not_matching(self):
+        filter_cols = ('INTCOL', 'STRINGCOL' )
+        filter_values = ([10], ['100'])
+        result = \
+            filters.filter_on_column_value(self.int_and_string_filter_data, filter_cols, filter_values).reset_index(drop=True)
+        aim = pd.DataFrame({'INTCOL': [], 'STRINGCOL': []})
+        aim = aim.astype(dtype={'INTCOL': np.int64, 'STRINGCOL': str})
+        assert_frame_equal(aim, result)
+
+    def test_filter_two_cols_one_value_each_matching(self):
+        filter_cols = ('INTCOL', 'STRINGCOL' )
+        filter_values = ([10], ['10'])
+        result = \
+            filters.filter_on_column_value(self.int_and_string_filter_data, filter_cols, filter_values).reset_index(drop=True)
+        aim = pd.DataFrame({'INTCOL': [10, 10, 10], 'STRINGCOL': ['10', '10', '10']})
+        assert_frame_equal(aim, result)
+
+    def test_filter_just_one_of_two_cols(self):
+        filter_cols = ('INTCOL', )
+        filter_values = ([10],)
+        result = \
+            filters.filter_on_column_value(self.int_and_string_filter_data, filter_cols, filter_values).reset_index(drop=True)
+        aim = pd.DataFrame({'INTCOL': [10, 10, 10], 'STRINGCOL': ['10', '10', '10']})
+        assert_frame_equal(aim, result)
+
+    def test_filter_one_empty_values_returns_empty_data_frame(self):
+        filter_cols = ('INTCOL', )
+        filter_values = ([],)
+        result = \
+            filters.filter_on_column_value(self.int_and_string_filter_data, filter_cols, filter_values).reset_index(drop=True)
+        aim = pd.DataFrame({'INTCOL': [], 'STRINGCOL': []})
+        aim = aim.astype(dtype={'INTCOL': np.int64, 'STRINGCOL': str})
         assert_frame_equal(aim, result)
 
 
