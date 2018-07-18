@@ -59,7 +59,15 @@ class TestMostRecent(unittest.TestCase):
                       'VERSIONNO': ['5', '1', '2'],
                       'GENCONID': ['ID1', 'ID1', 'ID1']})
         self.dummyGenConData2['EFFECTIVEDATE'] = pd.to_datetime(self.dummyGenConData2['EFFECTIVEDATE'],
-                                                               format='%Y/%m/%d %H:%M:%S')
+                                                                format='%Y/%m/%d %H:%M:%S')
+
+        self.dummyGenConData3 = \
+        pd.DataFrame({'EFFECTIVEDATE': ['2017/01/01 00:00:00', '2017/01/04 00:15:00', '2017/01/04 00:15:00',
+                                        '2017/01/01 00:00:00', '2017/01/04 00:15:00', '2017/01/04 00:15:00'],
+                      'VERSIONNO': ['5', '1', '2', '5', '1', '2'],
+                      'GENCONID': ['ID1', 'ID1', 'ID1', 'ID2', 'ID2', 'ID2']})
+        self.dummyGenConData3['EFFECTIVEDATE'] = pd.to_datetime(self.dummyGenConData3['EFFECTIVEDATE'],
+                                                                format='%Y/%m/%d %H:%M:%S')
 
     def test_one_id_gencondata_start_date_after_all(self):
         start_time = datetime.strptime('2019/06/01 00:00:00', '%Y/%m/%d %H:%M:%S')
@@ -95,12 +103,21 @@ class TestMostRecent(unittest.TestCase):
         aim['EFFECTIVEDATE'] = pd.to_datetime(aim['EFFECTIVEDATE'], format='%Y/%m/%d %H:%M:%S')
         assert_frame_equal(aim, result)
 
-
     def test_one_id_gencondata_and_repeated_effectivedate_start_date_after_all(self):
         start_time = datetime.strptime('2019/06/01 00:00:00', '%Y/%m/%d %H:%M:%S')
         result = query_wrapers.most_recent_records_before_start_time(self.dummyGenConData2, start_time, 'EFFECTIVEDATE',
                                                                      ['GENCONID']).reset_index(drop=True)
         aim = pd.DataFrame({'EFFECTIVEDATE': ['2017/01/04 00:15:00', '2017/01/04 00:15:00'],
                             'GENCONID': ['ID1', 'ID1'], 'VERSIONNO': ['1', '2']})
+        aim['EFFECTIVEDATE'] = pd.to_datetime(aim['EFFECTIVEDATE'], format='%Y/%m/%d %H:%M:%S')
+        assert_frame_equal(aim, result)
+
+    def test_2_id_and_repeated_effectivedate_start_date_after_all(self):
+        start_time = datetime.strptime('2019/06/01 00:00:00', '%Y/%m/%d %H:%M:%S')
+        result = query_wrapers.most_recent_records_before_start_time(self.dummyGenConData3, start_time, 'EFFECTIVEDATE',
+                                                                     ['GENCONID']).reset_index(drop=True)
+        aim = pd.DataFrame({'EFFECTIVEDATE': ['2017/01/04 00:15:00', '2017/01/04 00:15:00',
+                                              '2017/01/04 00:15:00', '2017/01/04 00:15:00'],
+                            'GENCONID': ['ID1', 'ID1', 'ID2', 'ID2'], 'VERSIONNO': ['1', '2', '1', '2']})
         aim['EFFECTIVEDATE'] = pd.to_datetime(aim['EFFECTIVEDATE'], format='%Y/%m/%d %H:%M:%S')
         assert_frame_equal(aim, result)

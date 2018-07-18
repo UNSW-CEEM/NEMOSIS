@@ -9,7 +9,7 @@ import feather
 import custom_tables
 
 
-def main_data_compiling_loop(start_time, end_time, table_name, raw_data_location, select_columns=None, filter_cols=None,
+def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location, select_columns=None, filter_cols=None,
                              filter_values=None):
     # Generic setup common to all tables.
     if select_columns is None:
@@ -18,10 +18,10 @@ def main_data_compiling_loop(start_time, end_time, table_name, raw_data_location
     # Pre loop setup, done at table type basis.
     date_filter = processing_info_maps.filter[table_name]
     setup_function = processing_info_maps.setup[table_name]
+
     if setup_function is not None:
         start_time, end_time = setup_function(start_time, end_time)
-    else:
-        date_filter = None
+
 
     search_type = processing_info_maps.search_type[table_name]
     if search_type == 'all':
@@ -37,16 +37,35 @@ def main_data_compiling_loop(start_time, end_time, table_name, raw_data_location
 
     finalise_data = processing_info_maps.finalise[table_name]
 
-    data_tables = []
+    data_tables = dynamic_data_fetch_loop(start_search, start_time, end_time, table_name, raw_data_location,
+                                          select_columns, date_filter, search_type)
 
-    for year, month, day, index in processing_info_maps.date_gen[table_name](start_search, end_time):
+    all_data = pd.concat(data_tables)
+
+    if finalise_data is not None:
+        for function in finalise_data:
+            all_data = function(all_data, start_time, table_name)
+
+    if filter_cols is not None:
+        all_data = filters.filter_on_column_value(all_data, filter_cols, filter_values)
+
+    return all_data
+
+
+def dynamic_data_fetch_loop(start_search, start_time, end_time, table_name, raw_data_location, select_columns,
+                             date_filter, search_type):
+    data_tables = []
+    table_type = defaults.table_types[table_name]
+    date_gen = processing_info_maps.date_gen[table_type](start_search, end_time)
+    for year, month, day, index in date_gen:
+        data = None
         # Write the file names and paths for where the data is stored in the cache.
         filename_full, path_and_name, filename_full_feather, path_and_name_feather = \
-            processing_info_maps.write_filename[table_name](table_name, month, year, day, index, raw_data_location)
+            processing_info_maps.write_filename[table_type](table_name, month, year, day, index, raw_data_location)
 
         # If the data needed is not in the cache then download it.
         if not os.path.isfile(path_and_name):
-            processing_info_maps.downloader[table_name](year, month, day, index, filename_full, raw_data_location)
+            processing_info_maps.downloader[table_type](year, month, day, index, filename_full, raw_data_location)
 
         # If the data exists in feather format the read in the data. If it only exists as a csv then read in from the
         # csv and save to feather.
@@ -76,22 +95,14 @@ def main_data_compiling_loop(start_time, end_time, table_name, raw_data_location
                     if column not in select_columns:
                         del data[column]
 
+        if data is not None:
             # Filter by the start and end time.
             if date_filter is not None:
                 data = date_filter(data, start_time, end_time)
 
             data_tables.append(data)
 
-        all_data = pd.concat(data_tables)
-
-        if finalise_data is not None:
-            all_data = finalise_data(all_data, start_time, defaults.primary_date_columns[table_name],
-                                     defaults.effective_date_group_col[table_name])
-
-        if filter_cols is not None:
-            all_data = filters.filter_on_column_value(all_data, filter_cols, filter_values)
-
-    return all_data
+    return data_tables
 
 
 def static_table(start_time, end_time, table_name, raw_data_location, select_columns=None, filter_cols=None,
@@ -125,19 +136,19 @@ def static_table_xl(start_time, end_time, table_name, raw_data_location, select_
     return table
 
 
-method_map = {'DISPATCHLOAD': main_data_compiling_loop,
-              'DISPATCHPRICE': main_data_compiling_loop,
-              'DISPATCH_UNIT_SCADA': main_data_compiling_loop,
-              'DISPATCHCONSTRAINT': main_data_compiling_loop,
-              'DUDETAILSUMMARY': main_data_compiling_loop,
-              'GENCONDATA': main_data_compiling_loop,
-              'SPDREGIONCONSTRAINT': main_data_compiling_loop,
-              'SPDCONNECTIONPOINTCONSTRAINT': main_data_compiling_loop,
-              'SPDINTERCONNECTORCONSTRAINT': main_data_compiling_loop,
-              'FCAS_4_SECOND': main_data_compiling_loop,
+method_map = {'DISPATCHLOAD': dynamic_data_compiler,
+              'DISPATCHPRICE': dynamic_data_compiler,
+              'DISPATCH_UNIT_SCADA': dynamic_data_compiler,
+              'DISPATCHCONSTRAINT': dynamic_data_compiler,
+              'DUDETAILSUMMARY': dynamic_data_compiler,
+              'GENCONDATA': dynamic_data_compiler,
+              'SPDREGIONCONSTRAINT': dynamic_data_compiler,
+              'SPDCONNECTIONPOINTCONSTRAINT': dynamic_data_compiler,
+              'SPDINTERCONNECTORCONSTRAINT': dynamic_data_compiler,
+              'FCAS_4_SECOND': dynamic_data_compiler,
               'ELEMENTS_FCAS_4_SECOND': static_table,
               'VARIABLES_FCAS_4_SECOND': static_table,
               'MASTER_REGISTRATION_LIST': static_table_xl,
-              'BIDDAYOFFER_D': main_data_compiling_loop,
-              'BIDPEROFFER_D': main_data_compiling_loop,
+              'BIDDAYOFFER_D': dynamic_data_compiler,
+              'BIDPEROFFER_D': dynamic_data_compiler,
               'FCAS_4s_SCADA_MAP': custom_tables.fcas4s_scada_match}

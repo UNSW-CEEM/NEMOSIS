@@ -244,13 +244,9 @@ def test_7(app, test_session):
 def run_tests():
     root = gui.tk.Tk()
     app = gui.App(root)
-    test_directory = os.getcwd() + '/test_data'
-    if not os.path.exists(test_directory):
-        os.makedirs(test_directory)
-    test_directory = 'C:/Users/user/test_dump'
     test_session = {}
-    test_session['raw_data_location'] = test_directory
-    test_session['save_location'] = test_directory
+    test_session['raw_data_location'] = 'E:/raw_aemo_data'
+    test_session['save_location'] = 'E:/tests'
     test_1(app, test_session)
     test_2(app, test_session)
     test_3(app, test_session)
@@ -258,16 +254,6 @@ def run_tests():
     test_5(app, test_session)
     test_6(app, test_session)
     test_7(app, test_session)
-
-    if False:
-        for the_file in os.listdir(test_directory):
-            file_path = os.path.join(test_directory, the_file)
-            try:
-                if os.path.isfile(file_path):
-                    os.unlink(file_path)
-                # elif os.path.isdir(file_path): shutil.rmtree(file_path)
-            except Exception as e:
-                print(e)
 
     return
 
