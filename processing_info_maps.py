@@ -19,7 +19,9 @@ setup = {'DISPATCHLOAD': None,
          'MASTER_REGISTRATION_LIST': None,
          'BIDDAYOFFER_D': query_wrapers.dispatch_date_setup,
          'BIDPEROFFER_D': None,
-         'FCAS_4s_SCADA_MAP': None}
+         'FCAS_4s_SCADA_MAP': None,
+         'DISPATCHINTERCONNECTORRES': None,
+         'DISPATCHREGIONSUM': None}
 
 search_type = {'DISPATCHLOAD': 'start_to_end',
                'DISPATCHPRICE': 'start_to_end',
@@ -36,7 +38,9 @@ search_type = {'DISPATCHLOAD': 'start_to_end',
                'MASTER_REGISTRATION_LIST': None,
                'BIDDAYOFFER_D': 'start_to_end',
                'BIDPEROFFER_D': 'start_to_end',
-               'FCAS_4s_SCADA_MAP': None}
+               'FCAS_4s_SCADA_MAP': None,
+               'DISPATCHINTERCONNECTORRES': 'start_to_end',
+               'DISPATCHREGIONSUM': 'start_to_end'}
 
 filter = {'DISPATCHLOAD': filters.filter_on_settlementdate,
           'DISPATCHPRICE': filters.filter_on_settlementdate,
@@ -52,8 +56,10 @@ filter = {'DISPATCHLOAD': filters.filter_on_settlementdate,
           'VARIABLES_FCAS_4_SECOND': None,
           'MASTER_REGISTRATION_LIST': None,
           'BIDDAYOFFER_D': filters.filter_on_settlementdate,
-          'BIDPEROFFER_D': filters.filter_on_settlementdate,
-          'FCAS_4s_SCADA_MAP': None}
+          'BIDPEROFFER_D': filters.filter_on_interval_datetime,
+          'FCAS_4s_SCADA_MAP': None,
+          'DISPATCHINTERCONNECTORRES': filters.filter_on_settlementdate,
+          'DISPATCHREGIONSUM': filters.filter_on_settlementdate}
 
 finalise = {'DISPATCHLOAD': None,
             'DISPATCHPRICE': None,
@@ -74,7 +80,9 @@ finalise = {'DISPATCHLOAD': None,
             'MASTER_REGISTRATION_LIST': None,
             'BIDDAYOFFER_D': None,
             'BIDPEROFFER_D': None,
-            'FCAS_4s_SCADA_MAP': None}
+            'FCAS_4s_SCADA_MAP': None,
+            'DISPATCHINTERCONNECTORRES': None,
+            'DISPATCHREGIONSUM': None}
 
 date_gen = {'MMS': date_generators.year_and_month_gen,
             'FCAS': date_generators.year_month_day_index_gen}

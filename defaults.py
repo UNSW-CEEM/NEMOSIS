@@ -228,39 +228,37 @@ effective_date_group_col = {'SPDREGIONCONSTRAINT': ['GENCONID'],
                             'MNSP_DAYOFFER': ['LINKID']}
 
 primary_date_columns = {'DISPATCHLOAD': 'SETTLEMENTDATE',
-               'DUDETAILSUMMARY': 'START_DATE',
-               'DISPATCHCONSTRAINT': 'SETTLEMENTDATE',
-               'GENCONDATA': 'EFFECTIVEDATE',
-               'DISPATCH_UNIT_SCADA': 'SETTLEMENTDATE',
-               'DISPATCHPRICE': 'SETTLEMENTDATE',
-               'SPDREGIONCONSTRAINT': 'EFFECTIVEDATE',
-               'SPDCONNECTIONPOINTCONSTRAINT': 'EFFECTIVEDATE',
-               'SPDINTERCONNECTORCONSTRAINT': 'EFFECTIVEDATE',
-               'BIDPEROFFER_D': 'SETTLEMENTDATE',
-               'DISPATCHINTERCONNECTORRES': 'SETTLEMENTDATE',
-               'BIDDAYOFFER_D': 'SETTLEMENTDATE',
-               'DISPATCHREGIONSUM': 'SETTLEMENTDATE',
-               'FCAS_4_SECOND': 'TIMESTAMP',
-               'ELEMENTS_FCAS_4_SECOND': None,
-               'VARIABLES_FCAS_4_SECOND': None,
-               'MASTER_REGISTRATION_LIST': None,
-               'MNSP_INTERCONNECTOR': 'EFFECTIVEDATE',
-               'MNSP_PEROFFER': 'SETTLEMENTDATE',
-               'INTERCONNECTOR': 'LASTCHANGED',
-               'INTERCONNECTORCONSTRAINT': 'EFFECTIVEDATE',
-               'MNSP_DAYOFFER': 'SETTLEMENTDATE',
-               'LOSSMODEL': 'EFFECTIVEDATE',
-               'LOSSFACTORMODEL': 'EFFECTIVEDATE',
-               'FCAS_4s_SCADA_MAP': None}
-
+                        'DUDETAILSUMMARY': 'START_DATE',
+                        'DISPATCHCONSTRAINT': 'SETTLEMENTDATE',
+                        'GENCONDATA': 'EFFECTIVEDATE',
+                        'DISPATCH_UNIT_SCADA': 'SETTLEMENTDATE',
+                        'DISPATCHPRICE': 'SETTLEMENTDATE',
+                        'SPDREGIONCONSTRAINT': 'EFFECTIVEDATE',
+                        'SPDCONNECTIONPOINTCONSTRAINT': 'EFFECTIVEDATE',
+                        'SPDINTERCONNECTORCONSTRAINT': 'EFFECTIVEDATE',
+                        'BIDPEROFFER_D': 'INTERVAL_DATETIME',
+                        'DISPATCHINTERCONNECTORRES': 'SETTLEMENTDATE',
+                        'BIDDAYOFFER_D': 'SETTLEMENTDATE',
+                        'DISPATCHREGIONSUM': 'SETTLEMENTDATE',
+                        'FCAS_4_SECOND': 'TIMESTAMP',
+                        'ELEMENTS_FCAS_4_SECOND': None,
+                        'VARIABLES_FCAS_4_SECOND': None,
+                        'MASTER_REGISTRATION_LIST': None,
+                        'MNSP_INTERCONNECTOR': 'EFFECTIVEDATE',
+                        'MNSP_PEROFFER': 'SETTLEMENTDATE',
+                        'INTERCONNECTOR': 'LASTCHANGED',
+                        'INTERCONNECTORCONSTRAINT': 'EFFECTIVEDATE',
+                        'MNSP_DAYOFFER': 'SETTLEMENTDATE',
+                        'LOSSMODEL': 'EFFECTIVEDATE',
+                        'LOSSFACTORMODEL': 'EFFECTIVEDATE',
+                        'FCAS_4s_SCADA_MAP': None}
 
 months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
 
 nem_data_model_start_time = '2009/07/01 00:00:00'
 
-fcas_start_index = 1
-fcas_end_index = 2355
 
+# GUI settings.
 header_y_pad = 30
 query_y_pad = (20, 0)
 query_row_offset = 2
@@ -282,3 +280,6 @@ internal_filter_row = 2
 delete_button_internal_row = 5
 last_column = 100
 join_type = ['inner', 'left', 'right']
+
+# Testting settings
+raw_data_cache = 'E:/raw_aemo_data'

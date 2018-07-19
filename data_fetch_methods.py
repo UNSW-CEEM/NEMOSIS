@@ -10,7 +10,7 @@ import custom_tables
 
 
 def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location, select_columns=None, filter_cols=None,
-                             filter_values=None):
+                          filter_values=None):
     # Generic setup common to all tables.
     if select_columns is None:
         select_columns = defaults.table_columns[table_name]
@@ -22,12 +22,10 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location, s
     if setup_function is not None:
         start_time, end_time = setup_function(start_time, end_time)
 
-
     search_type = processing_info_maps.search_type[table_name]
+
     if search_type == 'all':
         start_search = defaults.nem_data_model_start_time
-    elif search_type == 'last':
-        start_search = end_time
     elif search_type == 'start_to_end':
         start_search = start_time
 
@@ -35,13 +33,12 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location, s
     end_time = datetime.strptime(end_time, '%Y/%m/%d %H:%M:%S')
     start_search = datetime.strptime(start_search, '%Y/%m/%d %H:%M:%S')
 
-    finalise_data = processing_info_maps.finalise[table_name]
-
     data_tables = dynamic_data_fetch_loop(start_search, start_time, end_time, table_name, raw_data_location,
                                           select_columns, date_filter, search_type)
 
     all_data = pd.concat(data_tables)
 
+    finalise_data = processing_info_maps.finalise[table_name]
     if finalise_data is not None:
         for function in finalise_data:
             all_data = function(all_data, start_time, table_name)
@@ -82,7 +79,8 @@ def dynamic_data_fetch_loop(start_search, start_time, end_time, table_name, raw_
                 data = pd.read_csv(path_and_name, skiprows=[0], dtype=str, usecols=columns)
                 data = data[:-1]
             elif defaults.table_types[table_name] == 'FCAS':
-                data = pd.read_csv(path_and_name, skiprows=[0], dtype=str, names=defaults.table_columns[table_name])
+                columns = defaults.table_columns[table_name]
+                data = pd.read_csv(path_and_name, skiprows=[0], dtype=str, names=columns)
 
             # Remove feather files of the same name, deals with case of corrupted files.
             if os.path.isfile(path_and_name_feather):

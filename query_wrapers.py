@@ -6,20 +6,20 @@ def dispatch_date_setup(start_time, end_time):
     start_time = start_time[:10]
     date_padding = ' 00:00:00'
     start_time = start_time + date_padding
-    end_time = end_time[:10]
-    date_padding = ' 23:55:00'
-    end_time = end_time + date_padding
+    #end_time = end_time[:10]
+    #date_padding = ' 23:55:00'
+    #end_time = end_time + date_padding
     return start_time, end_time
 
 
-def fcas4s_finalise(data, start_time, date_col, group_cols):
+def fcas4s_finalise(data, start_time, table_name):
     for column in data.select_dtypes(['object']).columns:
         data[column] = data[column].map(lambda x: x.strip())
     return data
 
 
 def most_recent_records_before_start_time(data, start_time, table_name):
-    date_col = defaults.primary_date_columns[table_name],
+    date_col = defaults.primary_date_columns[table_name]
     group_cols = defaults.effective_date_group_col[table_name]
     records_from_after_start = data[data[date_col] > start_time].copy()
     records_from_before_start = data[data[date_col] <= start_time].copy()
