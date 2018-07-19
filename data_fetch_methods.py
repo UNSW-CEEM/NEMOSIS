@@ -115,6 +115,10 @@ def static_table(start_time, end_time, table_name, raw_data_location, select_col
         table = table.loc[:, select_columns]
     for column in table.select_dtypes(['object']).columns:
         table[column] = table[column].map(lambda x: x.strip())
+
+    if filter_cols is not None:
+        table = filters.filter_on_column_value(table, filter_cols, filter_values)
+
     return table
 
 
@@ -123,12 +127,11 @@ def static_table_xl(start_time, end_time, table_name, raw_data_location, select_
     path_and_name = raw_data_location + '/' + defaults.names[table_name] + '.xls'
     if not os.path.isfile(path_and_name):
         downloader.download_xl(defaults.static_table_url[table_name], raw_data_location, path_and_name)
-
     xls = pd.ExcelFile(path_and_name)
     table = pd.read_excel(xls, 'Generators and Scheduled Loads', dtype=str)
     table = table.loc[:, select_columns]
     if filter_cols is not None:
-        table = filters.filters(table, filter_cols, filter_values)
+        table = filters.filter_on_column_value(table, filter_cols, filter_values)
     table = table.drop_duplicates(['DUID'])
 
     return table

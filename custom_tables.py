@@ -1,7 +1,7 @@
 import filters
 import pandas as pd
 from datetime import timedelta, datetime
-import query_wrapers
+import data_fetch_methods
 
 
 def fcas4s_scada_match(start_time, end_time, table_name, raw_data_location, select_columns=None, filter_cols=None,
@@ -9,11 +9,11 @@ def fcas4s_scada_match(start_time, end_time, table_name, raw_data_location, sele
 
     # Pull in the 4 second fcas data.
     table_name_fcas4s = 'FCAS_4_SECOND'
-    fcas4s = filters.compile_generic_fcas(start_time, end_time, table_name_fcas4s, raw_data_location,
-                                          filters.filter_on_timestamp, search='start_to_end')
+    fcas4s = data_fetch_methods.dynamic_data_compiler(start_time, end_time, table_name_fcas4s, raw_data_location)
     # Pull in the 4 second fcas variable types.
     table_name_variable_types = 'VARIABLES_FCAS_4_SECOND'
-    fcas4s_variable_types = query_wrapers.static_table(start_time, end_time, table_name_variable_types, raw_data_location)
+    fcas4s_variable_types = data_fetch_methods.static_table(start_time, end_time, table_name_variable_types,
+                                                            raw_data_location)
 
     # Select the variable types that measure MW on an interconnector and Gen_MW from a dispatch unit.
     fcas4s_variable_types = fcas4s_variable_types[fcas4s_variable_types['VARIABLETYPE'].isin(['MW', 'Gen_MW'])]
@@ -31,7 +31,7 @@ def fcas4s_scada_match(start_time, end_time, table_name, raw_data_location, sele
 
     # Pull in the dispatch unit scada data.
     table_name_scada = 'DISPATCH_UNIT_SCADA'
-    scada = query_wrapers.dispatch(start_time, end_time, table_name_scada, raw_data_location)
+    scada = data_fetch_methods.dynamic_data_compiler(start_time, end_time, table_name_scada, raw_data_location)
     scada['SETTLEMENTDATE'] = scada['SETTLEMENTDATE'] - timedelta(minutes=5)
     scada = scada.loc[:, ('SETTLEMENTDATE', 'DUID', 'SCADAVALUE')]
     scada.columns = ['SETTLEMENTDATE', 'SCADA_ELEMENT', 'SCADAVALUE']
@@ -39,7 +39,8 @@ def fcas4s_scada_match(start_time, end_time, table_name, raw_data_location, sele
 
     # Pull in the interconnector scada data and use the intervention records where the exist.
     table_name_inter_flow = 'DISPATCHINTERCONNECTORRES'
-    inter_flows = query_wrapers.dispatch(start_time, end_time, table_name_inter_flow, raw_data_location)
+    inter_flows = data_fetch_methods.dynamic_data_compiler(start_time, end_time, table_name_inter_flow,
+                                                           raw_data_location)
     inter_flows['METEREDMWFLOW'] = pd.to_numeric(inter_flows['METEREDMWFLOW'])
     inter_flows = inter_flows.sort_values('INTERVENTION')
     inter_flows = inter_flows.groupby(['SETTLEMENTDATE', 'INTERCONNECTORID'], as_index=False).last()
@@ -80,7 +81,7 @@ def fcas4s_scada_match(start_time, end_time, table_name, raw_data_location, sele
     # Give error as a percentage.
     best_matches_scada['ERROR'] = best_matches_scada['ERROR'] / best_matches_scada['SCADAVALUE']
 
-    # drop matches with error greater than 10%
+    # drop matches with error greater than 100 %
     best_matches_scada = best_matches_scada[(best_matches_scada['ERROR'] < 1) & (best_matches_scada['ERROR'] > -1)]
 
 

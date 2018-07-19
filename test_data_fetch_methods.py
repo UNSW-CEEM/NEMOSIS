@@ -3,6 +3,7 @@ from datetime import timedelta
 import data_fetch_methods
 import defaults
 import pandas as pd
+import custom_tables
 
 
 class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
@@ -396,5 +397,73 @@ class TestFACS4SecondData(unittest.TestCase):
         self.assertEqual(expected_firt_time, data[dat_col][0])
         self.assertEqual(expected_last_time, data[dat_col].iloc[-1])
         print('Passed')
+
+
+class TestStaticTables(unittest.TestCase):
+    def setUp(self):
+        pass
+
+    def test_fcas_elements_table(self):
+        start_time = ''
+        end_time = ''
+        table = 'ELEMENTS_FCAS_4_SECOND'
+        cols = ['ELEMENTNUMBER', 'EMSNAME']
+        filter_cols = ('ELEMENTNUMBER',)
+        data = data_fetch_methods.static_table( start_time, end_time, table, defaults.raw_data_cache,
+            select_columns=cols, filter_cols=filter_cols, filter_values=(['1'],))
+        expected_length = 1
+        expected_number_of_columns = 2
+        self.assertEqual(expected_length, data.shape[0])
+        self.assertEqual(expected_number_of_columns, data.shape[1])
+        print('Passed')
+
+    def test_fcas_variable_table(self):
+        start_time = ''
+        end_time = ''
+        table = 'VARIABLES_FCAS_4_SECOND'
+        cols = ['VARIABLENUMBER', 'VARIABLETYPE']
+        filter_cols = ('VARIABLENUMBER',)
+        data = data_fetch_methods.static_table( start_time, end_time, table, defaults.raw_data_cache,
+            select_columns=cols, filter_cols=filter_cols, filter_values=(['2'],))
+        expected_length = 1
+        expected_number_of_columns = 2
+        self.assertEqual(expected_length, data.shape[0])
+        self.assertEqual(expected_number_of_columns, data.shape[1])
+        print('Passed')
+
+    def test_registration_list(self):
+        start_time = ''
+        end_time = ''
+        table = 'MASTER_REGISTRATION_LIST'
+        cols = ['DUID', 'Technology Type - Primary']
+        filter_cols = ('DUID',)
+        data = data_fetch_methods.static_table_xl( start_time, end_time, table, defaults.raw_data_cache,
+            select_columns=cols, filter_cols=filter_cols, filter_values=(['AGLHAL'],))
+        expected_length = 1
+        expected_number_of_columns = 2
+        self.assertEqual(expected_length, data.shape[0])
+        self.assertEqual(expected_number_of_columns, data.shape[1])
+        print('Passed')
+
+
+class TestCustomTables(unittest.TestCase):
+    def setUp(self):
+        pass
+
+    def test_dispatch_tables_stradle_years(self):
+        table = 'FCAS_4s_SCADA_MAP'
+        start_time = '2012/01/01 00:05:00'
+        end_time = '2012/01/01 01:00:00'
+        print('Testing custom table {}.'.format(table))
+        data = custom_tables.fcas4s_scada_match(start_time, end_time, table, defaults.raw_data_cache)
+        data = data.reset_index(drop=True)
+        contains_duplicates = data.duplicated(['SCADA_ELEMENT']).any()
+        self.assertEqual(False, contains_duplicates)
+        contains_duplicates = data.duplicated(['ELEMENTNUMBER']).any()
+        self.assertEqual(False, contains_duplicates)
+        not_empty = data.shape[0] > 0
+        self.assertEqual(True, not_empty)
+        print('Passed')
+
 
 
