@@ -217,7 +217,7 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 cols = [dat_col, 'DUID', 'BIDTYPE']
                 filter_cols = ('DUID', 'BIDTYPE')
                 expected_number_of_columns = 3
-                expected_length = 26
+                expected_length = 2
                 expected_last_time = expected_last_time.replace(hour=0, minute=0)
                 expected_firt_time = expected_firt_time.replace(hour=0, minute=0)
             data = data_fetch_methods.dynamic_data_compiler(
@@ -457,13 +457,10 @@ class TestCustomTables(unittest.TestCase):
         print('Testing custom table {}.'.format(table))
         data = custom_tables.fcas4s_scada_match(start_time, end_time, table, defaults.raw_data_cache)
         data = data.reset_index(drop=True)
-        contains_duplicates = data.duplicated(['SCADA_ELEMENT']).any()
+        contains_duplicates = data.duplicated(['MARKETNAME']).any()
         self.assertEqual(False, contains_duplicates)
         contains_duplicates = data.duplicated(['ELEMENTNUMBER']).any()
         self.assertEqual(False, contains_duplicates)
         not_empty = data.shape[0] > 0
         self.assertEqual(True, not_empty)
         print('Passed')
-
-
-

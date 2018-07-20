@@ -1,6 +1,3 @@
-#!/usr/bin/python3
-# -*- coding: utf-8 -*-
-
 import rows
 import defaults
 import data_fetch_methods
@@ -13,7 +10,6 @@ import pickle
 
 class VerticalScrollFrame(ttk.Frame):
     """A ttk frame allowing vertical scrolling only.
-    Use the '.interior' attribute to place widgets inside the scrollable frame.
     Adapted from https://github.com/sunbearc22/tkinterWidgets/blob/master/scrframe.py.
     """
 
@@ -193,7 +189,7 @@ class App(ttk.Frame):
         # Run an individual query.
 
         # Find the table name from the row.
-        table = defaults.return_tables[row.tables.curselection()[0]]
+        table = defaults.display_in_gui[row.tables.curselection()[0]]
         # Find the select columns.
         columns = tuple([row.col_list.get(0, tk.END)[index] for index in row.col_list.curselection()])
         # Find the columns that could be filtered on.

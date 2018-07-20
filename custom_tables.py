@@ -34,7 +34,7 @@ def fcas4s_scada_match(start_time, end_time, table_name, raw_data_location, sele
     scada = data_fetch_methods.dynamic_data_compiler(start_time, end_time, table_name_scada, raw_data_location)
     scada['SETTLEMENTDATE'] = scada['SETTLEMENTDATE'] - timedelta(minutes=5)
     scada = scada.loc[:, ('SETTLEMENTDATE', 'DUID', 'SCADAVALUE')]
-    scada.columns = ['SETTLEMENTDATE', 'SCADA_ELEMENT', 'SCADAVALUE']
+    scada.columns = ['SETTLEMENTDATE', 'MARKETNAME', 'SCADAVALUE']
     scada['SCADAVALUE'] = pd.to_numeric(scada['SCADAVALUE'])
 
     # Pull in the interconnector scada data and use the intervention records where the exist.
@@ -46,10 +46,10 @@ def fcas4s_scada_match(start_time, end_time, table_name, raw_data_location, sele
     inter_flows = inter_flows.groupby(['SETTLEMENTDATE', 'INTERCONNECTORID'], as_index=False).last()
     inter_flows = inter_flows.loc[:, ('SETTLEMENTDATE', 'INTERCONNECTORID', 'METEREDMWFLOW')]
     inter_flows['SETTLEMENTDATE'] = inter_flows['SETTLEMENTDATE'] - timedelta(minutes=5)
-    inter_flows.columns = ['SETTLEMENTDATE', 'SCADA_ELEMENT', 'SCADAVALUE']
+    inter_flows.columns = ['SETTLEMENTDATE', 'MARKETNAME', 'SCADAVALUE']
 
     # Combine scada data from interconnectors and dispatch units.
-    scada_elements = pd.concat([scada, inter_flows])
+    scada_elements = pd.concat([scada, inter_flows], sort=False)
 
     # Merge the fcas and scada data based on time stamp, these leads every scada element to be joined to every fcas
     # element that then allows them to be comapred.
@@ -61,10 +61,10 @@ def fcas4s_scada_match(start_time, end_time, table_name, raw_data_location, sele
 
     # Choose the fcas values that best matches the scada value during the 5 min interval.
     profile_comp = profile_comp.sort_values('ERROR')
-    error_comp = profile_comp.groupby(['SCADA_ELEMENT', 'ELEMENTNUMBER', 'TIMESTAMP'], as_index=False).first()
+    error_comp = profile_comp.groupby(['MARKETNAME', 'ELEMENTNUMBER', 'TIMESTAMP'], as_index=False).first()
 
     # Aggregate the error to comapre each scada and fcas element potential match.
-    error_comp = error_comp.groupby(['SCADA_ELEMENT', 'ELEMENTNUMBER'], as_index=False).sum()
+    error_comp = error_comp.groupby(['MARKETNAME', 'ELEMENTNUMBER'], as_index=False).sum()
 
     # Sort the comparisons based on aggregate error.
     error_comp = error_comp.sort_values('ERROR')
@@ -72,7 +72,7 @@ def fcas4s_scada_match(start_time, end_time, table_name, raw_data_location, sele
     # Drop duplicates of element numbers and scada element names, keeping the record for each with the least error.
     best_matches_scada = error_comp[error_comp['SCADAVALUE'].abs() > 0] # Don't include units 0 values for scada
     best_matches_scada = best_matches_scada.drop_duplicates('ELEMENTNUMBER', keep='first')
-    best_matches_scada = best_matches_scada.drop_duplicates('SCADA_ELEMENT', keep='first')
+    best_matches_scada = best_matches_scada.drop_duplicates('MARKETNAME', keep='first')
 
     # Remove fcas elements where a match only occurred because both fcas and scada showed no dispatch.
     best_matches_scada['ELEMENTNUMBER'] = pd.to_numeric(best_matches_scada['ELEMENTNUMBER'])
@@ -84,5 +84,9 @@ def fcas4s_scada_match(start_time, end_time, table_name, raw_data_location, sele
     # drop matches with error greater than 100 %
     best_matches_scada = best_matches_scada[(best_matches_scada['ERROR'] < 1) & (best_matches_scada['ERROR'] > -1)]
 
+    best_matches_scada.loc[:, ('ELEMENTNUMBER', 'MARKETNAME', 'ERROR')]
 
-    return best_matches_scada.loc[:, ('ELEMENTNUMBER', 'SCADA_ELEMENT', 'ERROR')]
+    if select_columns is not None:
+        best_matches_scada.loc[:, select_columns]
+
+    return best_matches_scada

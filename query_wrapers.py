@@ -28,7 +28,7 @@ def most_recent_records_before_start_time(data, start_time, table_name):
     group_cols = group_cols + [date_col]
     most_recent_from_before_start = pd.merge(most_recent_from_before_start.loc[:,group_cols], records_from_before_start,
                                              'inner', group_cols)
-    mod_table = pd.concat([records_from_after_start, most_recent_from_before_start])
+    mod_table = pd.concat([records_from_after_start, most_recent_from_before_start], sort=False)
     return mod_table
 
 

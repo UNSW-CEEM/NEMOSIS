@@ -27,7 +27,7 @@ class Query:
         self.tables_label = ttk.Label(self.master, text='Select table:')
         self.tables = tk.Listbox(self.master, exportselection=False, width=35)
         self.tables.bind('<<ListboxSelect>>', self.add_column_selection)
-        for item in defaults.return_tables:
+        for item in defaults.display_in_gui:
             self.tables.insert(tk.END, item)
 
         # Create a button to delete the row.
@@ -100,7 +100,7 @@ class Query:
     def add_column_selection(self, evt):
         # When a table is selected update the list of columns to be selected from.
         # Find the name of the table selected.
-        table = defaults.return_tables[self.tables.curselection()[0]]
+        table = defaults.display_in_gui[self.tables.curselection()[0]]
         # Delete the previous list of columns.
         if self.col_list is not None:
             self.col_list.destroy()
@@ -115,6 +115,10 @@ class Query:
         # Populate the list box with column names.
         for item in defaults.table_columns[table]:
             self.col_list.insert(tk.END, item)
+
+        for col in defaults.table_primary_keys[table]:
+            index = defaults.table_columns[table].index(col)
+            self.col_list.selection_set(index)
 
         # Position the column list.
         self.position_column_list()

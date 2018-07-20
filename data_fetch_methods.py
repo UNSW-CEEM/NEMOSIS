@@ -11,6 +11,7 @@ import custom_tables
 
 def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location, select_columns=None, filter_cols=None,
                           filter_values=None):
+    print('Compiling data for table {}.'.format(table_name))
     # Generic setup common to all tables.
     if select_columns is None:
         select_columns = defaults.table_columns[table_name]
@@ -36,7 +37,7 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location, s
     data_tables = dynamic_data_fetch_loop(start_search, start_time, end_time, table_name, raw_data_location,
                                           select_columns, date_filter, search_type)
 
-    all_data = pd.concat(data_tables)
+    all_data = pd.concat(data_tables, sort=False)
 
     finalise_data = processing_info_maps.finalise[table_name]
     if finalise_data is not None:
@@ -62,6 +63,12 @@ def dynamic_data_fetch_loop(start_search, start_time, end_time, table_name, raw_
 
         # If the data needed is not in the cache then download it.
         if not os.path.isfile(path_and_name):
+            if day is None:
+                print('Downloading data for table {}, year {}, month {}'.format(table_name, year, month))
+            else:
+                print('Downloading data for table {}, year {}, month {}, day {}, time {}'.
+                      format(table_name, year, month, day, index))
+
             processing_info_maps.downloader[table_type](year, month, day, index, filename_full, raw_data_location)
 
         # If the data exists in feather format the read in the data. If it only exists as a csv then read in from the
@@ -69,6 +76,12 @@ def dynamic_data_fetch_loop(start_search, start_time, end_time, table_name, raw_
         if os.path.isfile(path_and_name_feather) and os.stat(path_and_name_feather).st_size > 2000:
             data = feather.read_dataframe(path_and_name_feather, select_columns)
         elif os.path.isfile(path_and_name):
+            if day is None:
+                print('Creating feather file for faster future access of table {}, year {}, month {}.'.
+                      format(table_name, year, month))
+            else:
+                print('Creating feather file for faster future access of table {}, year {}, month {}, day {}, time {}.'.
+                      format(table_name, year, month, day, index))
             # Check what headers the data has.
             headers = pd.read_csv(path_and_name, skiprows=[0], nrows=1).columns
             if defaults.table_types[table_name] == 'MMS':
@@ -105,8 +118,10 @@ def dynamic_data_fetch_loop(start_search, start_time, end_time, table_name, raw_
 
 def static_table(start_time, end_time, table_name, raw_data_location, select_columns=None, filter_cols=None,
                  filter_values=None):
+    print('Retrieving static table {}.'.format(table_name))
     path_and_name = raw_data_location + '/' + defaults.names[table_name]
     if not os.path.isfile(path_and_name):
+        print('Downloading data for table {}.'.format(table_name))
         downloader.download_csv(defaults.static_table_url[table_name], raw_data_location, path_and_name)
 
     table = pd.read_csv(raw_data_location + '/' + defaults.names[table_name], dtype=str,
@@ -125,7 +140,9 @@ def static_table(start_time, end_time, table_name, raw_data_location, select_col
 def static_table_xl(start_time, end_time, table_name, raw_data_location, select_columns=None, filter_cols=None,
                     filter_values=None):
     path_and_name = raw_data_location + '/' + defaults.names[table_name] + '.xls'
+    print('Retrieving static table {}.'.format(table_name))
     if not os.path.isfile(path_and_name):
+        print('Downloading data for table {}.'.format(table_name))
         downloader.download_xl(defaults.static_table_url[table_name], raw_data_location, path_and_name)
     xls = pd.ExcelFile(path_and_name)
     table = pd.read_excel(xls, 'Generators and Scheduled Loads', dtype=str)
@@ -152,4 +169,6 @@ method_map = {'DISPATCHLOAD': dynamic_data_compiler,
               'MASTER_REGISTRATION_LIST': static_table_xl,
               'BIDDAYOFFER_D': dynamic_data_compiler,
               'BIDPEROFFER_D': dynamic_data_compiler,
-              'FCAS_4s_SCADA_MAP': custom_tables.fcas4s_scada_match}
+              'FCAS_4s_SCADA_MAP': custom_tables.fcas4s_scada_match,
+              'DISPATCHINTERCONNECTORRES': dynamic_data_compiler,
+              'DISPATCHREGIONSUM': dynamic_data_compiler}

@@ -98,7 +98,8 @@ filterable_cols = ['DUID', 'REGIONID', 'STATIONID', 'PARTICIPANTID', 'STARTTYPE'
                    'BIDTYPE', 'VARIABLEID', 'INTERVENTION', 'DISPATCHMODE', 'STARTTYPE', 'CONNECTIONPOINTID',
                    'DISPATCHTYPE', 'CONSTRAINTID', 'PREDISPATCH', 'STPASA', 'MTPASA', 'LIMITTYPE', 'STATIONNAME',
                    'AGCFLAG', 'INTERCONNECTORID', 'NAME', 'Fuel Source - Primary', 'Fuel Source - Descriptor',
-                   'Technology Type - Primary', 'Technology Type - Descriptor']
+                   'Technology Type - Primary', 'Technology Type - Descriptor', 'ELEMENTNUMBER', 'MARKETNAME',
+                   'VARIABLENUMBER', 'VARIABLETYPE', 'MMSDESCRIPTOR', 'ELEMENTTYPE']
 
 table_columns = {
 
@@ -138,7 +139,7 @@ table_columns = {
     'BIDPEROFFER_D': ['DUID', 'BANDAVAIL1', 'BANDAVAIL2', 'BANDAVAIL3', 'BANDAVAIL4', 'BANDAVAIL5', 'BANDAVAIL6',
                       'BANDAVAIL7', 'BANDAVAIL8', 'BANDAVAIL9', 'BANDAVAIL10', 'MAXAVAIL', 'RAMPUPRATE',
                       'RAMPDOWNRATE', 'BIDTYPE', 'SETTLEMENTDATE', 'ENABLEMENTMIN', 'ENABLEMENTMAX', 'LOWBREAKPOINT',
-                      'HIGHBREAKPOINT', 'INTERVAL_DATETIME'],
+                      'HIGHBREAKPOINT', 'INTERVAL_DATETIME', 'OFFERDATE'],
 
     'DISPATCHINTERCONNECTORRES': ['SETTLEMENTDATE', 'INTERCONNECTORID', 'DISPATCHINTERVAL', 'INTERVENTION', 'MWFLOW',
                                   'METEREDMWFLOW', 'MWLOSSES'],
@@ -187,11 +188,11 @@ table_columns = {
                                  'Fuel Source - Primary', 'Fuel Source - Descriptor', 'Technology Type - Primary',
                                  'Technology Type - Descriptor', 'Aggregation', 'DUID'],
 
-    'FCAS_4s_SCADA_MAP': ['ELEMENTNUMBER', 'MARKETNAME']}
+    'FCAS_4s_SCADA_MAP': ['ELEMENTNUMBER', 'MARKETNAME', 'ERROR']}
 
 table_primary_keys = {'DISPATCHCONSTRAINT': ['CONSTRAINTID', 'GENCONID_EFFECTIVEDATE', 'GENCONID_VERSIONNO',
                                              'SETTLEMENTDATE', 'INTERVENTION'],
-                      'DUDETAILSUMMARY': ['DUID', 'START_DATE'], 'STATION': ['STATIONID'],
+                      'DUDETAILSUMMARY': ['DUID', 'START_DATE', 'END_DATE'], 'STATION': ['STATIONID'],
                       'SPDREGIONCONSTRAINT': ['EFFECTIVEDATE', 'GENCONID', 'REGIONID', 'VERSIONNO', 'BIDTYPE'],
                       'SPDCONNECTIONPOINTCONSTRAINT': ['EFFECTIVEDATE', 'GENCONID', 'CONNECTIONPOINTID', 'VERSIONNO',
                                                        'BIDTYPE'],
@@ -207,12 +208,16 @@ table_primary_keys = {'DISPATCHCONSTRAINT': ['CONSTRAINTID', 'GENCONID_EFFECTIVE
                       'DISPATCHINTERCONNECTORRES': ['DISPATCHINTERVAL', 'INTERCONNECTORID', 'INTERVENTION',
                                                     'SETTLEMENTDATE'],
                       'INTERCONNECTOR': ['INTERCONNECTORID'],
-                      'DISPATCHPRICE': ['DISPATCHINTERVAL', 'INTERVENTION', 'REGIONID', 'SETTLEMENTDATE'],
+                      'DISPATCHPRICE': ['INTERVENTION', 'REGIONID', 'SETTLEMENTDATE'],
                       'BIDDAYOFFER_D': ['BIDTYPE', 'DUID', 'SETTLEMENTDATE'],
                       'DISPATCHREGIONSUM': ['DISPATCHINTERVAL', 'INTERVENTION', 'REGIONID', 'SETTLEMENTDATE'],
                       'DISPATCHLOAD': ['SETTLEMENTDATE', 'INTERVENTION', 'DUID'],
                       'DISPATCH_UNIT_SCADA': ['SETTLEMENTDATE', 'DUID'],
-                      'FCAS_4_SECOND': ['TIMESTAMP', 'ELEMENTNUMBER', 'VARIABLENUMBER']}
+                      'FCAS_4_SECOND': ['TIMESTAMP', 'ELEMENTNUMBER', 'VARIABLENUMBER'],
+                      'ELEMENTS_FCAS_4_SECOND': ['ELEMENTNUMBER'],
+                      'VARIABLES_FCAS_4_SECOND': ['VARIABLENUMBER', 'VARIABLETYPE'],
+                      'MASTER_REGISTRATION_LIST': ['DUID'],
+                      'FCAS_4s_SCADA_MAP': ['ELEMENTNUMBER', 'MARKETNAME']}
 
 effective_date_group_col = {'SPDREGIONCONSTRAINT': ['GENCONID'],
                             'SPDCONNECTIONPOINTCONSTRAINT': ['GENCONID'],

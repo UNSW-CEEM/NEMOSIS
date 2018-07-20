@@ -19,13 +19,16 @@ class TestSearchTypeValidity(unittest.TestCase):
                 start_test_window = '2018/01/01 00:00:00'
                 start_time = datetime.strptime(start_test_window, '%Y/%m/%d %H:%M:%S')
                 end_time = datetime.strptime('2018/05/01 00:00:00', '%Y/%m/%d %H:%M:%S')
+                if table_name == 'FCAS_4_SECOND':
+                    start_test_window = '2015/01/01 00:00:00'
+                    end_time = datetime.strptime('2015/01/02 00:00:00', '%Y/%m/%d %H:%M:%S')
                 start_search = datetime.strptime(start_test_window, '%Y/%m/%d %H:%M:%S')
                 data_tables = data_fetch_methods.dynamic_data_fetch_loop(
                     start_search=start_search, start_time=start_time,
                     end_time=end_time, table_name=table_name, raw_data_location='E:/raw_aemo_data',
                     select_columns=defaults.table_primary_keys[table_name], date_filter=None,
                     search_type='start_to_end')
-                all_data = pd.concat(data_tables)
+                all_data = pd.concat(data_tables, sort=False)
                 contains_duplicates = all_data.duplicated().any()
                 self.assertEqual(False, contains_duplicates)
                 print('Type valid, no duplicates found.')
@@ -62,7 +65,7 @@ class TestSearchTypeValidity(unittest.TestCase):
                     end_time=end_time, table_name=table_name, raw_data_location='E:/raw_aemo_data',
                     select_columns=defaults.table_primary_keys[table_name], date_filter=None,
                     search_type='all')
-                all_data = pd.concat(data_tables)
+                all_data = pd.concat(data_tables, sort=False)
                 contains_duplicates = all_data.duplicated().any()
                 self.assertEqual(False, contains_duplicates)
                 print('Type valid, no duplicates found.')
@@ -81,7 +84,7 @@ class TestSearchTypeValidity(unittest.TestCase):
                     end_time=end_time, table_name=table_name, raw_data_location='E:/raw_aemo_data',
                     select_columns=defaults.table_primary_keys[table_name], date_filter=None,
                     search_type='all')
-                all_data = pd.concat(data_tables)
+                all_data = pd.concat(data_tables, sort=False)
                 all_data = query_wrapers.drop_duplicates_by_primary_key(all_data, start_time, table_name)
                 contains_duplicates = all_data.duplicated().any()
                 self.assertEqual(False, contains_duplicates)
