@@ -1,0 +1,6 @@
+
+Use call like:
+
+rest_of_path\AppData\Local\Programs\Python\Python36\python.exe -m PyInstaller --onefile gui.py
+
+
