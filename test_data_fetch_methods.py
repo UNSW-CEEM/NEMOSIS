@@ -434,7 +434,7 @@ class TestStaticTables(unittest.TestCase):
     def test_registration_list(self):
         start_time = ''
         end_time = ''
-        table = 'MASTER_REGISTRATION_LIST'
+        table = 'Generators and Scheduled Loads'
         cols = ['DUID', 'Technology Type - Primary']
         filter_cols = ('DUID',)
         data = data_fetch_methods.static_table_xl( start_time, end_time, table, defaults.raw_data_cache,

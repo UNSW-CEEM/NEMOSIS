@@ -14,7 +14,7 @@ names = {'DISPATCHLOAD': 'PUBLIC_DVD_DISPATCHLOAD',
          'FCAS_4_SECOND': 'FCAS',
          'ELEMENTS_FCAS_4_SECOND': 'Elements_FCAS.csv',
          'VARIABLES_FCAS_4_SECOND': '820-0079 csv.csv',
-         'MASTER_REGISTRATION_LIST': 'NEM Registration and Exemption List',
+         'Generators and Scheduled Loads': 'NEM Registration and Exemption List',
          'MNSP_INTERCONNECTOR': 'PUBLIC_DVD_MNSP_INTERCONNECTOR',
          'MNSP_PEROFFER': 'PUBLIC_DVD_MNSP_PEROFFER',
          'INTERCONNECTOR': 'PUBLIC_DVD_INTERCONNECTOR',
@@ -40,7 +40,7 @@ table_types = {'DISPATCHLOAD': 'MMS',
                'FCAS_4_SECOND': 'FCAS',
                'ELEMENTS_FCAS_4_SECOND': 'STATIC',
                'VARIABLES_FCAS_4_SECOND': 'STATIC',
-               'MASTER_REGISTRATION_LIST': 'STATICXL',
+               'Generators and Scheduled Loads': 'STATICXL',
                'MNSP_INTERCONNECTOR': 'MMS',
                'MNSP_PEROFFER': 'MMS',
                'INTERCONNECTOR': 'MMS',
@@ -55,14 +55,14 @@ return_tables = list(names.keys())
 display_in_gui = ['DISPATCHLOAD', 'DUDETAILSUMMARY', 'DISPATCHCONSTRAINT', 'GENCONDATA', 'DISPATCH_UNIT_SCADA',
                   'DISPATCHPRICE', 'SPDREGIONCONSTRAINT', 'SPDCONNECTIONPOINTCONSTRAINT', 'SPDINTERCONNECTORCONSTRAINT',
                   'BIDPEROFFER_D', 'DISPATCHINTERCONNECTORRES', 'BIDDAYOFFER_D', 'DISPATCHREGIONSUM', 'FCAS_4_SECOND',
-                  'ELEMENTS_FCAS_4_SECOND', 'VARIABLES_FCAS_4_SECOND', 'MASTER_REGISTRATION_LIST', 'FCAS_4s_SCADA_MAP']
+                  'ELEMENTS_FCAS_4_SECOND', 'VARIABLES_FCAS_4_SECOND', 'Generators and Scheduled Loads', 'FCAS_4s_SCADA_MAP']
 
-static_tables = ['ELEMENTS_FCAS_4_SECOND', 'VARIABLES_FCAS_4_SECOND', 'MASTER_REGISTRATION_LIST']
+static_tables = ['ELEMENTS_FCAS_4_SECOND', 'VARIABLES_FCAS_4_SECOND', 'Generators and Scheduled Loads']
 
 static_table_url = {
     'ELEMENTS_FCAS_4_SECOND': 'https://www.aemo.com.au/-/media/Files/Electricity/NEM/Data/Ancillary_Services/Elements_FCAS.csv',
     'VARIABLES_FCAS_4_SECOND': 'https://www.aemo.com.au/-/media/Files/CSV/820-0079-csv.csv',
-    'MASTER_REGISTRATION_LIST': 'https://www.aemo.com.au/-/media/Files/Electricity/NEM/Participant_Information/NEM-Registration-and-Exemption-List.xls'}
+    'Generators and Scheduled Loads': 'https://www.aemo.com.au/-/media/Files/Electricity/NEM/Participant_Information/NEM-Registration-and-Exemption-List.xls'}
 
 aemo_data_url = 'http://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/MMSDM/{}/MMSDM_{}_{}/MMSDM_Historical_Data_SQLLoader/DATA/{}.zip'
 
@@ -184,7 +184,7 @@ table_columns = {
 
     'VARIABLES_FCAS_4_SECOND': ['VARIABLENUMBER', 'VARIABLETYPE'],
 
-    'MASTER_REGISTRATION_LIST': ['Participant', 'Station Name', 'Region', 'Dispatch Type', 'Category', 'Classification',
+    'Generators and Scheduled Loads': ['Participant', 'Station Name', 'Region', 'Dispatch Type', 'Category', 'Classification',
                                  'Fuel Source - Primary', 'Fuel Source - Descriptor', 'Technology Type - Primary',
                                  'Technology Type - Descriptor', 'Aggregation', 'DUID'],
 
@@ -216,7 +216,7 @@ table_primary_keys = {'DISPATCHCONSTRAINT': ['CONSTRAINTID', 'GENCONID_EFFECTIVE
                       'FCAS_4_SECOND': ['TIMESTAMP', 'ELEMENTNUMBER', 'VARIABLENUMBER'],
                       'ELEMENTS_FCAS_4_SECOND': ['ELEMENTNUMBER'],
                       'VARIABLES_FCAS_4_SECOND': ['VARIABLENUMBER', 'VARIABLETYPE'],
-                      'MASTER_REGISTRATION_LIST': ['DUID'],
+                      'Generators and Scheduled Loads': ['DUID'],
                       'FCAS_4s_SCADA_MAP': ['ELEMENTNUMBER', 'MARKETNAME']}
 
 effective_date_group_col = {'SPDREGIONCONSTRAINT': ['GENCONID'],
@@ -248,7 +248,7 @@ primary_date_columns = {'DISPATCHLOAD': 'SETTLEMENTDATE',
                         'FCAS_4_SECOND': 'TIMESTAMP',
                         'ELEMENTS_FCAS_4_SECOND': None,
                         'VARIABLES_FCAS_4_SECOND': None,
-                        'MASTER_REGISTRATION_LIST': None,
+                        'Generators and Scheduled Loads': None,
                         'MNSP_INTERCONNECTOR': 'EFFECTIVEDATE',
                         'MNSP_PEROFFER': 'SETTLEMENTDATE',
                         'INTERCONNECTOR': 'LASTCHANGED',
