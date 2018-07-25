@@ -27,7 +27,9 @@ def fcas4s_scada_match(start_time, end_time, table_name, raw_data_location, sele
 
     # Rename the 4 second measurements to the timestamp of the start of the 5 min interval i.e round down to nearest
     # 5 min interval.
-    fcas4s['TIMESTAMP'] = fcas4s['TIMESTAMP'].apply(lambda dt: datetime(dt.year, dt.month, dt.day, dt.hour, 5 * (dt.minute // 5)))
+    fcas4s = fcas4s[(fcas4s['TIMESTAMP'].dt.minute.isin(list(range(0, 60, 5)))) &
+                    (fcas4s['TIMESTAMP'].dt.second < 20)]
+    fcas4s['TIMESTAMP'] = fcas4s['TIMESTAMP'].apply(lambda dt: datetime(dt.year, dt.month, dt.day, dt.hour, dt.minute))
 
     # Pull in the dispatch unit scada data.
     table_name_scada = 'DISPATCH_UNIT_SCADA'
@@ -77,6 +79,7 @@ def fcas4s_scada_match(start_time, end_time, table_name, raw_data_location, sele
     # Remove fcas elements where a match only occurred because both fcas and scada showed no dispatch.
     best_matches_scada['ELEMENTNUMBER'] = pd.to_numeric(best_matches_scada['ELEMENTNUMBER'])
     best_matches_scada = best_matches_scada.sort_values('ELEMENTNUMBER')
+    best_matches_scada['ELEMENTNUMBER'] = best_matches_scada['ELEMENTNUMBER'].astype(str)
 
     # Give error as a percentage.
     best_matches_scada['ERROR'] = best_matches_scada['ERROR'] / best_matches_scada['SCADAVALUE']
