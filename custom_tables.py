@@ -84,9 +84,12 @@ def fcas4s_scada_match(start_time, end_time, table_name, raw_data_location, sele
     # drop matches with error greater than 100 %
     best_matches_scada = best_matches_scada[(best_matches_scada['ERROR'] < 1) & (best_matches_scada['ERROR'] > -1)]
 
-    best_matches_scada.loc[:, ('ELEMENTNUMBER', 'MARKETNAME', 'ERROR')]
+    best_matches_scada = best_matches_scada.loc[:, ('ELEMENTNUMBER', 'MARKETNAME', 'ERROR')]
 
     if select_columns is not None:
-        best_matches_scada.loc[:, select_columns]
+        best_matches_scada = best_matches_scada.loc[:, select_columns]
+
+    if filter_cols is not None:
+        best_matches_scada = filters.filter_on_column_value(best_matches_scada, filter_cols, filter_values)
 
     return best_matches_scada
