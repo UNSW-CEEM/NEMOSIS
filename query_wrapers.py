@@ -1,14 +1,19 @@
 import pandas as pd
 import defaults
+from datetime import datetime
 
 
 def dispatch_date_setup(start_time, end_time):
     start_time = start_time[:10]
     date_padding = ' 00:00:00'
     start_time = start_time + date_padding
-    #end_time = end_time[:10]
-    #date_padding = ' 23:55:00'
-    #end_time = end_time + date_padding
+    return start_time, end_time
+
+def dispatch_half_hour_setup(start_time, end_time):
+    start_time = datetime.strptime(start_time, '%Y/%m/%d %H:%M:%S')
+    start_time = datetime(year=start_time.year, month=start_time.month, day=start_time.day, hour=start_time.hour,
+                          minute=((start_time.minute // 30) * 30))
+    start_time = start_time.isoformat().replace('T', ' ').replace('-', '/')
     return start_time, end_time
 
 

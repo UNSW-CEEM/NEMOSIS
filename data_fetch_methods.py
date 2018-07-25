@@ -171,4 +171,11 @@ method_map = {'DISPATCHLOAD': dynamic_data_compiler,
               'BIDPEROFFER_D': dynamic_data_compiler,
               'FCAS_4s_SCADA_MAP': custom_tables.fcas4s_scada_match,
               'DISPATCHINTERCONNECTORRES': dynamic_data_compiler,
-              'DISPATCHREGIONSUM': dynamic_data_compiler}
+              'DISPATCHREGIONSUM': dynamic_data_compiler,
+              'LOSSMODEL': dynamic_data_compiler,
+              'LOSSFACTORMODEL': dynamic_data_compiler,
+              'MNSP_DAYOFFER': dynamic_data_compiler,
+              'MNSP_PEROFFER': dynamic_data_compiler,
+              'MNSP_INTERCONNECTOR': dynamic_data_compiler,
+              'INTERCONNECTOR': dynamic_data_compiler,
+              'INTERCONNECTORCONSTRAINT': dynamic_data_compiler}

@@ -38,7 +38,7 @@ def filter_on_interval_datetime(data, start_time, end_time):
 # Not tested, just for nemlite integration.
 def filter_on_date_and_peroid(data, start_time, end_time):
     data = construct_interval_datetime_from_period_id(data)
-    data = data[(data['SETTLEMENTDATE'] > start_time  - timedelta(minutes=30)) & (data['SETTLEMENTDATE'] < end_time)]
+    data = data[(data['SETTLEMENTDATE'] >= start_time) & (data['SETTLEMENTDATE'] < end_time)]
     return data
 
 
@@ -52,7 +52,7 @@ def filter_on_date_and_interval(data, start_time, end_time):
 # Not tested, just for nemlite integration.
 def filter_on_last_changed(data, start_time, end_time):
     data['LASTCHANGED'] = pd.to_datetime(data['LASTCHANGED'], format='%Y/%m/%d %H:%M:%S')
-    data = data[(data['LASTCHANGED'] < end_time) & (data['LASTCHANGED'] >= start_time)]
+    data = data[data['LASTCHANGED'] < end_time]
     return data
 
 
