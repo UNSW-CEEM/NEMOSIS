@@ -5,6 +5,7 @@ import write_file_names
 import date_generators
 
 setup = {'DISPATCHLOAD': None,
+         'TRADINGLOAD': None,
          'DISPATCHPRICE': None,
          'DISPATCH_UNIT_SCADA': None,
          'DISPATCHCONSTRAINT': None,
@@ -24,6 +25,7 @@ setup = {'DISPATCHLOAD': None,
          'DISPATCHREGIONSUM': None}
 
 search_type = {'DISPATCHLOAD': 'start_to_end',
+               'TRADINGLOAD': 'start_to_end',
                'DISPATCHPRICE': 'start_to_end',
                'DISPATCH_UNIT_SCADA': 'start_to_end',
                'DISPATCHCONSTRAINT': 'start_to_end',
@@ -43,6 +45,7 @@ search_type = {'DISPATCHLOAD': 'start_to_end',
                'DISPATCHREGIONSUM': 'start_to_end'}
 
 filter = {'DISPATCHLOAD': filters.filter_on_settlementdate,
+          'TRADINGLOAD': filters.filter_on_settlementdate,
           'DISPATCHPRICE': filters.filter_on_settlementdate,
           'DISPATCH_UNIT_SCADA': filters.filter_on_settlementdate,
           'DISPATCHCONSTRAINT': filters.filter_on_settlementdate,
@@ -62,6 +65,7 @@ filter = {'DISPATCHLOAD': filters.filter_on_settlementdate,
           'DISPATCHREGIONSUM': filters.filter_on_settlementdate}
 
 finalise = {'DISPATCHLOAD': None,
+            'TRADINGLOAD': None,
             'DISPATCHPRICE': None,
             'DISPATCH_UNIT_SCADA': None,
             'DISPATCHCONSTRAINT': None,

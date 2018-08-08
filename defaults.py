@@ -22,7 +22,8 @@ names = {'DISPATCHLOAD': 'PUBLIC_DVD_DISPATCHLOAD',
          'MNSP_DAYOFFER': 'PUBLIC_DVD_MNSP_DAYOFFER',
          'LOSSMODEL': 'PUBLIC_DVD_LOSSMODEL',
          'LOSSFACTORMODEL': 'PUBLIC_DVD_LOSSFACTORMODEL',
-         'FCAS_4s_SCADA_MAP': ''}
+         'FCAS_4s_SCADA_MAP': '',
+         'TRADINGLOAD': 'PUBLIC_DVD_TRADINGLOAD'}
 
 table_types = {'DISPATCHLOAD': 'MMS',
                'DUDETAILSUMMARY': 'MMS',
@@ -48,14 +49,16 @@ table_types = {'DISPATCHLOAD': 'MMS',
                'MNSP_DAYOFFER': 'MMS',
                'LOSSMODEL': 'MMS',
                'LOSSFACTORMODEL': 'MMS',
-               'FCAS_4s_SCADA_MAP': 'CUSTOM'}
+               'FCAS_4s_SCADA_MAP': 'CUSTOM',
+               'TRADINGLOAD': 'MMS'}
 
 return_tables = list(names.keys())
 
 display_in_gui = ['DISPATCHLOAD', 'DUDETAILSUMMARY', 'DISPATCHCONSTRAINT', 'GENCONDATA', 'DISPATCH_UNIT_SCADA',
                   'DISPATCHPRICE', 'SPDREGIONCONSTRAINT', 'SPDCONNECTIONPOINTCONSTRAINT', 'SPDINTERCONNECTORCONSTRAINT',
                   'BIDPEROFFER_D', 'DISPATCHINTERCONNECTORRES', 'BIDDAYOFFER_D', 'DISPATCHREGIONSUM', 'FCAS_4_SECOND',
-                  'ELEMENTS_FCAS_4_SECOND', 'VARIABLES_FCAS_4_SECOND', 'Generators and Scheduled Loads', 'FCAS_4s_SCADA_MAP']
+                  'ELEMENTS_FCAS_4_SECOND', 'VARIABLES_FCAS_4_SECOND', 'Generators and Scheduled Loads', 'FCAS_4s_SCADA_MAP',
+                  'TRADINGLOAD']
 
 static_tables = ['ELEMENTS_FCAS_4_SECOND', 'VARIABLES_FCAS_4_SECOND', 'Generators and Scheduled Loads']
 
@@ -92,7 +95,8 @@ data_url = {'DISPATCHLOAD': 'aemo_data_url',
             'LOSSMODEL': 'aemo_data_url',
             'LOSSFACTORMODEL': 'aemo_data_url',
             'DISPATCHCASESOLUTION': 'aemo_data_url',
-            'FCAS': 'fcas_4_url'}
+            'FCAS': 'fcas_4_url',
+            'TRADINGLOAD': 'aemo_data_url'}
 
 filterable_cols = ['DUID', 'REGIONID', 'STATIONID', 'PARTICIPANTID', 'STARTTYPE', 'SCHEDULE_TYPE', 'GENCONID',
                    'BIDTYPE', 'VARIABLEID', 'INTERVENTION', 'DISPATCHMODE', 'STARTTYPE', 'CONNECTIONPOINTID',
@@ -107,6 +111,10 @@ table_columns = {
                      'TOTALCLEARED', 'RAMPDOWNRATE', 'RAMPUPRATE', 'LOWER5MIN', 'LOWER60SEC',
                      'LOWER6SEC', 'RAISE5MIN', 'RAISE60SEC', 'RAISE6SEC', 'LOWERREG', 'RAISEREG',
                      'SEMIDISPATCHCAP', 'AVAILABILITY'],
+
+    'TRADINGLOAD':['SETTLEMENTDATE', 'DUID', 'INITIALMW', 'TOTALCLEARED', 'RAMPDOWNRATE', 'RAMPUPRATE', 'LOWER5MIN',
+                   'LOWER60SEC', 'LOWER6SEC', 'RAISE5MIN', 'RAISE60SEC', 'RAISE6SEC', 'LOWERREG', 'RAISEREG',
+                   'SEMIDISPATCHCAP', 'AVAILABILITY'],
 
     'DUDETAILSUMMARY': ['DUID', 'START_DATE', 'END_DATE', 'DISPATCHTYPE', 'CONNECTIONPOINTID', 'REGIONID', 'STATIONID',
                         'PARTICIPANTID', 'LASTCHANGED', 'TRANSMISSIONLOSSFACTOR', 'STARTTYPE', 'DISTRIBUTIONLOSSFACTOR',
@@ -217,7 +225,8 @@ table_primary_keys = {'DISPATCHCONSTRAINT': ['CONSTRAINTID', 'GENCONID_EFFECTIVE
                       'ELEMENTS_FCAS_4_SECOND': ['ELEMENTNUMBER'],
                       'VARIABLES_FCAS_4_SECOND': ['VARIABLENUMBER', 'VARIABLETYPE'],
                       'Generators and Scheduled Loads': ['DUID'],
-                      'FCAS_4s_SCADA_MAP': ['ELEMENTNUMBER', 'MARKETNAME']}
+                      'FCAS_4s_SCADA_MAP': ['ELEMENTNUMBER', 'MARKETNAME'],
+                      'TRADINGLOAD': ['SETTLEMENTDATE', 'DUID']}
 
 effective_date_group_col = {'SPDREGIONCONSTRAINT': ['GENCONID'],
                             'SPDCONNECTIONPOINTCONSTRAINT': ['GENCONID'],
@@ -233,6 +242,7 @@ effective_date_group_col = {'SPDREGIONCONSTRAINT': ['GENCONID'],
                             'MNSP_DAYOFFER': ['LINKID']}
 
 primary_date_columns = {'DISPATCHLOAD': 'SETTLEMENTDATE',
+                        'TRADINGLOAD': 'SETTLEMENTDATE',
                         'DUDETAILSUMMARY': 'START_DATE',
                         'DISPATCHCONSTRAINT': 'SETTLEMENTDATE',
                         'GENCONDATA': 'EFFECTIVEDATE',
