@@ -9,11 +9,15 @@ import custom_tables
 class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
     def setUp(self):
         self.table_names = ['BIDDAYOFFER_D', 'BIDPEROFFER_D', 'DISPATCHLOAD', 'DISPATCHCONSTRAINT',
-                            'DISPATCH_UNIT_SCADA', 'DISPATCHPRICE', 'DISPATCHINTERCONNECTORRES', 'DISPATCHREGIONSUM']
+                            'DISPATCH_UNIT_SCADA', 'DISPATCHPRICE', 'DISPATCHINTERCONNECTORRES', 'DISPATCHREGIONSUM',
+                            'TRADINGLOAD', 'TRADINGPRICE', 'TRADINGREGIONSUM', 'TRADINGINTERCONNECT']
+
         self.table_types = {'DISPATCHLOAD': 'DUID', 'DISPATCHCONSTRAINT': 'CONSTRAINTID', 'DISPATCH_UNIT_SCADA': 'DUID',
                        'DISPATCHPRICE': 'REGIONID', 'DISPATCHINTERCONNECTORRES': 'INTERCONNECTORID',
                        'DISPATCHREGIONSUM': 'REGIONID', 'BIDPEROFFER_D': 'DUID-BIDTYPE',
-                            'BIDDAYOFFER_D': 'DUID-BIDTYPE'}
+                       'BIDDAYOFFER_D': 'DUID-BIDTYPE', 'TRADINGLOAD': 'DUID', 'TRADINGPRICE': 'REGIONID',
+                       'TRADINGREGIONSUM': 'REGIONID', 'TRADINGINTERCONNECT': 'INTERCONNECTORID'}
+
         self.filter_values = {'DUID': (['AGLHAL'],), 'REGIONID': (['SA1'],), 'INTERCONNECTORID': (['VIC1-NSW1'],),
                               'CONSTRAINTID': (['DATASNAP_DFS_Q_CLST'],), 'DUID-BIDTYPE': (['AGLHAL', 'ENERGY'],)}
 
@@ -30,6 +34,8 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             expected_number_of_columns = 2
             expected_firt_time = pd.Timestamp.strptime(start_time, '%Y/%m/%d %H:%M:%S')
             expected_last_time = pd.Timestamp.strptime(end_time, '%Y/%m/%d %H:%M:%S') - timedelta(minutes=5)
+            if table in [ 'TRADINGLOAD', 'TRADINGPRICE', 'TRADINGREGIONSUM', 'TRADINGINTERCONNECT']:
+                expected_length = 11
             if table == 'BIDPEROFFER_D':
                 cols = [dat_col, 'DUID', 'BIDTYPE']
                 filter_cols = ('DUID', 'BIDTYPE')
@@ -65,6 +71,8 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             expected_number_of_columns = 2
             expected_firt_time = pd.Timestamp.strptime(start_time, '%Y/%m/%d %H:%M:%S')
             expected_last_time = pd.Timestamp.strptime(end_time, '%Y/%m/%d %H:%M:%S') - timedelta(minutes=5)
+            if table in [ 'TRADINGLOAD', 'TRADINGPRICE', 'TRADINGREGIONSUM', 'TRADINGINTERCONNECT']:
+                expected_length = 6
             if table == 'BIDPEROFFER_D':
                 cols = [dat_col, 'DUID', 'BIDTYPE']
                 filter_cols = ('DUID', 'BIDTYPE')
@@ -101,6 +109,8 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             expected_number_of_columns = 2
             expected_firt_time = pd.Timestamp.strptime(start_time, '%Y/%m/%d %H:%M:%S')
             expected_last_time = pd.Timestamp.strptime(end_time, '%Y/%m/%d %H:%M:%S') - timedelta(minutes=5)
+            if table in [ 'TRADINGLOAD', 'TRADINGPRICE', 'TRADINGREGIONSUM', 'TRADINGINTERCONNECT']:
+                expected_length = 48
             if table == 'BIDPEROFFER_D':
                 cols = [dat_col, 'DUID', 'BIDTYPE']
                 filter_cols = ('DUID', 'BIDTYPE')
@@ -137,6 +147,8 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             expected_number_of_columns = 2
             expected_firt_time = pd.Timestamp.strptime(start_time, '%Y/%m/%d %H:%M:%S')
             expected_last_time = pd.Timestamp.strptime(end_time, '%Y/%m/%d %H:%M:%S') - timedelta(minutes=5)
+            if table in [ 'TRADINGLOAD', 'TRADINGPRICE', 'TRADINGREGIONSUM', 'TRADINGINTERCONNECT']:
+                expected_length = 2
             if table == 'BIDPEROFFER_D':
                 cols = [dat_col, 'DUID', 'BIDTYPE']
                 filter_cols = ('DUID', 'BIDTYPE')
@@ -173,6 +185,8 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             expected_number_of_columns = 2
             expected_firt_time = pd.Timestamp.strptime(start_time, '%Y/%m/%d %H:%M:%S')
             expected_last_time = pd.Timestamp.strptime(end_time, '%Y/%m/%d %H:%M:%S') - timedelta(minutes=5)
+            if table in [ 'TRADINGLOAD', 'TRADINGPRICE', 'TRADINGREGIONSUM', 'TRADINGINTERCONNECT']:
+                expected_length = 2
             if table == 'BIDPEROFFER_D':
                 cols = [dat_col, 'DUID', 'BIDTYPE']
                 filter_cols = ('DUID', 'BIDTYPE')
@@ -209,6 +223,8 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             expected_number_of_columns = 2
             expected_firt_time = pd.Timestamp.strptime(start_time, '%Y/%m/%d %H:%M:%S')
             expected_last_time = pd.Timestamp.strptime(end_time, '%Y/%m/%d %H:%M:%S') - timedelta(minutes=5)
+            if table in [ 'TRADINGLOAD', 'TRADINGPRICE', 'TRADINGREGIONSUM', 'TRADINGINTERCONNECT']:
+                expected_length = 4
             if table == 'BIDPEROFFER_D':
                 cols = [dat_col, 'DUID', 'BIDTYPE']
                 filter_cols = ('DUID', 'BIDTYPE')
