@@ -23,6 +23,12 @@ def filter_on_settlementdate(data, start_time, end_time):
     return data
 
 
+def make_and_filter_on_settlementdate(data, start_time, end_time):
+    data['SETTLEMENTDATE'] = pd.to_datetime(data['SETTLEMENTDATE'], format='%Y/%m/%d %H:%M:%S')
+    data = data[(data['SETTLEMENTDATE'] >= start_time) & (data['SETTLEMENTDATE'] < end_time)]
+    return data
+
+
 def filter_on_timestamp(data, start_time, end_time):
     data['TIMESTAMP'] = pd.to_datetime(data['TIMESTAMP'], format='%Y/%m/%d %H:%M:%S')
     data = data[(data['TIMESTAMP'] >= start_time) & (data['TIMESTAMP'] < end_time)]
@@ -72,5 +78,6 @@ def date_2_interval_datetime(date, period):
     datetime_obj = datetime.strptime(date, '%Y/%m/%d %H:%M:%S')
     datetime_obj = datetime_obj + timedelta(minutes=((float(period)-1)*30))
     return datetime_obj
+
 
 
