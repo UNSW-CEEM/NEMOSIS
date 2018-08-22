@@ -4,12 +4,12 @@ from calendar import monthrange
 
 def year_and_month_gen(start_time, end_time):
 
-    if start_time.day == 1 and start_time.hour == 0 and start_time.minute == 0:
-        if start_time.month == 1:
-            start_time = start_time.replace(month=12)
-            start_time = start_time.replace(year=start_time.year - 1)
-        else:
-            start_time = start_time.replace(month=start_time.month - 1)
+    #if start_time.day == 1 and start_time.hour == 0 and start_time.minute == 0:
+    if start_time.month == 1:
+        start_time = start_time.replace(month=12)
+        start_time = start_time.replace(year=start_time.year - 1)
+    else:
+        start_time = start_time.replace(month=start_time.month - 1)
 
     end_year = end_time.year
     start_year = start_time.year
