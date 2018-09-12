@@ -44,9 +44,7 @@ def filter_on_interval_datetime(data, start_time, end_time):
 # Not tested, just for nemlite integration.
 def filter_on_date_and_peroid(data, start_time, end_time):
     data = construct_interval_datetime_from_period_id(data)
-    end_time = end_time + (datetime.min - end_time) % timedelta(minutes=30)
-    data = data[(data['SETTLEMENTDATE'] <= end_time)]
-    #data = data[(data['SETTLEMENTDATE'] >= start_time) & (data['SETTLEMENTDATE'] <= end_time)]
+    data = data[(data['SETTLEMENTDATE'] >= start_time) & (data['SETTLEMENTDATE'] < end_time)]
     return data
 
 
@@ -78,7 +76,7 @@ def construct_interval_datetime_from_period_id(data):
 # Not tested, just for nemlite integration.
 def date_2_interval_datetime(date, period):
     datetime_obj = datetime.strptime(date, '%Y/%m/%d %H:%M:%S')
-    datetime_obj = datetime_obj + timedelta(minutes=((float(period)-1)*30)) + timedelta(hours=4)
+    datetime_obj = datetime_obj + timedelta(minutes=((float(period)-1)*30))
     return datetime_obj
 
 
