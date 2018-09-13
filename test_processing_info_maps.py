@@ -51,7 +51,8 @@ class TestSearchTypeValidity(unittest.TestCase):
                 print('Validating all type for table {}'.format(table_name))
                 if table_name in ['GENCONDATA', 'SPDCONNECTIONPOINTCONSTRAINT', 'SPDINTERCONNECTORCONSTRAINT',
                                   'DUDETAILSUMMARY', 'LOSSMODEL', 'LOSSFACTORMODEL', 'MNSP_DAYOFFER',
-                                  'MNSP_PEROFFER', 'MNSP_INTERCONNECTOR', 'INTERCONNECTOR', 'INTERCONNECTORCONSTRAINT']:
+                                  'MNSP_PEROFFER', 'MNSP_INTERCONNECTOR', 'INTERCONNECTOR', 'INTERCONNECTORCONSTRAINT',
+                                  'DUDETAIL']:
                     print('{} is known to contain duplicate entries and is exempted from this test, a finalise '
                           'data processing step is included in dynamic data fetch to clean up these duplicates.'
                           .format(table_name))
