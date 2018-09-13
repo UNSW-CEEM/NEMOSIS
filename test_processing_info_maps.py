@@ -30,7 +30,7 @@ class TestSearchTypeValidity(unittest.TestCase):
                     search_type='start_to_end')
                 all_data = pd.concat(data_tables, sort=False)
                 contains_duplicates = all_data.duplicated().any()
-                self.assertEqual(False, contains_duplicates)
+                self.assertEqual(False, contains_duplicates, 'table {}'.format(table_name))
                 print('Type valid, no duplicates found.')
 
     def test_start_to_end_has_settlement_or_interval_col(self):
@@ -50,7 +50,8 @@ class TestSearchTypeValidity(unittest.TestCase):
             if processing_info_maps.search_type[table_name] == 'all':
                 print('Validating all type for table {}'.format(table_name))
                 if table_name in ['GENCONDATA', 'SPDCONNECTIONPOINTCONSTRAINT', 'SPDINTERCONNECTORCONSTRAINT',
-                                  'DUDETAILSUMMARY']:
+                                  'DUDETAILSUMMARY', 'LOSSMODEL', 'LOSSFACTORMODEL', 'MNSP_DAYOFFER',
+                                  'MNSP_PEROFFER', 'MNSP_INTERCONNECTOR', 'INTERCONNECTOR', 'INTERCONNECTORCONSTRAINT']:
                     print('{} is known to contain duplicate entries and is exempted from this test, a finalise '
                           'data processing step is included in dynamic data fetch to clean up these duplicates.'
                           .format(table_name))
@@ -67,7 +68,7 @@ class TestSearchTypeValidity(unittest.TestCase):
                     search_type='all')
                 all_data = pd.concat(data_tables, sort=False)
                 contains_duplicates = all_data.duplicated().any()
-                self.assertEqual(False, contains_duplicates)
+                self.assertEqual(False, contains_duplicates, 'table {}'.format(table_name))
                 print('Type valid, no duplicates found.')
 
     def test_all_no_duplication_between_batches_with_finalise_step(self):
@@ -97,7 +98,7 @@ class TestSearchTypeValidity(unittest.TestCase):
                 has_interval_datetime_col = 'INTERVAL_DATETIME' in defaults.table_columns[table_name]
                 has_interval_timestamp_col = 'TIMESTAMP' in defaults.table_columns[table_name]
                 has_either = has_interval_datetime_col or has_settlement_date_col or has_interval_timestamp_col
-                self.assertEqual(False, has_either)
+                self.assertEqual(False, has_either, 'table {}'.format(table_name))
                 print('{} is valid candidate for type all as there is not a SETTLEMENTDATE, ' 
                       'INTERVAL_DATETIME or TIMESTAMP column to filter on'
                       .format(table_name))
