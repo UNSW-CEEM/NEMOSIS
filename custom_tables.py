@@ -100,7 +100,7 @@ def fcas4s_scada_match(start_time, end_time, table_name, raw_data_location, sele
 
 
 def capacity_factor(capacity_and_scada_grouped):
-    cf = capacity_and_scada_grouped['SCADAVALUE']/capacity_and_scada_grouped['MAXCAPACITY']
+    cf = capacity_and_scada_grouped['SCADAVALUE'] / capacity_and_scada_grouped['MAXCAPACITY']
     cf = cf.mean()
     return cf
 
@@ -119,19 +119,19 @@ def volume_weighted_average_price(output, prices):
 
 
 def volume_weighted_average_trading_price(capacity_and_scada_grouped):
-    return volume_weighted_average_price(capacity_and_scada_grouped['TRADINGTOTALCLEARED'],
-                                         capacity_and_scada_grouped['TRADINGRRP'])
+    return volume_weighted_average_price(capacity_and_scada_grouped['TRADING_TOTALCLEARED'],
+                                         capacity_and_scada_grouped['TRADING_RRP'])
 
 
 def volume_weighted_average_spot_price(capacity_and_scada_grouped):
     return volume_weighted_average_price(capacity_and_scada_grouped['SCADAVALUE'],
-                                         capacity_and_scada_grouped['DISPATCHRRP'])
+                                         capacity_and_scada_grouped['DISPATCH_RRP'])
 
 
 def performance_at_nodal_peak(capacity_and_scada_grouped):
     index_max = capacity_and_scada_grouped['TOTALDEMAND'].idxmax()
-    performance = capacity_and_scada_grouped['SCADAVALUE'].iloc[index_max] / \
-        capacity_and_scada_grouped['MAXCAPACITY'].iloc[index_max]
+    performance = capacity_and_scada_grouped['SCADAVALUE'][index_max] / \
+            capacity_and_scada_grouped['MAXCAPACITY'][index_max]
     return performance
 
 
@@ -147,9 +147,16 @@ def capacity_factor_over_90th_percentile_of_nodal_demand(capacity_and_scada_grou
 
 def stats_for_group(capacity_and_scada_grouped):
     cf = capacity_factor(capacity_and_scada_grouped)
+    v = volume(capacity_and_scada_grouped)
+    tvwap = volume_weighted_average_trading_price(capacity_and_scada_grouped)
+    dvwap = volume_weighted_average_spot_price(capacity_and_scada_grouped)
+    peak = performance_at_nodal_peak(capacity_and_scada_grouped)
+    peak_percentile = capacity_factor_over_90th_percentile_of_nodal_demand(capacity_and_scada_grouped)
     month = list(capacity_and_scada_grouped['MONTH'])[0]
     duid = list(capacity_and_scada_grouped['DUID'])[0]
-    cf_df = pd.DataFrame({'MONTH': [month], 'DUID': [duid], 'CapacityFactor': [cf]})
+    cf_df = pd.DataFrame({'Month': [month], 'DUID': [duid], 'CapacityFactor': [cf], 'Volume': [v],
+                          'TRADING_VWAP': [tvwap], 'DISPATCH_VWAP': [dvwap], 'NodalPeakCapacityFactor': peak,
+                          'Nodal90thPercentileCapacityFactor': [peak_percentile]})
     return cf_df
 
 
@@ -160,14 +167,22 @@ def stats_by_month_and_plant(capacity_and_scada):
     return capacity_factors
 
 
-def merge_tables_for_plant_stats(gen_info, scada, trading_load, dispatch_price, trading_price, region_summary):
-    scada = scada.sort_values('SETTLEMENTDATE')
-    gen_info = gen_info.sort_values('EFFECTIVEDATE')
-    merged_data = pd.merge_asof(scada, gen_info, left_on='SETTLEMENTDATE', right_on='EFFECTIVEDATE', by='DUID')
+def merge_tables_for_plant_stats(timeseries_df, gen_max_cap, gen_region, scada, trading_load, dispatch_price, trading_price,
+                                 region_summary):
+    gen_max_cap = gen_max_cap.sort_values('EFFECTIVEDATE')
+    gen_max_cap = gen_max_cap[gen_max_cap['DUID'].isin(scada['DUID'])]
+    merged_data_temp = []
+    for gen in gen_max_cap.groupby(['DUID', 'EFFECTIVEDATE']):
+        merged_data_temp.append(pd.merge_asof(timeseries_df, gen[1], left_on='SETTLEMENTDATE', right_on='EFFECTIVEDATE'))
+    merged_data = pd.concat(merged_data_temp)
+    merged_data = merged_data.sort_values('SETTLEMENTDATE')
+    gen_region = gen_region.sort_values('START_DATE')
+    merged_data = pd.merge_asof(merged_data, gen_region, left_on='SETTLEMENTDATE', right_on='START_DATE', by='DUID')
     merged_data = pd.merge(merged_data, trading_load, 'left', on=['SETTLEMENTDATE', 'DUID'])
     merged_data = pd.merge(merged_data, dispatch_price, 'left', on=['SETTLEMENTDATE', 'REGIONID'])
     merged_data = pd.merge(merged_data, trading_price, 'left', on=['SETTLEMENTDATE', 'REGIONID'])
     merged_data = pd.merge(merged_data, region_summary, 'left', on=['SETTLEMENTDATE', 'REGIONID'])
+    merged_data = pd.merge(merged_data, scada, 'left', on=['SETTLEMENTDATE', 'DUID'])
     merged_data = merged_data.loc[:, ('DUID', 'EFFECTIVEDATE', 'REGIONID', 'SETTLEMENTDATE', 'MAXCAPACITY',
                                       'SCADAVALUE', 'TOTALCLEARED', 'RRP_x', 'RRP_y', 'TOTALDEMAND')]
     merged_data.columns = ['DUID', 'DUDETAIL_EFFECTIVEDATE', 'REGIONID', 'SETTLEMENTDATE', 'MAXCAPACITY', 'SCADAVALUE',
@@ -177,20 +192,36 @@ def merge_tables_for_plant_stats(gen_info, scada, trading_load, dispatch_price, 
 
 def plant_stats(start_time, end_time, table_name, raw_data_location, select_columns=None, filter_cols=None,
                 filter_values=None):
-    gen_info = data_fetch_methods.dynamic_data_compiler(start_time, end_time, 'DUDETAIL', raw_data_location,
-                                                        select_columns=['EFFECTIVEDATE', 'DUID', 'MAXCAPACITY'])
+    ix = pd.DatetimeIndex(start=datetime.strptime(start_time, '%Y/%m/%d %H:%M:%S'),
+                          end=datetime.strptime(end_time, '%Y/%m/%d %H:%M:%S') - timedelta(minutes=5),
+                          freq='5T')
+    timeseries_df = pd.DataFrame(index=ix)
+    timeseries_df.reset_index(inplace=True)
+    timeseries_df.columns = ['SETTLEMENTDATE']
+    gen_max_cap = data_fetch_methods.dynamic_data_compiler(start_time, end_time, 'DUDETAIL', raw_data_location,
+                                                           select_columns=['EFFECTIVEDATE', 'DUID', 'VERSIONNO',
+                                                                           'MAXCAPACITY'])
+    gen_region = data_fetch_methods.dynamic_data_compiler(start_time, end_time, 'DUDETAILSUMMARY', raw_data_location,
+                                                          select_columns=['START_DATE', 'END_DATE', 'DUID', 'REGIONID'])
     scada = data_fetch_methods.dynamic_data_compiler(start_time, end_time, 'DISPATCH_UNIT_SCADA', raw_data_location,
                                                      select_columns=['SETTLEMENTDATE', 'DUID', 'SCADAVALUE'])
     trading_load = data_fetch_methods.dynamic_data_compiler(start_time, end_time, 'TRADINGLOAD', raw_data_location,
                                                             select_columns=['SETTLEMENTDATE', 'DUID', 'TOTALCLEARED'])
     dispatch_price = data_fetch_methods.dynamic_data_compiler(start_time, end_time, 'DISPATCHPRICE', raw_data_location,
                                                               select_columns=['SETTLEMENTDATE', 'REGIONID', 'RRP'])
-    trading_price = data_fetch_methods.dynamic_data_compiler(start_time, end_time, 'DUDETAIL', raw_data_location,
+    trading_price = data_fetch_methods.dynamic_data_compiler(start_time, end_time, 'TRADINGPRICE', raw_data_location,
                                                              select_columns=['SETTLEMENTDATE', 'REGIONID', 'RRP'])
-    region_summary = data_fetch_methods.dynamic_data_compiler(start_time, end_time, 'DUDETAIL', raw_data_location,
+    region_summary = data_fetch_methods.dynamic_data_compiler(start_time, end_time, 'DISPATCHREGIONSUM',
+                                                              raw_data_location,
                                                               select_columns=['SETTLEMENTDATE', 'REGIONID',
                                                                               'TOTALDEMAND'])
-    combined_data = merge_tables_for_plant_stats(gen_info, scada, trading_load, dispatch_price, trading_price,
-                                                 region_summary)
+    combined_data = merge_tables_for_plant_stats(timeseries_df, gen_max_cap, gen_region, scada, trading_load, dispatch_price,
+                                                 trading_price, region_summary)
+    combined_data['SCADAVALUE'] = pd.to_numeric(combined_data['SCADAVALUE'])
+    combined_data['MAXCAPACITY'] = pd.to_numeric(combined_data['MAXCAPACITY'])
+    combined_data['TRADING_TOTALCLEARED'] = pd.to_numeric(combined_data['TRADING_TOTALCLEARED'])
+    combined_data['TRADING_RRP'] = pd.to_numeric(combined_data['TRADING_RRP'])
+    combined_data['DISPATCH_RRP'] = pd.to_numeric(combined_data['DISPATCH_RRP'])
+    combined_data['TOTALDEMAND'] = pd.to_numeric(combined_data['TOTALDEMAND'])
     stats = stats_by_month_and_plant(combined_data)
     return stats

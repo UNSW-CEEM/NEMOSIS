@@ -8,6 +8,7 @@ import query_wrapers
 import custom_tables
 import math
 import numpy as np
+import time
 
 
 class TestBaseVolumeWeightAveragePriceFunction(unittest.TestCase):
@@ -122,9 +123,13 @@ class TestMergeTables(unittest.TestCase):
         self.gen_info = pd.DataFrame({
             'EFFECTIVEDATE': ['2014/01/01 00:00:00', '2017/01/01 00:00:00', '2014/01/01 00:00:00'],
             'DUID': ['A', 'A', 'B'],
-            'REGIONID': ['NSW1', 'NSW1', 'VIC1'],
             'MAXCAPACITY': [333, 400, 250]})
         self.gen_info['EFFECTIVEDATE'] = pd.to_datetime(self.gen_info['EFFECTIVEDATE'])
+        self.gen_info2 = pd.DataFrame({
+            'START_DATE': ['2014/01/01 00:00:00', '2017/01/01 00:00:00', '2014/01/01 00:00:00'],
+            'DUID': ['A', 'A', 'B'],
+            'REGIONID': ['NSW1', 'NSW1', 'VIC1']})
+        self.gen_info2['START_DATE'] = pd.to_datetime(self.gen_info2['START_DATE'])
         self.scada = pd.DataFrame({
             'DUID': ['A', 'A', 'B', 'B'],
             'SETTLEMENTDATE': ['2015/01/01 00:00:00', '2015/01/01 00:05:00',
@@ -171,9 +176,9 @@ class TestMergeTables(unittest.TestCase):
         self.expected_combined_df = self.expected_combined_df.sort_values('SETTLEMENTDATE')
 
     def test_merge_tables(self):
-        merged_table = custom_tables.merge_tables_for_plant_stats(self.gen_info, self.scada, self.trading_load,
-                                                                  self.dispatch_price, self.trading_price,
-                                                                  self.region_summary)
+        merged_table = custom_tables.merge_tables_for_plant_stats(self.gen_info, self.gen_info2, self.scada,
+                                                                  self.trading_load,  self.dispatch_price,
+                                                                  self.trading_price,  self.region_summary)
         np.array_equal(merged_table, self.expected_combined_df)
 
 
@@ -182,6 +187,8 @@ class TestPlantStats(unittest.TestCase):
         pass
 
     def test_plant_stats(self):
-        plant_stats = custom_tables.plant_stats('2015/01/01 00:00:00', '2015/01/02 00:00:00', '', 'E:/raw_aemo_data')
+        t0 = time.time()
+        plant_stats = custom_tables.plant_stats('2017/01/01 00:00:00', '2018/01/01 00:00:00', '', 'E:/raw_aemo_data')
         plant_stats.to_csv('C:/Users/user/Documents/plant_stats.csv')
+        print(time.time() -t0)
 
