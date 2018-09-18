@@ -155,6 +155,7 @@ def static_table_xl(start_time, end_time, table_name, raw_data_location, select_
 
 
 method_map = {'DISPATCHLOAD': dynamic_data_compiler,
+              'DISPATCHPRICE': dynamic_data_compiler,
               'TRADINGLOAD': dynamic_data_compiler,
               'TRADINGPRICE': dynamic_data_compiler,
               'TRADINGREGIONSUM': dynamic_data_compiler,

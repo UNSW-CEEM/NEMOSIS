@@ -3,7 +3,8 @@ import pandas as pd
 from datetime import timedelta, datetime
 import data_fetch_methods
 import math
-
+import defaults
+import numpy as np
 
 def fcas4s_scada_match(start_time, end_time, table_name, raw_data_location, select_columns=None, filter_cols=None,
                        filter_values=None):
@@ -73,7 +74,7 @@ def fcas4s_scada_match(start_time, end_time, table_name, raw_data_location, sele
     error_comp = error_comp.sort_values('ERROR')
 
     # Drop duplicates of element numbers and scada element names, keeping the record for each with the least error.
-    best_matches_scada = error_comp[error_comp['SCADAVALUE'].abs() > 0] # Don't include units 0 values for scada
+    best_matches_scada = error_comp[error_comp['SCADAVALUE'].abs() > 0]  # Don't include units 0 values for scada
     best_matches_scada = best_matches_scada.drop_duplicates('ELEMENTNUMBER', keep='first')
     best_matches_scada = best_matches_scada.drop_duplicates('MARKETNAME', keep='first')
 
@@ -100,7 +101,9 @@ def fcas4s_scada_match(start_time, end_time, table_name, raw_data_location, sele
 
 
 def capacity_factor(capacity_and_scada_grouped):
-    cf = capacity_and_scada_grouped['SCADAVALUE'] / capacity_and_scada_grouped['MAXCAPACITY']
+    scada_data = np.where(capacity_and_scada_grouped['SCADAVALUE'].isnull(), 0.0,
+                          capacity_and_scada_grouped['SCADAVALUE'])
+    cf = scada_data / capacity_and_scada_grouped['MAXCAPACITY']
     cf = cf.mean()
     return cf
 
@@ -130,8 +133,10 @@ def volume_weighted_average_spot_price(capacity_and_scada_grouped):
 
 def performance_at_nodal_peak(capacity_and_scada_grouped):
     index_max = capacity_and_scada_grouped['TOTALDEMAND'].idxmax()
-    performance = capacity_and_scada_grouped['SCADAVALUE'][index_max] / \
-            capacity_and_scada_grouped['MAXCAPACITY'][index_max]
+    output_at_peak = capacity_and_scada_grouped['SCADAVALUE'][index_max]
+    if np.isnan(output_at_peak):
+        output_at_peak = 0
+    performance = output_at_peak / capacity_and_scada_grouped['MAXCAPACITY'][index_max]
     return performance
 
 
@@ -167,8 +172,8 @@ def stats_by_month_and_plant(capacity_and_scada):
     return capacity_factors
 
 
-def merge_tables_for_plant_stats(timeseries_df, gen_max_cap, gen_region, scada, trading_load, dispatch_price, trading_price,
-                                 region_summary):
+def merge_tables_for_plant_stats(timeseries_df, gen_max_cap, gen_region, scada, trading_load, dispatch_price,
+                                 trading_price, region_summary):
     gen_max_cap = gen_max_cap.sort_values('EFFECTIVEDATE')
     gen_max_cap = gen_max_cap[gen_max_cap['DUID'].isin(scada['DUID'])]
     merged_data_temp = []
@@ -190,6 +195,20 @@ def merge_tables_for_plant_stats(timeseries_df, gen_max_cap, gen_region, scada, 
     return merged_data
 
 
+def select_intervention_if_present(data, primary_key):
+    data = data.sort_values(['INTERVENTION'])
+    data = data.groupby(primary_key, as_index=False).last()
+    return data
+
+
+def select_highest_version_number(data, primary_key):
+    data['VERSIONNO'] = pd.to_numeric(data['VERSIONNO'])
+    data = data.sort_values(['VERSIONNO'])
+    data['VERSIONNO'] = data['VERSIONNO'].astype(int).astype(str)
+    data = data.groupby(primary_key, as_index=False).last()
+    return data
+
+
 def plant_stats(start_time, end_time, table_name, raw_data_location, select_columns=None, filter_cols=None,
                 filter_values=None):
     ix = pd.DatetimeIndex(start=datetime.strptime(start_time, '%Y/%m/%d %H:%M:%S'),
@@ -200,7 +219,9 @@ def plant_stats(start_time, end_time, table_name, raw_data_location, select_colu
     timeseries_df.columns = ['SETTLEMENTDATE']
     gen_max_cap = data_fetch_methods.dynamic_data_compiler(start_time, end_time, 'DUDETAIL', raw_data_location,
                                                            select_columns=['EFFECTIVEDATE', 'DUID', 'VERSIONNO',
-                                                                           'MAXCAPACITY'])
+                                                                           'MAXCAPACITY'], filter_cols=filter_cols,
+                                                           filter_values=filter_values)
+    gen_max_cap = select_highest_version_number(gen_max_cap, defaults.table_primary_keys['DUDETAIL'])
     gen_region = data_fetch_methods.dynamic_data_compiler(start_time, end_time, 'DUDETAILSUMMARY', raw_data_location,
                                                           select_columns=['START_DATE', 'END_DATE', 'DUID', 'REGIONID'])
     scada = data_fetch_methods.dynamic_data_compiler(start_time, end_time, 'DISPATCH_UNIT_SCADA', raw_data_location,
@@ -208,15 +229,21 @@ def plant_stats(start_time, end_time, table_name, raw_data_location, select_colu
     trading_load = data_fetch_methods.dynamic_data_compiler(start_time, end_time, 'TRADINGLOAD', raw_data_location,
                                                             select_columns=['SETTLEMENTDATE', 'DUID', 'TOTALCLEARED'])
     dispatch_price = data_fetch_methods.dynamic_data_compiler(start_time, end_time, 'DISPATCHPRICE', raw_data_location,
-                                                              select_columns=['SETTLEMENTDATE', 'REGIONID', 'RRP'])
+                                                              select_columns=['SETTLEMENTDATE', 'REGIONID', 'RRP',
+                                                                              'INTERVENTION'])
+    dispatch_price = select_intervention_if_present(dispatch_price, defaults.table_primary_keys['DISPATCHPRICE'])
     trading_price = data_fetch_methods.dynamic_data_compiler(start_time, end_time, 'TRADINGPRICE', raw_data_location,
                                                              select_columns=['SETTLEMENTDATE', 'REGIONID', 'RRP'])
     region_summary = data_fetch_methods.dynamic_data_compiler(start_time, end_time, 'DISPATCHREGIONSUM',
                                                               raw_data_location,
                                                               select_columns=['SETTLEMENTDATE', 'REGIONID',
-                                                                              'TOTALDEMAND'])
-    combined_data = merge_tables_for_plant_stats(timeseries_df, gen_max_cap, gen_region, scada, trading_load, dispatch_price,
-                                                 trading_price, region_summary)
+                                                                              'TOTALDEMAND', 'INTERVENTION',
+                                                                              'DISPATCHINTERVAL'])
+
+    region_summary = select_intervention_if_present(region_summary, defaults.table_primary_keys['DISPATCHREGIONSUM'])
+
+    combined_data = merge_tables_for_plant_stats(timeseries_df, gen_max_cap, gen_region, scada, trading_load,
+                                                 dispatch_price, trading_price, region_summary)
     combined_data['SCADAVALUE'] = pd.to_numeric(combined_data['SCADAVALUE'])
     combined_data['MAXCAPACITY'] = pd.to_numeric(combined_data['MAXCAPACITY'])
     combined_data['TRADING_TOTALCLEARED'] = pd.to_numeric(combined_data['TRADING_TOTALCLEARED'])
