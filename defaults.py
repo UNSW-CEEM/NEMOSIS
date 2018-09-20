@@ -24,6 +24,7 @@ names = {'DISPATCHLOAD': 'PUBLIC_DVD_DISPATCHLOAD',
          'LOSSMODEL': 'PUBLIC_DVD_LOSSMODEL',
          'LOSSFACTORMODEL': 'PUBLIC_DVD_LOSSFACTORMODEL',
          'FCAS_4s_SCADA_MAP': '',
+         'PLANTSTATS': '',
          'TRADINGLOAD': 'PUBLIC_DVD_TRADINGLOAD',
          'TRADINGPRICE': 'PUBLIC_DVD_TRADINGPRICE',
          'TRADINGREGIONSUM': 'PUBLIC_DVD_TRADINGREGIONSUM',
@@ -67,7 +68,8 @@ display_in_gui = ['DISPATCHLOAD', 'DUDETAILSUMMARY', 'DUDETAIL', 'DISPATCHCONSTR
                   'DISPATCHPRICE', 'SPDREGIONCONSTRAINT', 'SPDCONNECTIONPOINTCONSTRAINT', 'SPDINTERCONNECTORCONSTRAINT',
                   'BIDPEROFFER_D', 'DISPATCHINTERCONNECTORRES', 'BIDDAYOFFER_D', 'DISPATCHREGIONSUM', 'FCAS_4_SECOND',
                   'ELEMENTS_FCAS_4_SECOND', 'VARIABLES_FCAS_4_SECOND', 'Generators and Scheduled Loads',
-                  'FCAS_4s_SCADA_MAP', 'TRADINGLOAD', 'TRADINGPRICE', 'TRADINGREGIONSUM', 'TRADINGINTERCONNECT']
+                  'FCAS_4s_SCADA_MAP', 'PLANTSTATS', 'TRADINGLOAD', 'TRADINGPRICE', 'TRADINGREGIONSUM',
+                  'TRADINGINTERCONNECT']
 
 static_tables = ['ELEMENTS_FCAS_4_SECOND', 'VARIABLES_FCAS_4_SECOND', 'Generators and Scheduled Loads']
 
@@ -223,7 +225,9 @@ table_columns = {
                                  'Fuel Source - Primary', 'Fuel Source - Descriptor', 'Technology Type - Primary',
                                  'Technology Type - Descriptor', 'Aggregation', 'DUID'],
 
-    'FCAS_4s_SCADA_MAP': ['ELEMENTNUMBER', 'MARKETNAME', 'ERROR']}
+    'FCAS_4s_SCADA_MAP': ['ELEMENTNUMBER', 'MARKETNAME', 'ERROR'],
+    'PLANTSTATS': ['Month', 'DUID', 'CapacityFactor', 'Volume', 'TRADING_VWAP', 'DISPATCH_VWAP',
+                   'NodalPeakCapacityFactor', 'Nodal90thPercentileCapacityFactor']}
 
 table_primary_keys = {'DISPATCHCONSTRAINT': ['CONSTRAINTID', 'GENCONID_EFFECTIVEDATE', 'GENCONID_VERSIONNO',
                                              'SETTLEMENTDATE', 'INTERVENTION'],
@@ -257,8 +261,8 @@ table_primary_keys = {'DISPATCHCONSTRAINT': ['CONSTRAINTID', 'GENCONID_EFFECTIVE
                       'TRADINGLOAD': ['SETTLEMENTDATE', 'DUID'],
                       'TRADINGPRICE': ['SETTLEMENTDATE', 'REGIONID'],
                       'TRADINGREGIONSUM': ['SETTLEMENTDATE', 'REGIONID'],
-                      'TRADINGINTERCONNECT': ['SETTLEMENTDATE', 'INTERCONNECTORID']
-                      }
+                      'TRADINGINTERCONNECT': ['SETTLEMENTDATE', 'INTERCONNECTORID'],
+                      'PLANTSTATS': ['Month', 'DUID']}
 
 effective_date_group_col = {'SPDREGIONCONSTRAINT': ['GENCONID'],
                             'SPDCONNECTIONPOINTCONSTRAINT': ['GENCONID'],

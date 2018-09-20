@@ -197,7 +197,7 @@ def merge_tables_for_plant_stats(timeseries_df, gen_max_cap, gen_region, scada, 
 
 def select_intervention_if_present(data, primary_key):
     data = data.sort_values(['INTERVENTION'])
-    data = data.groupby(primary_key, as_index=False).last()
+    data = data.groupby([col for col in primary_key if col != 'INTERVENTION'], as_index=False).last()
     return data
 
 
@@ -205,7 +205,7 @@ def select_highest_version_number(data, primary_key):
     data['VERSIONNO'] = pd.to_numeric(data['VERSIONNO'])
     data = data.sort_values(['VERSIONNO'])
     data['VERSIONNO'] = data['VERSIONNO'].astype(int).astype(str)
-    data = data.groupby(primary_key, as_index=False).last()
+    data = data.groupby([col for col in primary_key if col != 'INTERVENTION'], as_index=False).last()
     return data
 
 
@@ -226,8 +226,17 @@ def plant_stats(start_time, end_time, table_name, raw_data_location, select_colu
                                                           select_columns=['START_DATE', 'END_DATE', 'DUID', 'REGIONID'])
     scada = data_fetch_methods.dynamic_data_compiler(start_time, end_time, 'DISPATCH_UNIT_SCADA', raw_data_location,
                                                      select_columns=['SETTLEMENTDATE', 'DUID', 'SCADAVALUE'])
-    trading_load = data_fetch_methods.dynamic_data_compiler(start_time, end_time, 'TRADINGLOAD', raw_data_location,
-                                                            select_columns=['SETTLEMENTDATE', 'DUID', 'TOTALCLEARED'])
+    trading_load = scada.copy()
+    trading_load['timestamp'] = trading_load['SETTLEMENTDATE']
+    trading_load = trading_load.set_index('timestamp')
+    trading_load['SCADAVALUE'] = pd.to_numeric(trading_load['SCADAVALUE'])
+    trading_load = trading_load.groupby('DUID').resample('30T', label='right', closed='right').aggregate(
+        {'SCADAVALUE': 'mean', 'SETTLEMENTDATE': 'last'})
+    trading_load.reset_index(inplace=True)
+    trading_load = trading_load.drop('timestamp', axis=1)
+    trading_load.columns = ['DUID', 'TOTALCLEARED', 'SETTLEMENTDATE']
+    #  trading_load = data_fetch_methods.dynamic_data_compiler(start_time, end_time, 'TRADINGLOAD', raw_data_location,
+    #                                                       select_columns=['SETTLEMENTDATE', 'DUID', 'TOTALCLEARED'])
     dispatch_price = data_fetch_methods.dynamic_data_compiler(start_time, end_time, 'DISPATCHPRICE', raw_data_location,
                                                               select_columns=['SETTLEMENTDATE', 'REGIONID', 'RRP',
                                                                               'INTERVENTION'])

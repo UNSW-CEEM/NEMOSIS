@@ -7,6 +7,7 @@ import numpy as np
 import time
 import defaults
 from datetime import datetime, timedelta
+import os
 
 
 class TestBaseVolumeWeightAveragePriceFunction(unittest.TestCase):
@@ -285,13 +286,14 @@ class TestPlantStats(unittest.TestCase):
         pass
 
     def test_plant_stats(self):
-        t0 = time.time()
-        plant_types = data_fetch_methods.static_table_xl('', '', 'Generators and Scheduled Loads', 'E:/raw_aemo_data',
-                                                         select_columns=['DUID', 'Fuel Source - Primary'])
-        plant_stats = custom_tables.plant_stats('2017/01/01 00:00:00', '2018/01/01 00:00:00', '', 'E:/raw_aemo_data')
-        plant_stats = pd.merge(plant_stats, plant_types, 'left', 'DUID')
-        plant_stats.to_csv('C:/Users/user/Documents/plant_stats.csv')
-        print(time.time() - t0)
+        if os.path.isfile('C:/Users/user/Documents/plant_stats.csv'):
+            t0 = time.time()
+            plant_types = data_fetch_methods.static_table_xl('', '', 'Generators and Scheduled Loads', 'E:/raw_aemo_data',
+                                                             select_columns=['DUID', 'Fuel Source - Primary'])
+            plant_stats = custom_tables.plant_stats('2017/01/01 00:00:00', '2018/01/01 00:00:00', '', 'E:/raw_aemo_data')
+            plant_stats = pd.merge(plant_stats, plant_types, 'left', 'DUID')
+            plant_stats.to_csv('C:/Users/user/Documents/plant_stats.csv')
+            print(time.time() - t0)
 
 
 class TestPlantsAgainstExcelNumbers(unittest.TestCase):
@@ -299,12 +301,24 @@ class TestPlantsAgainstExcelNumbers(unittest.TestCase):
         pass
 
     def test_nyngan1(self):
-        xls = pd.ExcelFile('E:/plants_stats_test_data/NYNGAN1_test.xlsx')
-        table = pd.read_excel(xls, 'Plant_stats', dtype=str)
-        results = custom_tables.plant_stats('2017/01/01 00:00:00', '2017/02/01 00:00:00', '', 'E:/raw_aemo_data',
-                                            filter_cols=['DUID'], filter_values=[('NYNGAN1',)])
-        for col in [col for col in table.columns if col not in ['Month', 'DUID']]:
-            table[col] = table[col].astype(float)
-        results.reset_index(drop=True, inplace=True)
-        pd.testing.assert_frame_equal(results, table)
+        if os.path.isfile('E:/plants_stats_test_data/NYNGAN1/NYNGAN1_test.xlsx'):
+            xls = pd.ExcelFile('E:/plants_stats_test_data/NYNGAN1/NYNGAN1_test.xlsx')
+            table = pd.read_excel(xls, 'Plant_stats', dtype=str)
+            results = custom_tables.plant_stats('2017/01/01 00:00:00', '2017/02/01 00:00:00', '', 'E:/raw_aemo_data',
+                                                filter_cols=['DUID'], filter_values=[('NYNGAN1',)])
+            for col in [col for col in table.columns if col not in ['Month', 'DUID']]:
+                table[col] = table[col].astype(float)
+            results.reset_index(drop=True, inplace=True)
+            pd.testing.assert_frame_equal(results, table)
+
+    def test_eildon2(self):
+        if os.path.isfile('E:/plants_stats_test_data/EILDON2/EILDON2_test.xlsx'):
+            xls = pd.ExcelFile('E:/plants_stats_test_data/EILDON2/EILDON2_test.xlsx')
+            table = pd.read_excel(xls, 'Plant_stats', dtype=str)
+            results = custom_tables.plant_stats('2018/01/01 00:00:00', '2018/02/01 00:00:00', '', 'E:/raw_aemo_data',
+                                                filter_cols=['DUID'], filter_values=[('EILDON2',)])
+            for col in [col for col in table.columns if col not in ['Month', 'DUID']]:
+                table[col] = table[col].astype(float)
+            results.reset_index(drop=True, inplace=True)
+            pd.testing.assert_frame_equal(results, table)
 
