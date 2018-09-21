@@ -131,6 +131,11 @@ def volume_weighted_average_spot_price(capacity_and_scada_grouped):
                                          capacity_and_scada_grouped['DISPATCH_RRP'])
 
 
+def alt_volume_weighted_average_trading_price(capacity_and_scada_grouped):
+    return volume_weighted_average_price(capacity_and_scada_grouped['TRADING_TOTALCLEARED'],
+                                         capacity_and_scada_grouped['TRADING_VWAP'])
+
+
 def performance_at_nodal_peak(capacity_and_scada_grouped):
     index_max = capacity_and_scada_grouped['TOTALDEMAND'].idxmax()
     output_at_peak = capacity_and_scada_grouped['SCADAVALUE'][index_max]
@@ -155,13 +160,16 @@ def stats_for_group(capacity_and_scada_grouped):
     v = volume(capacity_and_scada_grouped)
     tvwap = volume_weighted_average_trading_price(capacity_and_scada_grouped)
     dvwap = volume_weighted_average_spot_price(capacity_and_scada_grouped)
+    #alttvwap = alt_volume_weighted_average_trading_price(capacity_and_scada_grouped)
     peak = performance_at_nodal_peak(capacity_and_scada_grouped)
     peak_percentile = capacity_factor_over_90th_percentile_of_nodal_demand(capacity_and_scada_grouped)
     month = list(capacity_and_scada_grouped['MONTH'])[0]
     duid = list(capacity_and_scada_grouped['DUID'])[0]
     cf_df = pd.DataFrame({'Month': [month], 'DUID': [duid], 'CapacityFactor': [cf], 'Volume': [v],
                           'TRADING_VWAP': [tvwap], 'DISPATCH_VWAP': [dvwap], 'NodalPeakCapacityFactor': peak,
-                          'Nodal90thPercentileCapacityFactor': [peak_percentile]})
+                          'Nodal90thPercentileCapacityFactor': [peak_percentile],
+                          #'ALT_TRADING_VWAP': alttvwap
+                          })
     return cf_df
 
 
@@ -187,6 +195,7 @@ def merge_tables_for_plant_stats(timeseries_df, gen_max_cap, gen_region, scada, 
     merged_data = pd.merge(merged_data, dispatch_price, 'left', on=['SETTLEMENTDATE', 'REGIONID'])
     merged_data = pd.merge(merged_data, trading_price, 'left', on=['SETTLEMENTDATE', 'REGIONID'])
     merged_data = pd.merge(merged_data, region_summary, 'left', on=['SETTLEMENTDATE', 'REGIONID'])
+    #merged_data = pd.merge(merged_data, vwap_trading_price, 'left', on=['SETTLEMENTDATE', 'REGIONID'])
     merged_data = pd.merge(merged_data, scada, 'left', on=['SETTLEMENTDATE', 'DUID'])
     merged_data = merged_data.loc[:, ('DUID', 'EFFECTIVEDATE', 'REGIONID', 'SETTLEMENTDATE', 'MAXCAPACITY',
                                       'SCADAVALUE', 'TOTALCLEARED', 'RRP_x', 'RRP_y', 'TOTALDEMAND')]
@@ -209,55 +218,138 @@ def select_highest_version_number(data, primary_key):
     return data
 
 
+def calc_trading_vwap_price(regional_demand, dispatch_price):
+    demand_and_price = pd.merge(regional_demand, dispatch_price, 'inner', on=['SETTLEMENTDATE', 'REGIONID'])
+    demand_and_price['COST'] = demand_and_price['RRP'] * demand_and_price['TOTALDEMAND']
+    demand_and_price = demand_and_price.set_index('SETTLEMENTDATE')
+    demand_and_price = demand_and_price.groupby('REGIONID').resample('30T', label='right', closed='right').aggregate(
+        {'COST': 'sum', 'TOTALDEMAND': 'sum'})
+    demand_and_price['TRADING_VWAP'] = demand_and_price['COST'] / demand_and_price['TOTALDEMAND']
+    demand_and_price.reset_index(inplace=True)
+    demand_and_price = demand_and_price.loc[:, ('SETTLEMENTDATE', 'REGIONID', 'TRADING_VWAP')]
+    return demand_and_price
+
+
+def calc_trading_load(scada):
+    trading_load = scada.copy()
+    trading_load = trading_load.set_index('SETTLEMENTDATE')
+    trading_load['SCADAVALUE'] = pd.to_numeric(trading_load['SCADAVALUE'])
+    trading_load = trading_load.groupby('DUID').resample('30T', label='right', closed='right').aggregate(
+        {'SCADAVALUE': 'mean'})
+    trading_load.reset_index(inplace=True)
+    trading_load.columns = ['DUID', 'SETTLEMENTDATE', 'TOTALCLEARED']
+    return trading_load
+
+
+def calc_trading_price(dispatch_price):
+    dispatch_price = dispatch_price.set_index('SETTLEMENTDATE')
+    dispatch_price = dispatch_price.groupby('REGIONID').resample('30T', label='right', closed='right').aggregate({'RRP': 'mean'})
+    dispatch_price.reset_index(inplace=True)
+    return dispatch_price
+
+
 def plant_stats(start_time, end_time, table_name, raw_data_location, select_columns=None, filter_cols=None,
                 filter_values=None):
+
     ix = pd.DatetimeIndex(start=datetime.strptime(start_time, '%Y/%m/%d %H:%M:%S'),
                           end=datetime.strptime(end_time, '%Y/%m/%d %H:%M:%S') - timedelta(minutes=5),
                           freq='5T')
     timeseries_df = pd.DataFrame(index=ix)
     timeseries_df.reset_index(inplace=True)
     timeseries_df.columns = ['SETTLEMENTDATE']
+
     gen_max_cap = data_fetch_methods.dynamic_data_compiler(start_time, end_time, 'DUDETAIL', raw_data_location,
                                                            select_columns=['EFFECTIVEDATE', 'DUID', 'VERSIONNO',
                                                                            'MAXCAPACITY'], filter_cols=filter_cols,
                                                            filter_values=filter_values)
     gen_max_cap = select_highest_version_number(gen_max_cap, defaults.table_primary_keys['DUDETAIL'])
     gen_region = data_fetch_methods.dynamic_data_compiler(start_time, end_time, 'DUDETAILSUMMARY', raw_data_location,
-                                                          select_columns=['START_DATE', 'END_DATE', 'DUID', 'REGIONID'])
+                                                          select_columns=['START_DATE', 'END_DATE', 'DUID', 'REGIONID'],
+                                                          filter_cols=filter_cols, filter_values=filter_values)
     scada = data_fetch_methods.dynamic_data_compiler(start_time, end_time, 'DISPATCH_UNIT_SCADA', raw_data_location,
                                                      select_columns=['SETTLEMENTDATE', 'DUID', 'SCADAVALUE'])
-    trading_load = scada.copy()
-    trading_load['timestamp'] = trading_load['SETTLEMENTDATE']
-    trading_load = trading_load.set_index('timestamp')
-    trading_load['SCADAVALUE'] = pd.to_numeric(trading_load['SCADAVALUE'])
-    trading_load = trading_load.groupby('DUID').resample('30T', label='right', closed='right').aggregate(
-        {'SCADAVALUE': 'mean', 'SETTLEMENTDATE': 'last'})
-    trading_load.reset_index(inplace=True)
-    trading_load = trading_load.drop('timestamp', axis=1)
-    trading_load.columns = ['DUID', 'TOTALCLEARED', 'SETTLEMENTDATE']
-    #  trading_load = data_fetch_methods.dynamic_data_compiler(start_time, end_time, 'TRADINGLOAD', raw_data_location,
-    #                                                       select_columns=['SETTLEMENTDATE', 'DUID', 'TOTALCLEARED'])
     dispatch_price = data_fetch_methods.dynamic_data_compiler(start_time, end_time, 'DISPATCHPRICE', raw_data_location,
                                                               select_columns=['SETTLEMENTDATE', 'REGIONID', 'RRP',
                                                                               'INTERVENTION'])
     dispatch_price = select_intervention_if_present(dispatch_price, defaults.table_primary_keys['DISPATCHPRICE'])
     trading_price = data_fetch_methods.dynamic_data_compiler(start_time, end_time, 'TRADINGPRICE', raw_data_location,
                                                              select_columns=['SETTLEMENTDATE', 'REGIONID', 'RRP'])
+    dispatch_price['RRP'] = pd.to_numeric(dispatch_price['RRP'])
+    trading_price = calc_trading_price(dispatch_price)
+
     region_summary = data_fetch_methods.dynamic_data_compiler(start_time, end_time, 'DISPATCHREGIONSUM',
                                                               raw_data_location,
                                                               select_columns=['SETTLEMENTDATE', 'REGIONID',
                                                                               'TOTALDEMAND', 'INTERVENTION',
                                                                               'DISPATCHINTERVAL'])
-
     region_summary = select_intervention_if_present(region_summary, defaults.table_primary_keys['DISPATCHREGIONSUM'])
+
+    scada_list = []
+    for gen in scada.groupby(['DUID'], as_index=False):
+        scada_list.append(pd.merge(timeseries_df, gen[1], 'left', on='SETTLEMENTDATE'))
+
+    scada = pd.concat(scada_list)
+    scada['SCADAVALUE'] = np.where(scada['SCADAVALUE'].isnull(), 0.0, scada['SCADAVALUE'])
+
+    trading_load = calc_trading_load(scada)
+
+    #  trading_load = data_fetch_methods.dynamic_data_compiler(start_time, end_time, 'TRADINGLOAD', raw_data_location,
+    #                                                       select_columns=['SETTLEMENTDATE', 'DUID', 'TOTALCLEARED'])
+
+    #vwap_trading_price = calc_trading_vwap_price(region_summary, dispatch_price)
 
     combined_data = merge_tables_for_plant_stats(timeseries_df, gen_max_cap, gen_region, scada, trading_load,
                                                  dispatch_price, trading_price, region_summary)
     combined_data['SCADAVALUE'] = pd.to_numeric(combined_data['SCADAVALUE'])
     combined_data['MAXCAPACITY'] = pd.to_numeric(combined_data['MAXCAPACITY'])
     combined_data['TRADING_TOTALCLEARED'] = pd.to_numeric(combined_data['TRADING_TOTALCLEARED'])
-    combined_data['TRADING_RRP'] = pd.to_numeric(combined_data['TRADING_RRP'])
-    combined_data['DISPATCH_RRP'] = pd.to_numeric(combined_data['DISPATCH_RRP'])
+    #combined_data['TRADING_RRP'] = pd.to_numeric(combined_data['TRADING_RRP'])
+    #combined_data['DISPATCH_RRP'] = pd.to_numeric(combined_data['DISPATCH_RRP'])
     combined_data['TOTALDEMAND'] = pd.to_numeric(combined_data['TOTALDEMAND'])
+
     stats = stats_by_month_and_plant(combined_data)
     return stats
+
+
+def trading_and_dispatch_cost():
+    plant_types = data_fetch_methods.static_table_xl('', '', 'Generators and Scheduled Loads', 'E:/raw_aemo_data',
+                                                     select_columns=['DUID', 'Region'])
+    scada = data_fetch_methods.dynamic_data_compiler('2017/01/01 00:00:00', '2018/01/01 00:00:00', 'DISPATCH_UNIT_SCADA', 'E:/raw_aemo_data')
+
+    ix = pd.DatetimeIndex(start=datetime.strptime('2017/01/01 00:00:00', '%Y/%m/%d %H:%M:%S'),
+                          end=datetime.strptime('2018/01/01 00:00:00', '%Y/%m/%d %H:%M:%S') - timedelta(minutes=5),
+                          freq='5T')
+    timeseries_df = pd.DataFrame(index=ix)
+    timeseries_df.reset_index(inplace=True)
+    timeseries_df.columns = ['SETTLEMENTDATE']
+
+    scada_list = []
+    for gen in scada.groupby(['DUID'], as_index=False):
+        scada_list.append(pd.merge(timeseries_df, gen[1], 'left', on='SETTLEMENTDATE'))
+
+    scada = pd.concat(scada_list)
+    scada['SCADAVALUE'] = np.where(scada['SCADAVALUE'].isnull(), 0.0, scada['SCADAVALUE'])
+
+    dispatch_price = data_fetch_methods.dynamic_data_compiler('2017/01/01 00:00:00', '2018/01/01 00:00:00', 'DISPATCHPRICE', 'E:/raw_aemo_data')
+    dispatch_price = select_intervention_if_present(dispatch_price, defaults.table_primary_keys['DISPATCHPRICE'])
+    scada_and_regions = pd.merge(scada, plant_types, 'inner', left_on='DUID', right_on='DUID')
+    scada_and_regions = pd.merge(scada_and_regions, dispatch_price, 'inner', left_on=['Region', 'SETTLEMENTDATE'],
+                                 right_on=['REGIONID', 'SETTLEMENTDATE'])
+
+    scada_and_regions['SCADAVALUE'] = pd.to_numeric(scada_and_regions['SCADAVALUE'])
+    scada_and_regions['RRP'] = pd.to_numeric(scada_and_regions['RRP'])
+
+    scada_and_regions['DISPATCHCOST'] = (scada_and_regions['SCADAVALUE'] * scada_and_regions['RRP']) / 12
+
+    scada_and_regions = scada_and_regions.set_index('SETTLEMENTDATE')
+    scada_and_regions = scada_and_regions.groupby('DUID').resample('30T', label='right', closed='right').aggregate(
+        {'SCADAVALUE': 'mean', 'RRP': 'mean', 'DISPATCHCOST': 'sum'})
+    scada_and_regions.reset_index(inplace=True)
+
+    scada_and_regions['TRADINGCOST'] = (scada_and_regions['SCADAVALUE'] * scada_and_regions['RRP']) / 2
+
+    scada_and_regions['SCADAVALUE'] = scada_and_regions['SCADAVALUE'] / 2
+
+    scada_and_regions = scada_and_regions.groupby('DUID').sum()
+
+    scada_and_regions.to_csv('C:/Users/user/Documents/dispatch_trading_cost.csv')

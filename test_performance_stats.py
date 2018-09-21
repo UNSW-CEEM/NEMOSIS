@@ -292,6 +292,8 @@ class TestPlantStats(unittest.TestCase):
                                                              select_columns=['DUID', 'Fuel Source - Primary'])
             plant_stats = custom_tables.plant_stats('2017/01/01 00:00:00', '2018/01/01 00:00:00', '', 'E:/raw_aemo_data')
             plant_stats = pd.merge(plant_stats, plant_types, 'left', 'DUID')
+            plant_stats['TRADING_COST'] = plant_stats['Volume'] * plant_stats['TRADING_VWAP']
+            plant_stats['DISPATCH_COST'] = plant_stats['Volume'] * plant_stats['DISPATCH_VWAP']
             plant_stats.to_csv('C:/Users/user/Documents/plant_stats.csv')
             print(time.time() - t0)
 
@@ -321,4 +323,33 @@ class TestPlantsAgainstExcelNumbers(unittest.TestCase):
                 table[col] = table[col].astype(float)
             results.reset_index(drop=True, inplace=True)
             pd.testing.assert_frame_equal(results, table)
+
+
+class TestCalcTradingLoad(unittest.TestCase):
+    def setUp(self):
+        self.scada = pd.DataFrame({
+            'DUID': ['A', 'A', 'B', 'B'],
+            'SETTLEMENTDATE': ['2015/01/01 00:00:00', '2015/01/01 00:05:00',
+                               '2015/01/01 00:00:00', '2015/01/01 00:05:00'],
+            'SCADAVALUE': [150, 150,  200, 220]})
+        self.scada['SETTLEMENTDATE'] = pd.to_datetime(self.scada['SETTLEMENTDATE'])
+        self.result = pd.DataFrame({
+            'DUID': ['A', 'A', 'B', 'B'],
+            'TOTALCLEARED': [150, 150, 200, 220],
+            'SETTLEMENTDATE': ['2015/01/01 00:00:00', '2015/01/01 00:05:00',
+                               '2015/01/01 00:00:00', '2015/01/01 00:05:00']
+            })
+        self.result['SETTLEMENTDATE'] = pd.to_datetime(self.result['SETTLEMENTDATE'])
+
+    def test_calc_trading_load_simple(self):
+        trading_load = custom_tables.calc_trading_load(self.scada)
+        pd.testing.assert_frame_equal(trading_load, self.result)
+
+
+class TestCalcTradingLoad(unittest.TestCase):
+    def setUp(self):
+        pass
+
+    def test_calc_trading_load_simple(self):
+        custom_tables.trading_and_dispatch_cost()
 
