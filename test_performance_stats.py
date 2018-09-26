@@ -289,8 +289,9 @@ class TestPlantStats(unittest.TestCase):
         if os.path.isfile('C:/Users/user/Documents/plant_stats.csv'):
             t0 = time.time()
             plant_types = data_fetch_methods.static_table_xl('', '', 'Generators and Scheduled Loads', 'E:/raw_aemo_data',
-                                                             select_columns=['DUID', 'Fuel Source - Primary'])
-            plant_stats = custom_tables.plant_stats('2017/01/01 00:00:00', '2018/01/01 00:00:00', '', 'E:/raw_aemo_data')
+                                                             select_columns=['DUID', 'Fuel Source - Primary',
+                                                                             'Region', 'Participant'])
+            plant_stats = custom_tables.plant_stats('2015/01/01 00:05:00', '2018/09/01 00:05:00', '', 'E:/raw_aemo_data')
             plant_stats = pd.merge(plant_stats, plant_types, 'left', 'DUID')
             plant_stats['TRADING_COST'] = plant_stats['Volume'] * plant_stats['TRADING_VWAP']
             plant_stats['DISPATCH_COST'] = plant_stats['Volume'] * plant_stats['DISPATCH_VWAP']
