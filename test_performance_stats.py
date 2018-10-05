@@ -291,11 +291,11 @@ class TestPlantStats(unittest.TestCase):
             plant_types = data_fetch_methods.static_table_xl('', '', 'Generators and Scheduled Loads', 'E:/raw_aemo_data',
                                                              select_columns=['DUID', 'Fuel Source - Primary',
                                                                              'Region', 'Participant'])
-            plant_stats = custom_tables.plant_stats('2015/01/01 00:05:00', '2018/09/01 00:05:00', '', 'E:/raw_aemo_data')
+            plant_stats = custom_tables.plant_stats('2017/07/01 00:05:00', '2018/07/01 00:05:00', '', 'E:/raw_aemo_data')
             plant_stats = pd.merge(plant_stats, plant_types, 'left', 'DUID')
             plant_stats['TRADING_COST'] = plant_stats['Volume'] * plant_stats['TRADING_VWAP']
             plant_stats['DISPATCH_COST'] = plant_stats['Volume'] * plant_stats['DISPATCH_VWAP']
-            plant_stats.to_csv('C:/Users/user/Documents/plant_stats.csv')
+            plant_stats.to_csv('C:/Users/user/Documents/plant_stats_tp.csv')
             print(time.time() - t0)
 
 

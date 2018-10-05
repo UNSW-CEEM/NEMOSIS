@@ -274,7 +274,8 @@ def plant_stats(start_time, end_time, table_name, raw_data_location, select_colu
     trading_price = data_fetch_methods.dynamic_data_compiler(start_time, end_time, 'TRADINGPRICE', raw_data_location,
                                                              select_columns=['SETTLEMENTDATE', 'REGIONID', 'RRP'])
     dispatch_price['RRP'] = pd.to_numeric(dispatch_price['RRP'])
-    trading_price = calc_trading_price(dispatch_price)
+    trading_price['RRP'] = pd.to_numeric(trading_price['RRP'])
+    #trading_price = calc_trading_price(dispatch_price)
 
     region_summary = data_fetch_methods.dynamic_data_compiler(start_time, end_time, 'DISPATCHREGIONSUM',
                                                               raw_data_location,
