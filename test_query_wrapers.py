@@ -14,8 +14,8 @@ class TestDispatchDateSetup(unittest.TestCase):
 
     def test_start_time_and_end_time(self):
         start_time, end_time = query_wrapers.dispatch_date_setup(self.start_time, self.end_time)
-        self.assertEqual(start_time, '2017/01/01 00:00:00')
-        self.assertEqual(end_time, '2019/06/03 12:15:00')
+        self.assertEqual(start_time, '2016/12/30 23:59:59')
+        self.assertEqual(end_time, '2019/06/03 00:00:00')
 
 
 class TestFCASFinalise(unittest.TestCase):

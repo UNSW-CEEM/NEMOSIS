@@ -32,10 +32,12 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             filter_cols = (self.table_types[table],)
             expected_length = 63
             expected_number_of_columns = 2
-            expected_firt_time = pd.Timestamp.strptime(start_time, '%Y/%m/%d %H:%M:%S')
-            expected_last_time = pd.Timestamp.strptime(end_time, '%Y/%m/%d %H:%M:%S') - timedelta(minutes=5)
-            if table in [ 'TRADINGLOAD', 'TRADINGPRICE', 'TRADINGREGIONSUM', 'TRADINGINTERCONNECT']:
-                expected_length = 11
+            expected_first_time = pd.Timestamp.strptime(start_time, '%Y/%m/%d %H:%M:%S') + timedelta(minutes=5)
+            expected_last_time = pd.Timestamp.strptime(end_time, '%Y/%m/%d %H:%M:%S')
+            if table in ['TRADINGLOAD', 'TRADINGPRICE', 'TRADINGREGIONSUM', 'TRADINGINTERCONNECT']:
+                expected_length = 10
+                expected_first_time = '2015/05/01 00:30:00'
+                expected_first_time = pd.Timestamp.strptime(expected_first_time, '%Y/%m/%d %H:%M:%S')
                 expected_last_time = '2015/05/01 05:00:00'
                 expected_last_time = pd.Timestamp.strptime(expected_last_time, '%Y/%m/%d %H:%M:%S')
             if table == 'BIDPEROFFER_D':
@@ -46,17 +48,20 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 cols = [dat_col, 'DUID', 'BIDTYPE']
                 filter_cols = ('DUID', 'BIDTYPE')
                 expected_number_of_columns = 3
-                expected_length = 1
-                expected_last_time = expected_last_time.replace(hour=0, minute=0)
-                expected_firt_time = expected_firt_time.replace(hour=0, minute=0)
+                expected_length = 2
+                expected_last_time = '2015/05/01 00:00:00'
+                expected_last_time = pd.Timestamp.strptime(expected_last_time, '%Y/%m/%d %H:%M:%S')
+                expected_first_time = '2015/04/30 00:00:00'
+                expected_first_time = pd.Timestamp.strptime(expected_first_time, '%Y/%m/%d %H:%M:%S')
             data = data_fetch_methods.dynamic_data_compiler(
                     start_time, end_time, table, defaults.raw_data_cache,
                     select_columns=cols,
                     filter_cols=filter_cols, filter_values=self.filter_values[table_type])
             data = data.reset_index(drop=True)
+            print(table)
             self.assertEqual(expected_length, data.shape[0])
             self.assertEqual(expected_number_of_columns, data.shape[1])
-            self.assertEqual(expected_firt_time, data[dat_col][0])
+            self.assertEqual(expected_first_time, data[dat_col][0])
             self.assertEqual(expected_last_time, data[dat_col].iloc[-1])
             print('Passed')
 
@@ -71,12 +76,12 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             filter_cols = (self.table_types[table],)
             expected_length = 36
             expected_number_of_columns = 2
-            expected_firt_time = pd.Timestamp.strptime(start_time, '%Y/%m/%d %H:%M:%S')
-            expected_last_time = pd.Timestamp.strptime(end_time, '%Y/%m/%d %H:%M:%S') - timedelta(minutes=5)
-            if table in [ 'TRADINGLOAD', 'TRADINGPRICE', 'TRADINGREGIONSUM', 'TRADINGINTERCONNECT']:
+            expected_first_time = pd.Timestamp.strptime(start_time, '%Y/%m/%d %H:%M:%S') + timedelta(minutes=5)
+            expected_last_time = pd.Timestamp.strptime(end_time, '%Y/%m/%d %H:%M:%S')
+            if table in ['TRADINGLOAD', 'TRADINGPRICE', 'TRADINGREGIONSUM', 'TRADINGINTERCONNECT']:
                 expected_length = 6
-                expected_last_time = '2013/07/31 23:30:00'
-                expected_last_time = pd.Timestamp.strptime(expected_last_time, '%Y/%m/%d %H:%M:%S')
+                expected_first_time = '2013/07/31 21:30:00'
+                expected_first_time = pd.Timestamp.strptime(expected_first_time, '%Y/%m/%d %H:%M:%S')
             if table == 'BIDPEROFFER_D':
                 cols = [dat_col, 'DUID', 'BIDTYPE']
                 filter_cols = ('DUID', 'BIDTYPE')
@@ -86,8 +91,8 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 filter_cols = ('DUID', 'BIDTYPE')
                 expected_number_of_columns = 3
                 expected_length = 1
-                expected_last_time = expected_last_time.replace(hour=0, minute=0)
-                expected_firt_time = expected_firt_time.replace(hour=0, minute=0)
+                expected_last_time = expected_first_time.replace(hour=0, minute=0)
+                expected_first_time = expected_first_time.replace(hour=0, minute=0)
             data = data_fetch_methods.dynamic_data_compiler(
                     start_time, end_time, table, defaults.raw_data_cache,
                     select_columns=cols,
@@ -96,7 +101,7 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             data = data.reset_index(drop=True)
             self.assertEqual(expected_length, data.shape[0])
             self.assertEqual(expected_number_of_columns, data.shape[1])
-            self.assertEqual(expected_firt_time, data[dat_col][0])
+            self.assertEqual(expected_first_time, data[dat_col][0])
             self.assertEqual(expected_last_time, data[dat_col].iloc[-1])
             print('Passed')
 
@@ -111,12 +116,12 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             filter_cols = (self.table_types[table],)
             expected_length = 288
             expected_number_of_columns = 2
-            expected_firt_time = pd.Timestamp.strptime(start_time, '%Y/%m/%d %H:%M:%S')
-            expected_last_time = pd.Timestamp.strptime(end_time, '%Y/%m/%d %H:%M:%S') - timedelta(minutes=5)
-            if table in [ 'TRADINGLOAD', 'TRADINGPRICE', 'TRADINGREGIONSUM', 'TRADINGINTERCONNECT']:
+            expected_first_time = pd.Timestamp.strptime(start_time, '%Y/%m/%d %H:%M:%S') + timedelta(minutes=5)
+            expected_last_time = pd.Timestamp.strptime(end_time, '%Y/%m/%d %H:%M:%S')
+            if table in ['TRADINGLOAD', 'TRADINGPRICE', 'TRADINGREGIONSUM', 'TRADINGINTERCONNECT']:
                 expected_length = 48
-                expected_last_time = '2014/04/01 20:30:00'
-                expected_last_time = pd.Timestamp.strptime(expected_last_time, '%Y/%m/%d %H:%M:%S')
+                expected_first_time = '2014/03/31 21:30:00'
+                expected_first_time = pd.Timestamp.strptime(expected_first_time, '%Y/%m/%d %H:%M:%S')
             if table == 'BIDPEROFFER_D':
                 cols = [dat_col, 'DUID', 'BIDTYPE']
                 filter_cols = ('DUID', 'BIDTYPE')
@@ -127,7 +132,7 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 expected_number_of_columns = 3
                 expected_length = 2
                 expected_last_time = expected_last_time.replace(hour=0, minute=0)
-                expected_firt_time = expected_firt_time.replace(hour=0, minute=0)
+                expected_first_time = expected_first_time.replace(hour=0, minute=0)
             data = data_fetch_methods.dynamic_data_compiler(
                     start_time, end_time, table, defaults.raw_data_cache,
                     select_columns=cols,
@@ -136,7 +141,7 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             data = data.reset_index(drop=True)
             self.assertEqual(expected_length, data.shape[0])
             self.assertEqual(expected_number_of_columns, data.shape[1])
-            self.assertEqual(expected_firt_time, data[dat_col][0])
+            self.assertEqual(expected_first_time, data[dat_col][0])
             self.assertEqual(expected_last_time, data[dat_col].iloc[-1])
             print('Passed')
 
@@ -151,12 +156,12 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             filter_cols = (self.table_types[table],)
             expected_length = 12
             expected_number_of_columns = 2
-            expected_firt_time = pd.Timestamp.strptime(start_time, '%Y/%m/%d %H:%M:%S')
-            expected_last_time = pd.Timestamp.strptime(end_time, '%Y/%m/%d %H:%M:%S') - timedelta(minutes=5)
+            expected_first_time = pd.Timestamp.strptime(start_time, '%Y/%m/%d %H:%M:%S') + timedelta(minutes=5)
+            expected_last_time = pd.Timestamp.strptime(end_time, '%Y/%m/%d %H:%M:%S')
             if table in [ 'TRADINGLOAD', 'TRADINGPRICE', 'TRADINGREGIONSUM', 'TRADINGINTERCONNECT']:
                 expected_length = 2
-                expected_last_time = '2014/01/01 00:30:00'
-                expected_last_time = pd.Timestamp.strptime(expected_last_time, '%Y/%m/%d %H:%M:%S')
+                expected_first_time = '2014/01/01 00:30:00'
+                expected_first_time = pd.Timestamp.strptime(expected_first_time, '%Y/%m/%d %H:%M:%S')
             if table == 'BIDPEROFFER_D':
                 cols = [dat_col, 'DUID', 'BIDTYPE']
                 filter_cols = ('DUID', 'BIDTYPE')
@@ -166,8 +171,8 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 filter_cols = ('DUID', 'BIDTYPE')
                 expected_number_of_columns = 3
                 expected_length = 1
-                expected_last_time = expected_last_time.replace(hour=0, minute=0)
-                expected_firt_time = expected_firt_time.replace(hour=0, minute=0)
+                expected_last_time = expected_last_time.replace(hour=0, minute=0) - timedelta(days=1)
+                expected_first_time = expected_first_time.replace(hour=0, minute=0) - timedelta(days=1)
             data = data_fetch_methods.dynamic_data_compiler(
                     start_time, end_time, table, defaults.raw_data_cache,
                     select_columns=cols,
@@ -176,7 +181,7 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             data = data.reset_index(drop=True)
             self.assertEqual(expected_length, data.shape[0])
             self.assertEqual(expected_number_of_columns, data.shape[1])
-            self.assertEqual(expected_firt_time, data[dat_col][0])
+            self.assertEqual(expected_first_time, data[dat_col][0])
             self.assertEqual(expected_last_time, data[dat_col].iloc[-1])
             print('Passed')
 
@@ -191,12 +196,12 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             filter_cols = (self.table_types[table],)
             expected_length = 12
             expected_number_of_columns = 2
-            expected_firt_time = pd.Timestamp.strptime(start_time, '%Y/%m/%d %H:%M:%S')
-            expected_last_time = pd.Timestamp.strptime(end_time, '%Y/%m/%d %H:%M:%S') - timedelta(minutes=5)
+            expected_first_time = pd.Timestamp.strptime(start_time, '%Y/%m/%d %H:%M:%S') + timedelta(minutes=5)
+            expected_last_time = pd.Timestamp.strptime(end_time, '%Y/%m/%d %H:%M:%S')
             if table in [ 'TRADINGLOAD', 'TRADINGPRICE', 'TRADINGREGIONSUM', 'TRADINGINTERCONNECT']:
                 expected_length = 2
-                expected_last_time = '2013/12/31 23:30:00'
-                expected_last_time = pd.Timestamp.strptime(expected_last_time, '%Y/%m/%d %H:%M:%S')
+                expected_first_time = '2013/12/31 23:30:00'
+                expected_first_time = pd.Timestamp.strptime(expected_first_time, '%Y/%m/%d %H:%M:%S')
             if table == 'BIDPEROFFER_D':
                 cols = [dat_col, 'DUID', 'BIDTYPE']
                 filter_cols = ('DUID', 'BIDTYPE')
@@ -206,8 +211,8 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 filter_cols = ('DUID', 'BIDTYPE')
                 expected_number_of_columns = 3
                 expected_length = 1
-                expected_last_time = expected_last_time.replace(hour=0, minute=0)
-                expected_firt_time = expected_firt_time.replace(hour=0, minute=0)
+                expected_first_time = expected_first_time.replace(hour=0, minute=0)
+                expected_last_time = expected_first_time
             data = data_fetch_methods.dynamic_data_compiler(
                     start_time, end_time, table, defaults.raw_data_cache,
                     select_columns=cols,
@@ -216,7 +221,7 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             data = data.reset_index(drop=True)
             self.assertEqual(expected_length, data.shape[0])
             self.assertEqual(expected_number_of_columns, data.shape[1])
-            self.assertEqual(expected_firt_time, data[dat_col][0])
+            self.assertEqual(expected_first_time, data[dat_col][0])
             self.assertEqual(expected_last_time, data[dat_col].iloc[-1])
             print('Passed')
 
@@ -231,12 +236,12 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             filter_cols = (self.table_types[table],)
             expected_length = 24
             expected_number_of_columns = 2
-            expected_firt_time = pd.Timestamp.strptime(start_time, '%Y/%m/%d %H:%M:%S')
-            expected_last_time = pd.Timestamp.strptime(end_time, '%Y/%m/%d %H:%M:%S') - timedelta(minutes=5)
+            expected_first_time = pd.Timestamp.strptime(start_time, '%Y/%m/%d %H:%M:%S') + timedelta(minutes=5)
+            expected_last_time = pd.Timestamp.strptime(end_time, '%Y/%m/%d %H:%M:%S')
             if table in [ 'TRADINGLOAD', 'TRADINGPRICE', 'TRADINGREGIONSUM', 'TRADINGINTERCONNECT']:
                 expected_length = 4
-                expected_last_time = '2018/01/01 00:30:00'
-                expected_last_time = pd.Timestamp.strptime(expected_last_time, '%Y/%m/%d %H:%M:%S')
+                expected_first_time = '2017/12/31 23:30:00'
+                expected_first_time = pd.Timestamp.strptime(expected_first_time, '%Y/%m/%d %H:%M:%S')
             if table == 'BIDPEROFFER_D':
                 cols = [dat_col, 'DUID', 'BIDTYPE']
                 filter_cols = ('DUID', 'BIDTYPE')
@@ -245,9 +250,9 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 cols = [dat_col, 'DUID', 'BIDTYPE']
                 filter_cols = ('DUID', 'BIDTYPE')
                 expected_number_of_columns = 3
-                expected_length = 2
-                expected_last_time = expected_last_time.replace(hour=0, minute=0)
-                expected_firt_time = expected_firt_time.replace(hour=0, minute=0)
+                expected_length = 1
+                expected_first_time = expected_first_time.replace(hour=0, minute=0)
+                expected_last_time = expected_first_time
             data = data_fetch_methods.dynamic_data_compiler(
                     start_time, end_time, table, defaults.raw_data_cache,
                     select_columns=cols,
@@ -256,7 +261,7 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             data = data.reset_index(drop=True)
             self.assertEqual(expected_length, data.shape[0])
             self.assertEqual(expected_number_of_columns, data.shape[1])
-            self.assertEqual(expected_firt_time, data[dat_col][0])
+            self.assertEqual(expected_first_time, data[dat_col][0])
             self.assertEqual(expected_last_time, data[dat_col].iloc[-1])
             print('Passed')
 
@@ -316,8 +321,8 @@ class TestFACS4SecondData(unittest.TestCase):
         filter_cols = ('ELEMENTNUMBER', 'VARIABLENUMBER')
         expected_length = 77
         expected_number_of_columns = 3
-        expected_firt_time = pd.Timestamp.strptime(start_time, '%Y/%m/%d %H:%M:%S')
-        expected_last_time = pd.Timestamp.strptime(end_time, '%Y/%m/%d %H:%M:%S') - timedelta(seconds=4)
+        expected_firt_time = pd.Timestamp.strptime(start_time, '%Y/%m/%d %H:%M:%S') + timedelta(seconds=4)
+        expected_last_time = pd.Timestamp.strptime(end_time, '%Y/%m/%d %H:%M:%S')
         data = data_fetch_methods.dynamic_data_compiler(
                 start_time, end_time, table, defaults.raw_data_cache,
                 select_columns=cols,
@@ -340,8 +345,8 @@ class TestFACS4SecondData(unittest.TestCase):
         filter_cols = ('ELEMENTNUMBER', 'VARIABLENUMBER')
         expected_length = 75
         expected_number_of_columns = 3
-        expected_firt_time = pd.Timestamp.strptime(start_time, '%Y/%m/%d %H:%M:%S')
-        expected_last_time = pd.Timestamp.strptime(end_time, '%Y/%m/%d %H:%M:%S') - timedelta(seconds=4)
+        expected_firt_time = pd.Timestamp.strptime(start_time, '%Y/%m/%d %H:%M:%S') + timedelta(seconds=4)
+        expected_last_time = pd.Timestamp.strptime(end_time, '%Y/%m/%d %H:%M:%S')
         data = data_fetch_methods.dynamic_data_compiler(
             start_time, end_time, table, defaults.raw_data_cache,
             select_columns=cols,
@@ -364,8 +369,8 @@ class TestFACS4SecondData(unittest.TestCase):
         filter_cols = ('ELEMENTNUMBER', 'VARIABLENUMBER')
         expected_length = 150
         expected_number_of_columns = 3
-        expected_firt_time = pd.Timestamp.strptime(start_time, '%Y/%m/%d %H:%M:%S')
-        expected_last_time = pd.Timestamp.strptime(end_time, '%Y/%m/%d %H:%M:%S') - timedelta(seconds=4)
+        expected_firt_time = pd.Timestamp.strptime(start_time, '%Y/%m/%d %H:%M:%S') + timedelta(seconds=4)
+        expected_last_time = pd.Timestamp.strptime(end_time, '%Y/%m/%d %H:%M:%S')
         data = data_fetch_methods.dynamic_data_compiler(
             start_time, end_time, table, defaults.raw_data_cache,
             select_columns=cols,
@@ -388,8 +393,8 @@ class TestFACS4SecondData(unittest.TestCase):
         filter_cols = ('ELEMENTNUMBER', 'VARIABLENUMBER')
         expected_length = 149
         expected_number_of_columns = 3
-        expected_firt_time = pd.Timestamp.strptime(start_time, '%Y/%m/%d %H:%M:%S')
-        expected_last_time = pd.Timestamp.strptime(end_time, '%Y/%m/%d %H:%M:%S') - timedelta(seconds=4)
+        expected_firt_time = pd.Timestamp.strptime(start_time, '%Y/%m/%d %H:%M:%S') + timedelta(seconds=4)
+        expected_last_time = pd.Timestamp.strptime(end_time, '%Y/%m/%d %H:%M:%S')
         data = data_fetch_methods.dynamic_data_compiler(
             start_time, end_time, table, defaults.raw_data_cache,
             select_columns=cols,
@@ -412,8 +417,8 @@ class TestFACS4SecondData(unittest.TestCase):
         filter_cols = ('ELEMENTNUMBER', 'VARIABLENUMBER')
         expected_length = 149
         expected_number_of_columns = 3
-        expected_firt_time = pd.Timestamp.strptime(start_time, '%Y/%m/%d %H:%M:%S')
-        expected_last_time = pd.Timestamp.strptime(end_time, '%Y/%m/%d %H:%M:%S') - timedelta(seconds=4)
+        expected_firt_time = pd.Timestamp.strptime(start_time, '%Y/%m/%d %H:%M:%S') + timedelta(seconds=4)
+        expected_last_time = pd.Timestamp.strptime(end_time, '%Y/%m/%d %H:%M:%S')
         data = data_fetch_methods.dynamic_data_compiler(
             start_time, end_time, table, defaults.raw_data_cache,
             select_columns=cols,

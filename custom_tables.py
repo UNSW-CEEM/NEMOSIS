@@ -177,7 +177,7 @@ def stats_for_group(capacity_and_scada_grouped):
 
 
 def stats_by_month_and_plant(capacity_and_scada):
-    capacity_and_scada['effective_set_date'] = capacity_and_scada['SETTLEMENTDATE'] - timedelta(seconds=1)
+    capacity_and_scada['effective_set_date'] = capacity_and_scada['SETTLEMENTDATE'] #- timedelta(seconds=1)
     capacity_and_scada['MONTH'] = capacity_and_scada['effective_set_date'].dt.year.astype(str) + '-' + \
                                   capacity_and_scada['effective_set_date'].dt.month.astype(str).str.zfill(2)
     capacity_factors = capacity_and_scada.groupby(['MONTH', 'DUID'], as_index=False).apply(stats_for_group)

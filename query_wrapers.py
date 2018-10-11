@@ -1,13 +1,22 @@
 import pandas as pd
 import defaults
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 def dispatch_date_setup(start_time, end_time):
-    start_time = start_time[:10]
+    start_time = datetime.strptime(start_time, '%Y/%m/%d %H:%M:%S')
+    start_time = start_time - timedelta(hours=4)
+    start_time = start_time.replace(hour=0, minute=0)
+    start_time = start_time - timedelta(seconds=1)
+    start_time = datetime.isoformat(start_time).replace('-', '/').replace('T', ' ')
+    end_time = datetime.strptime(end_time, '%Y/%m/%d %H:%M:%S')
+    end_time = end_time - timedelta(hours=4, seconds=1)
+    end_time = datetime.isoformat(end_time).replace('-', '/').replace('T', ' ')
+    end_time = end_time[:10]
     date_padding = ' 00:00:00'
-    start_time = start_time + date_padding
+    end_time = end_time + date_padding
     return start_time, end_time
+
 
 def dispatch_half_hour_setup(start_time, end_time):
     start_time = datetime.strptime(start_time, '%Y/%m/%d %H:%M:%S')
@@ -26,8 +35,8 @@ def fcas4s_finalise(data, start_time, table_name):
 def most_recent_records_before_start_time(data, start_time, table_name):
     date_col = defaults.primary_date_columns[table_name]
     group_cols = defaults.effective_date_group_col[table_name]
-    records_from_after_start = data[data[date_col] > start_time].copy()
-    records_from_before_start = data[data[date_col] <= start_time].copy()
+    records_from_after_start = data[data[date_col] >= start_time].copy()
+    records_from_before_start = data[data[date_col] < start_time].copy()
     records_from_before_start = records_from_before_start.sort_values(date_col)
     most_recent_from_before_start = records_from_before_start.groupby(group_cols, as_index=False).last()
     group_cols = group_cols + [date_col]

@@ -137,8 +137,8 @@ class TestFiltersSettlementDate(unittest.TestCase):
         assert_frame_equal(aim, result)
 
     def test_settlement_date_pick_two_of_two_by_overlaping_interval(self):
-        start_time = datetime.strptime('2011/01/01 00:00:00', '%Y/%m/%d %H:%M:%S')
-        end_time = datetime.strptime('2015/05/01 00:13:00', '%Y/%m/%d %H:%M:%S')
+        start_time = datetime.strptime('2010/12/31 23:59:00', '%Y/%m/%d %H:%M:%S')
+        end_time = datetime.strptime('2015/05/01 00:00:00', '%Y/%m/%d %H:%M:%S')
         aim = pd.DataFrame({'SETTLEMENTDATE': ['2011/01/01 00:00:00', '2015/01/01 00:00:00']})
         result = filters.filter_on_settlementdate(self.settlement_date_data, start_time=start_time, end_time=end_time)\
             .reset_index(drop=True)
@@ -165,7 +165,7 @@ class TestFiltersSettlementDate(unittest.TestCase):
 
     def test_settlement_date_end_date_exclusive_by_undershooting(self):
         start_time = datetime.strptime('2010/04/01 00:00:00', '%Y/%m/%d %H:%M:%S')
-        end_time = datetime.strptime('2011/01/01 00:00:00', '%Y/%m/%d %H:%M:%S')
+        end_time = datetime.strptime('2010/12/31 23:59:00', '%Y/%m/%d %H:%M:%S')
         result = filters.filter_on_settlementdate(self.settlement_date_data, start_time=start_time, end_time=end_time)\
             .reset_index(drop=True)
         aim = pd.DataFrame({'SETTLEMENTDATE': []})
@@ -196,8 +196,8 @@ class TestFiltersTimeStamp(unittest.TestCase):
         assert_frame_equal(aim, result)
 
     def test_time_stamp_pick_two_of_two_by_overlaping_interval(self):
-        start_time = datetime.strptime('2011/01/01 00:00:00', '%Y/%m/%d %H:%M:%S')
-        end_time = datetime.strptime('2015/05/01 00:13:00', '%Y/%m/%d %H:%M:%S')
+        start_time = datetime.strptime('2010/12/31 23:59:00', '%Y/%m/%d %H:%M:%S')
+        end_time = datetime.strptime('2015/05/01 00:00:00', '%Y/%m/%d %H:%M:%S')
         aim = pd.DataFrame({'TIMESTAMP': ['2011/01/01 00:00:00', '2015/01/01 00:00:00']})
         result = filters.filter_on_timestamp(self.time_stamp_data, start_time=start_time, end_time=end_time)\
             .reset_index(drop=True)
@@ -224,7 +224,7 @@ class TestFiltersTimeStamp(unittest.TestCase):
 
     def test_time_stamp_end_date_exclusive_by_undershooting(self):
         start_time = datetime.strptime('2010/04/01 00:00:00', '%Y/%m/%d %H:%M:%S')
-        end_time = datetime.strptime('2011/01/01 00:00:00', '%Y/%m/%d %H:%M:%S')
+        end_time = datetime.strptime('2010/12/31 23:59:00', '%Y/%m/%d %H:%M:%S')
         result = filters.filter_on_timestamp(self.time_stamp_data, start_time=start_time, end_time=end_time)\
             .reset_index(drop=True)
         aim = pd.DataFrame({'TIMESTAMP': []})
@@ -255,8 +255,8 @@ class TestFiltersIntervalDatetime(unittest.TestCase):
         assert_frame_equal(aim, result)
 
     def test_interval_datetime_pick_two_of_two_by_overlaping_interval(self):
-        start_time = datetime.strptime('2011/01/01 00:00:00', '%Y/%m/%d %H:%M:%S')
-        end_time = datetime.strptime('2015/05/01 00:13:00', '%Y/%m/%d %H:%M:%S')
+        start_time = datetime.strptime('2010/12/31 23:59:00', '%Y/%m/%d %H:%M:%S')
+        end_time = datetime.strptime('2015/05/01 00:00:00', '%Y/%m/%d %H:%M:%S')
         aim = pd.DataFrame({'INTERVAL_DATETIME': ['2011/01/01 00:00:00', '2015/01/01 00:00:00']})
         result = filters.filter_on_interval_datetime(self.interval_datetime_data, start_time=start_time, end_time=end_time)\
             .reset_index(drop=True)
@@ -283,7 +283,7 @@ class TestFiltersIntervalDatetime(unittest.TestCase):
 
     def test_interval_datetime_end_date_exclusive_by_undershooting(self):
         start_time = datetime.strptime('2010/04/01 00:00:00', '%Y/%m/%d %H:%M:%S')
-        end_time = datetime.strptime('2011/01/01 00:00:00', '%Y/%m/%d %H:%M:%S')
+        end_time = datetime.strptime('2010/12/31 23:59:00', '%Y/%m/%d %H:%M:%S')
         result = filters.filter_on_interval_datetime(self.interval_datetime_data, start_time=start_time, end_time=end_time)\
             .reset_index(drop=True)
         aim = pd.DataFrame({'INTERVAL_DATETIME': []})
