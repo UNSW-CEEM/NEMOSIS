@@ -1,4 +1,7 @@
 .idea/*
 __pycache__/*
 venv/*
+build/*
+dist/*
 
+.pkl

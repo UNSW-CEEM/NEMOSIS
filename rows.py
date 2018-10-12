@@ -5,7 +5,7 @@ import defaults
 
 class Query:
 
-    def __init__(self, master, row_number, app):
+    def __init__(self, master, row_number, app, table_options=None):
         # Load in the starting features of a query row.
         self.master = master
         self.row_number = row_number
@@ -27,11 +27,14 @@ class Query:
         self.tables_label = ttk.Label(self.master, text='Select table:')
         self.tables = tk.Listbox(self.master, exportselection=False, width=35)
         self.tables.bind('<<ListboxSelect>>', self.add_column_selection)
-        for item in defaults.display_in_gui:
+
+        self.table_options = table_options
+
+        for item in table_options:
             self.tables.insert(tk.END, item)
 
         # Create a button to delete the row.
-        self.delete = ttk.Button(self.master, text=u"\u274C", command= lambda: app.delete_row(self.row_number))
+        self.delete = ttk.Button(self.master, text=u"\u274C", command=lambda: app.delete_row(self.row_number))
 
         # Create empty attributes to fill up later on.
         self.filter_list = {}
@@ -50,57 +53,57 @@ class Query:
         padx = defaults.standard_x_pad
 
         self.query_label.grid(row=defaults.query_row_offset + defaults.row_height * self.row_number,
-                              column=first_sub_column,pady=pady, padx=padx, sticky='sw')
+                              column=first_sub_column, pady=pady, padx=padx, sticky='sw')
         self.query_label.update()
 
         self.name.grid(row=defaults.query_row_offset + defaults.row_height * self.row_number
-                           + defaults.names_internal_row, column=first_sub_column, padx=padx)
+                       + defaults.names_internal_row, column=first_sub_column, padx=padx, sticky='sw')
         self.name.update()
 
         self.start_time_label.grid(row=defaults.query_row_offset + defaults.row_height * self.row_number
                                        + defaults.start_time_label_internal_row, column=first_sub_column,
-                                   padx=defaults.standard_x_pad)
+                                   padx=defaults.standard_x_pad, sticky='sw')
         self.start_time_label.update()
 
         self.start_time.grid(row=defaults.query_row_offset + defaults.row_height * self.row_number
-                                 + defaults.start_time_internal_row, column=first_sub_column,
-                             padx=padx)
+                             + defaults.start_time_internal_row, column=first_sub_column,
+                             padx=padx, sticky='sw')
         self.start_time.update()
 
         self.end_time_label.grid(row=defaults.query_row_offset + defaults.row_height * self.row_number
                                  + defaults.end_time_label_internal_row, column=first_sub_column,
-                                 padx=padx)
+                                 padx=padx, sticky='sw')
         self.end_time_label.update()
 
         self.end_time.grid(row=defaults.query_row_offset + defaults.row_height * self.row_number
                                  + defaults.end_time_internal_row, column=first_sub_column,
-                           padx=padx)
+                           padx=padx, sticky='sw')
         self.end_time.update()
 
         self.tables_label.grid(row=defaults.query_row_offset + defaults.row_height * self.row_number,
-                               column=second_sub_column, pady = defaults.query_y_pad, sticky = 'sw',
+                               column=second_sub_column, pady=defaults.query_y_pad, sticky='sw',
                                padx=padx)
         self.tables_label.update()
 
         self.tables.grid(row=defaults.query_row_offset + defaults.row_height * self.row_number
-                             + defaults.table_list_internal_row, column=second_sub_column,
-                             rowspan=defaults.list_row_span, columnspan=defaults.list_column_span,
-                             sticky='nw', padx=padx)
+                         + defaults.table_list_internal_row, column=second_sub_column,
+                         rowspan=defaults.list_row_span, columnspan=defaults.list_column_span,
+                         sticky='sw', padx=padx)
         self.tables.update()
 
         self.delete.grid(row=defaults.query_row_offset + defaults.row_height * self.row_number
-                             + defaults.delete_button_internal_row, column=defaults.last_column, sticky='nw')
+                         + defaults.delete_button_internal_row, column=defaults.last_column, sticky='nw')
         self.delete.update()
 
         if self.col_list is not None:
             self.position_column_list()
-        if self.filter_list :
+        if self.filter_list:
             self.position_filter_list()
 
     def add_column_selection(self, evt):
         # When a table is selected update the list of columns to be selected from.
         # Find the name of the table selected.
-        table = defaults.display_in_gui[self.tables.curselection()[0]]
+        table = self.table_options[self.tables.curselection()[0]]
         # Delete the previous list of columns.
         if self.col_list is not None:
             self.col_list.destroy()
@@ -125,6 +128,7 @@ class Query:
 
         # Delete any filters that existed for previous column selections.
         self.remove_filters()
+        self.add_filters(None)
 
     def position_column_list(self):
         self.cols_label.grid(column=self.tables.grid_info()['column'] + defaults.list_column_span,
@@ -133,8 +137,8 @@ class Query:
         self.cols_label.update()
         self.col_list.grid(column=self.tables.grid_info()['column'] + defaults.list_column_span,
                            row=defaults.query_row_offset + self.row_number * defaults.row_height
-                               + defaults.table_list_internal_row,
-                           rowspan = defaults.list_row_span, columnspan=defaults.list_column_span,
+                           + defaults.table_list_internal_row,
+                           rowspan=defaults.list_row_span, columnspan=defaults.list_column_span,
                            padx=defaults.standard_x_pad, sticky='sw')
         self.col_list.update()
 
@@ -257,9 +261,10 @@ class Query:
         state['name'] = self.name.get()
         state['start_time'] = self.start_time.get()
         state['end_time'] = self.end_time.get()
-        state['table'] = self.tables.curselection()
+        if len(self.tables.curselection()) != 0:
+            state['table'] = self.table_options[self.tables.curselection()[0]]
         if self.col_list is not None:
-            state['columns'] = self.col_list.curselection()
+            state['columns'] = [self.col_list.get(0, tk.END)[index] for index in self.col_list.curselection()]
         state['filters_contents'] = {}
         state['filters_selection'] = {}
         for column, filter_list in self.filter_list.items():
@@ -273,10 +278,12 @@ class Query:
         self.start_time.insert(0, state['start_time'])
         self.end_time.insert(0, state['end_time'])
         if len(state['table']) != 0:
-            self.tables.selection_set(state['table'][0])
+            table_index = list(self.tables.get(0, "end")).index(state['table'])
+            self.tables.selection_set(table_index)
             self.add_column_selection(None)
-            for index in state['columns']:
-                self.col_list.selection_set(index)
+            for col in state['columns']:
+                col_index = list(self.col_list.get(0, "end")).index(col)
+                self.col_list.selection_set(col_index)
             self.add_filters(None)
         for column, filter_contents in state['filters_contents'].items():
             self.filter_list[column].insert(0, *filter_contents)

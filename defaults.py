@@ -64,12 +64,13 @@ table_types = {'DISPATCHLOAD': 'MMS',
 
 return_tables = list(names.keys())
 
-display_in_gui = ['DISPATCHLOAD', 'DUDETAILSUMMARY', 'DUDETAIL', 'DISPATCHCONSTRAINT', 'GENCONDATA', 'DISPATCH_UNIT_SCADA',
-                  'DISPATCHPRICE', 'SPDREGIONCONSTRAINT', 'SPDCONNECTIONPOINTCONSTRAINT', 'SPDINTERCONNECTORCONSTRAINT',
-                  'BIDPEROFFER_D', 'DISPATCHINTERCONNECTORRES', 'BIDDAYOFFER_D', 'DISPATCHREGIONSUM', 'FCAS_4_SECOND',
-                  'ELEMENTS_FCAS_4_SECOND', 'VARIABLES_FCAS_4_SECOND', 'Generators and Scheduled Loads',
-                  'FCAS_4s_SCADA_MAP', 'PLANTSTATS', 'TRADINGLOAD', 'TRADINGPRICE', 'TRADINGREGIONSUM',
-                  'TRADINGINTERCONNECT']
+display_as_AMEO = ['DISPATCHLOAD', 'DUDETAILSUMMARY', 'DUDETAIL', 'DISPATCHCONSTRAINT', 'GENCONDATA', 'DISPATCH_UNIT_SCADA',
+                   'DISPATCHPRICE', 'SPDREGIONCONSTRAINT', 'SPDCONNECTIONPOINTCONSTRAINT', 'SPDINTERCONNECTORCONSTRAINT',
+                   'BIDPEROFFER_D', 'DISPATCHINTERCONNECTORRES', 'BIDDAYOFFER_D', 'DISPATCHREGIONSUM', 'FCAS_4_SECOND',
+                   'ELEMENTS_FCAS_4_SECOND', 'VARIABLES_FCAS_4_SECOND', 'Generators and Scheduled Loads', 'TRADINGLOAD',
+                   'TRADINGPRICE', 'TRADINGREGIONSUM', 'TRADINGINTERCONNECT']
+
+display_as_Custom = ['FCAS_4s_SCADA_MAP', 'PLANTSTATS']
 
 static_tables = ['ELEMENTS_FCAS_4_SECOND', 'VARIABLES_FCAS_4_SECOND', 'Generators and Scheduled Loads']
 
@@ -328,7 +329,7 @@ end_time_internal_row = 5
 plus_internal_row = 6
 plus_merge_internal_row = 7
 list_row_span = 5
-list_column_span = 2
+list_column_span = 1
 save_field_column_span = 3
 standard_x_pad = (0, 10)
 list_filter_row_span = 4
