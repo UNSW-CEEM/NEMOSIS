@@ -207,21 +207,20 @@ class App(ttk.Frame):
         results = {}
         save_location = self.save_location.get()
         raw_data_location = self.raw_data_location.get()
-        for row in self.rows:
-            save_name = row.name.get()
-            try:
+        try:
+            for row in self.rows:
+                save_name = row.name.get()
                 if type(row).__name__ == 'Query':
                     results[save_name] = self.run_query(row, raw_data_location)
                 elif type(row).__name__ == 'Merge':
                     results[save_name] = self.run_merge(row, results)
                 results[save_name].to_csv(save_location + '\\' + save_name + '.csv', index=False,
                                           date_format='%Y/%m/%d %H:%M:%S')
-                messagebox.showinfo('Finished', 'Your query has finished!')
-            except Exception:
-                    traceback.print_exc()
-                    messagebox.showerror('Error', 'Your query executed with an error. '
-                                     '\nReview the console for detailed information')
-
+            messagebox.showinfo('Finished', 'Your query has finished!')
+        except Exception:
+                traceback.print_exc()
+                messagebox.showerror('Error', 'Your query executed with an error. '
+                                 '\nReview the console for detailed information')
 
         return
 

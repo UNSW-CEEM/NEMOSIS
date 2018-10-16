@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['gui.py'],
-             pathex=['C:\\Users\\user\\Documents\\GitHub\\nem-data'],
+             pathex=['C:\\Users\\user\\Documents\\GitHub\\Osdan'],
              binaries=[],
              datas=[],
              hiddenimports=[],
@@ -15,8 +15,7 @@ a = Analysis(['gui.py'],
              win_private_assemblies=False,
              cipher=block_cipher)
 
-
-a.datas += [('favicon.ico', 'C:\\Users\\user\\Documents\\GitHub\\nem-data\\favicon.ico',  'DATA')]
+a.datas += [('favicon.ico', 'C:\\Users\\user\\Documents\\GitHub\\Osdan\\favicon.ico',  'DATA')]
 
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
