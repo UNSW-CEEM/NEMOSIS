@@ -154,7 +154,7 @@ class Query:
         # If a column is selected, and is filterable, but does not have a filter then add a filter for that column.
         for column in select_cols:
             if column in defaults.filterable_cols and column not in self.filter_label.keys():
-                self.filter_label[column] = ttk.Label(self.master, text='Select {}\'s:'.format(str(column)))
+                self.filter_label[column] = ttk.Label(self.master, text='Select {}s:'.format(str(column)))
                 self.filter_entry[column] = ttk.Entry(self.master, width=25)
                 self.filter_entry[column].bind('<Return>', self.add_to_list)
                 self.filter_entry[column].name = column
