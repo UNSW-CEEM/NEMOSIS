@@ -1,8 +1,9 @@
-import filters
-import downloader
-import query_wrapers
-import write_file_names
-import date_generators
+import os
+
+if os.getcwd().split('\\')[-1] == 'osdan':
+    import filters, downloader, query_wrapers, write_file_names, date_generators
+else:
+    from osdan import filters, downloader, query_wrapers, write_file_names, date_generators
 
 setup = {'DISPATCHLOAD': None,
          'TRADINGLOAD': None,

@@ -1,6 +1,11 @@
 import pandas as pd
-import defaults
 from datetime import datetime, timedelta
+import os
+
+if os.getcwd().split('\\')[-1] == 'osdan':
+    import defaults
+else:
+    from osdan import defaults
 
 
 def dispatch_date_setup(start_time, end_time):

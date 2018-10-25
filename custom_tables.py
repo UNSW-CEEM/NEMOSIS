@@ -1,10 +1,14 @@
-import filters
 import pandas as pd
 from datetime import timedelta, datetime
-import data_fetch_methods
 import math
-import defaults
 import numpy as np
+
+import os
+
+if os.getcwd().split('\\')[-1] == 'osdan':
+    import defaults, data_fetch_methods
+else:
+    from osdan import defaults, data_fetch_methods
 
 def fcas4s_scada_match(start_time, end_time, table_name, raw_data_location, select_columns=None, filter_cols=None,
                        filter_values=None):

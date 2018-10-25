@@ -6,7 +6,6 @@ from datetime import datetime
 import defaults
 
 
-
 class TestDispatchDateSetup(unittest.TestCase):
     def setUp(self):
         self.start_time = '2017/01/01 00:10:00'
