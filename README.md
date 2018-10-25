@@ -1,6 +1,6 @@
 # OSDAN
 
-# Use the OSDAN without python
+# Use OSDAN without python
 Download the latest executable file [here](https://github.com/UNSW-CEEM/osdan/releases)
 
 # Use the source code
