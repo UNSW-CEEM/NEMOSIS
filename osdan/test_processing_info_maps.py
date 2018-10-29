@@ -1,10 +1,10 @@
 import unittest
-import processing_info_maps
-import data_fetch_methods
-import defaults
+from osdan import processing_info_maps
+from osdan import data_fetch_methods
+from osdan import defaults
 import pandas as pd
 from datetime import datetime
-import query_wrapers
+from osdan import query_wrapers
 
 
 class TestSearchTypeValidity(unittest.TestCase):

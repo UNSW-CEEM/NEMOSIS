@@ -1,10 +1,4 @@
-import os
-
-if os.getcwd().split('\\')[-1] == 'osdan':
-    import defaults
-else:
-    from osdan import defaults
-
+from osdan import defaults
 from calendar import monthrange
 
 

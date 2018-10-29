@@ -119,7 +119,7 @@ filterable_cols = ['DUID', 'REGIONID', 'STATIONID', 'PARTICIPANTID', 'STARTTYPE'
                    'DISPATCHTYPE', 'CONSTRAINTID', 'PREDISPATCH', 'STPASA', 'MTPASA', 'LIMITTYPE', 'STATIONNAME',
                    'AGCFLAG', 'INTERCONNECTORID', 'NAME', 'Fuel Source - Primary', 'Fuel Source - Descriptor',
                    'Technology Type - Primary', 'Technology Type - Descriptor', 'ELEMENTNUMBER', 'MARKETNAME',
-                   'VARIABLENUMBER', 'VARIABLETYPE', 'MMSDESCRIPTOR', 'ELEMENTTYPE']
+                   'VARIABLENUMBER', 'VARIABLETYPE', 'MMSDESCRIPTOR', 'ELEMENTTYPE', 'Region']
 
 table_columns = {
 

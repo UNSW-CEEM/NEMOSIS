@@ -1,6 +1,6 @@
-import rows
-import defaults
-import data_fetch_methods
+from osdan import rows
+from osdan import defaults
+from osdan import data_fetch_methods
 import pandas as pd
 import tkinter as tk
 import tkinter.ttk as ttk

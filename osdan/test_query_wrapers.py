@@ -1,9 +1,9 @@
 import unittest
 import pandas as pd
-import query_wrapers
+from osdan import query_wrapers
 from pandas.util.testing import assert_frame_equal
 from datetime import datetime
-import defaults
+from osdan import defaults
 
 
 class TestDispatchDateSetup(unittest.TestCase):

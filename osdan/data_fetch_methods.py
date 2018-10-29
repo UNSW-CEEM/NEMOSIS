@@ -2,11 +2,8 @@ import os
 from datetime import datetime, timedelta
 import pandas as pd
 import feather
-
-if os.getcwd().split('\\')[-1] == 'osdan':
-    import filters, downloader, processing_info_maps, custom_tables, defaults
-else:
-    from osdan import filters, downloader, processing_info_maps, custom_tables, defaults
+from osdan import filters, downloader, processing_info_maps, defaults, custom_tables
+print(custom_tables.__file__)
 
 
 def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location, select_columns=None, filter_cols=None,

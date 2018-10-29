@@ -1,6 +1,6 @@
 import tkinter as tk
 import tkinter.ttk as ttk
-import defaults
+from osdan import defaults
 
 
 class Query:

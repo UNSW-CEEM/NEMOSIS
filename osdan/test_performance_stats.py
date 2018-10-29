@@ -1,11 +1,11 @@
 import unittest
-import data_fetch_methods
+from osdan import data_fetch_methods
 import pandas as pd
-import custom_tables
+from osdan import custom_tables
 import math
 import numpy as np
 import time
-import defaults
+from osdan import defaults
 from datetime import datetime, timedelta
 import os
 

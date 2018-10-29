@@ -2,13 +2,8 @@ import pandas as pd
 from datetime import timedelta, datetime
 import math
 import numpy as np
+from osdan import defaults, data_fetch_methods, filters
 
-import os
-
-if os.getcwd().split('\\')[-1] == 'osdan':
-    import defaults, data_fetch_methods
-else:
-    from osdan import defaults, data_fetch_methods
 
 def fcas4s_scada_match(start_time, end_time, table_name, raw_data_location, select_columns=None, filter_cols=None,
                        filter_values=None):
@@ -360,3 +355,4 @@ def trading_and_dispatch_cost():
     scada_and_regions = scada_and_regions.groupby('DUID').sum()
 
     scada_and_regions.to_csv('C:/Users/user/Documents/dispatch_trading_cost.csv')
+

@@ -1,10 +1,5 @@
 import os
-
-if os.getcwd().split('\\')[-1] == 'osdan':
-    import defaults
-else:
-    from osdan import defaults
-
+from osdan import defaults
 
 def write_file_names(name, month, year, day, index, raw_data_location):
     # Add the year and month information to the generic AEMO file name

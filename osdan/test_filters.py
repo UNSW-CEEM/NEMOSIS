@@ -1,6 +1,6 @@
 import unittest
 import pandas as pd
-import filters
+from osdan import filters
 from pandas.util.testing import assert_frame_equal
 from datetime import datetime
 import numpy as np

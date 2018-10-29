@@ -1,0 +1,14 @@
+Metadata-Version: 2.1
+Name: osdan
+Version: 0.0.5
+Summary: A tool for accessing AEMO data.
+Home-page: https://github.com/UNSW-CEEM/osdan
+Author: Nicholas Gorman
+Author-email: n.gorman305@gmail.com
+License: UNKNOWN
+Description: A tool for accessing AEMO data.
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: GNU General Public License (GPL)
+Classifier: Operating System :: OS Independent
+Description-Content-Type: text/markdown

@@ -1,12 +1,8 @@
 import requests
 import zipfile
 import io
-import os
+from osdan import defaults
 
-if os.getcwd().split('\\')[-1] == 'osdan':
-    import defaults
-else:
-    from osdan import defaults
 
 
 def run(year, month, day, index, filename, down_load_to):

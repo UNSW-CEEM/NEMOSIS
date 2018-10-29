@@ -3,5 +3,6 @@ __pycache__/*
 venv/*
 build/*
 dist/*
-
+gui.spec
 .pkl
+cd

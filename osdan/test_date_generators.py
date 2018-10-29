@@ -1,6 +1,6 @@
 import unittest
 from datetime import datetime
-import date_generators
+from osdan import date_generators
 
 
 class TestYearAndMonthGen(unittest.TestCase):

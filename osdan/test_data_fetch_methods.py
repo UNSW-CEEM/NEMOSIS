@@ -1,9 +1,9 @@
 import unittest
 from datetime import timedelta
-import data_fetch_methods
-import defaults
+from osdan import data_fetch_methods
+from osdan import defaults
 import pandas as pd
-import custom_tables
+from osdan import custom_tables
 
 
 class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
