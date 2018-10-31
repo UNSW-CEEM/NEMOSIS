@@ -1,6 +1,6 @@
 import os
 
-from osdan import filters, downloader, query_wrapers, write_file_names, date_generators
+from nemosis import filters, downloader, query_wrapers, write_file_names, date_generators
 
 
 setup = {'DISPATCHLOAD': None,

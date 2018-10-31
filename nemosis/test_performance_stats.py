@@ -1,11 +1,11 @@
 import unittest
-from osdan import data_fetch_methods
+from nemosis import data_fetch_methods
 import pandas as pd
-from osdan import custom_tables
+from nemosis import custom_tables
 import math
 import numpy as np
 import time
-from osdan import defaults
+from nemosis import defaults
 from datetime import datetime, timedelta
 import os
 

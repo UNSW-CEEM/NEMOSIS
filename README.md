@@ -1,12 +1,12 @@
-# OSDAN
+# NEMOSIS
 
-# Use OSDAN without python
-Download the latest executable file [here](https://github.com/UNSW-CEEM/osdan/releases)
+# Use NEMOSIS without python
+Download the latest executable file [here](https://github.com/UNSW-CEEM/NEMOSIS/releases)
 
 # Use the source code
 
 ```
-from osdan import data_fetch_methods
+from nemosis import data_fetch_methods
 
 start_time = '2017/01/01 00:00:00'
 end_time = '2017/01/01 00:00:00'

@@ -1,7 +1,7 @@
 import requests
 import zipfile
 import io
-from osdan import defaults
+from nemosis import defaults
 
 
 

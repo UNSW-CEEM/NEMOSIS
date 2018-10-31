@@ -1,6 +1,6 @@
-from osdan import rows
-from osdan import defaults
-from osdan import data_fetch_methods
+from nemosis import rows
+from nemosis import defaults
+from nemosis import data_fetch_methods
 import pandas as pd
 import tkinter as tk
 import tkinter.ttk as ttk
@@ -71,7 +71,7 @@ class App(ttk.Frame):
 
         ttk.Frame.__init__(self, parent=None, style='App.TFrame', borderwidth=0, width=890, height=590)
         self.parent = parent
-        self.parent.title('Osdan')
+        self.parent.title('NEMOSIS')
         self.parent.geometry('1000x600')
         self.setStyle()
         self.createWidgets()

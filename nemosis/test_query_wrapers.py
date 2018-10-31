@@ -1,9 +1,9 @@
 import unittest
 import pandas as pd
-from osdan import query_wrapers
+from nemosis import query_wrapers
 from pandas.util.testing import assert_frame_equal
 from datetime import datetime
-from osdan import defaults
+from nemosis import defaults
 
 
 class TestDispatchDateSetup(unittest.TestCase):

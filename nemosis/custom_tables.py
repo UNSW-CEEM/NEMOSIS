@@ -2,7 +2,7 @@ import pandas as pd
 from datetime import timedelta, datetime
 import math
 import numpy as np
-from osdan import defaults, data_fetch_methods, filters
+from nemosis import defaults, data_fetch_methods, filters
 
 
 def fcas4s_scada_match(start_time, end_time, table_name, raw_data_location, select_columns=None, filter_cols=None,

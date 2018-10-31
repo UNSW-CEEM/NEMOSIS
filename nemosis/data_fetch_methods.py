@@ -2,7 +2,7 @@ import os
 from datetime import datetime, timedelta
 import pandas as pd
 import feather
-from osdan import filters, downloader, processing_info_maps, defaults, custom_tables
+from nemosis import filters, downloader, processing_info_maps, defaults, custom_tables
 print(custom_tables.__file__)
 
 

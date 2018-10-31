@@ -1,6 +1,6 @@
 import pandas as pd
 from datetime import datetime, timedelta
-from osdan import defaults
+from nemosis import defaults
 
 
 

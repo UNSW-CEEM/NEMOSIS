@@ -1,5 +1,5 @@
 import os
-from osdan import defaults
+from nemosis import defaults
 
 def write_file_names(name, month, year, day, index, raw_data_location):
     # Add the year and month information to the generic AEMO file name

@@ -1,10 +1,10 @@
 import unittest
-from osdan import processing_info_maps
-from osdan import data_fetch_methods
-from osdan import defaults
+from nemosis import processing_info_maps
+from nemosis import data_fetch_methods
+from nemosis import defaults
 import pandas as pd
 from datetime import datetime
-from osdan import query_wrapers
+from nemosis import query_wrapers
 
 
 class TestSearchTypeValidity(unittest.TestCase):
