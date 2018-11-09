@@ -1,8 +1,10 @@
 .idea/*
-__pycache__/*
+nemosis/__pycache__/*
 venv/*
 build/*
+nemosis/build/*
 dist/*
 gui.spec
 .pkl
 cd
+nemosis.egg-info/*

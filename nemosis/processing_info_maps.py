@@ -32,7 +32,8 @@ setup = {'DISPATCHLOAD': None,
          'MNSP_PEROFFER': query_wrapers.dispatch_half_hour_setup,
          'MNSP_INTERCONNECTOR': None,
          'INTERCONNECTOR': None,
-         'INTERCONNECTORCONSTRAINT': None}
+         'INTERCONNECTORCONSTRAINT': None,
+         'MARKET_PRICE_THRESHOLDS': None}
 
 search_type = {'DISPATCHLOAD': 'start_to_end',
                'TRADINGLOAD': 'start_to_end',
@@ -63,7 +64,8 @@ search_type = {'DISPATCHLOAD': 'start_to_end',
                'MNSP_PEROFFER': 'start_to_end',
                'MNSP_INTERCONNECTOR': 'all',
                'INTERCONNECTOR': 'all',
-               'INTERCONNECTORCONSTRAINT': 'all'}
+               'INTERCONNECTORCONSTRAINT': 'all',
+               'MARKET_PRICE_THRESHOLDS': 'all'}
 
 filter = {'DISPATCHLOAD': filters.filter_on_settlementdate,
           'TRADINGLOAD': filters.filter_on_settlementdate,
@@ -94,7 +96,8 @@ filter = {'DISPATCHLOAD': filters.filter_on_settlementdate,
           'MNSP_PEROFFER': filters.filter_on_date_and_peroid,
           'MNSP_INTERCONNECTOR': filters.filter_on_effective_date,
           'INTERCONNECTOR': filters.filter_on_last_changed,
-          'INTERCONNECTORCONSTRAINT': filters.filter_on_effective_date}
+          'INTERCONNECTORCONSTRAINT': filters.filter_on_effective_date,
+          'MARKET_PRICE_THRESHOLDS': filters.filter_on_effective_date}
 
 finalise = {'DISPATCHLOAD': None,
             'TRADINGLOAD': None,
@@ -137,7 +140,8 @@ finalise = {'DISPATCHLOAD': None,
             'INTERCONNECTOR': [query_wrapers.most_recent_records_before_start_time,
                                query_wrapers.drop_duplicates_by_primary_key],
             'INTERCONNECTORCONSTRAINT': [query_wrapers.most_recent_records_before_start_time,
-                                         query_wrapers.drop_duplicates_by_primary_key]}
+                                         query_wrapers.drop_duplicates_by_primary_key],
+            'MARKET_PRICE_THRESHOLDS': None}
 
 date_gen = {'MMS': date_generators.year_and_month_gen,
             'FCAS': date_generators.year_month_day_index_gen}

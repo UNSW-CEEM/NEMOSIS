@@ -2,7 +2,7 @@
 Use call like:
 
 # Add to spec file
-a.datas += [('favicon.ico', 'C:\\Users\\user\\Documents\\GitHub\\osdan\\favicon.ico',  'DATA')]
+a.datas += [('favicon.ico', 'C:\\Users\\user\\Documents\\GitHub\\nemosis\\nemosis\\favicon.ico',  'DATA')]
 
 # Run in terminal
 C:\Users\user\AppData\Local\Programs\Python\Python36\python.exe -m PyInstaller --onefile --icon=favicon.ico gui.py

@@ -39,10 +39,14 @@ def most_recent_records_before_start_time(data, start_time, table_name):
     records_from_after_start = data[data[date_col] >= start_time].copy()
     records_from_before_start = data[data[date_col] < start_time].copy()
     records_from_before_start = records_from_before_start.sort_values(date_col)
-    most_recent_from_before_start = records_from_before_start.groupby(group_cols, as_index=False).last()
-    group_cols = group_cols + [date_col]
-    most_recent_from_before_start = pd.merge(most_recent_from_before_start.loc[:,group_cols], records_from_before_start,
-                                             'inner', group_cols)
+    if len(group_cols) > 0:
+        most_recent_from_before_start = records_from_before_start.groupby(group_cols, as_index=False).last()
+        group_cols = group_cols + [date_col]
+        most_recent_from_before_start = pd.merge(most_recent_from_before_start.loc[:, group_cols],
+                                                 records_from_before_start, 'inner', group_cols)
+    else:
+        most_recent_from_before_start = records_from_before_start.tail(1)
+
     mod_table = pd.concat([records_from_after_start, most_recent_from_before_start], sort=False)
     return mod_table
 

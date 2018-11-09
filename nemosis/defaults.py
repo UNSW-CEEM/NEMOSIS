@@ -28,7 +28,8 @@ names = {'DISPATCHLOAD': 'PUBLIC_DVD_DISPATCHLOAD',
          'TRADINGLOAD': 'PUBLIC_DVD_TRADINGLOAD',
          'TRADINGPRICE': 'PUBLIC_DVD_TRADINGPRICE',
          'TRADINGREGIONSUM': 'PUBLIC_DVD_TRADINGREGIONSUM',
-         'TRADINGINTERCONNECT': 'PUBLIC_DVD_TRADINGINTERCONNECT'}
+         'TRADINGINTERCONNECT': 'PUBLIC_DVD_TRADINGINTERCONNECT',
+         'MARKET_PRICE_THRESHOLDS': 'PUBLIC_DVD_MARKET_PRICE_THRESHOLDS'}
 
 table_types = {'DISPATCHLOAD': 'MMS',
                'DUDETAILSUMMARY': 'MMS',
@@ -59,7 +60,8 @@ table_types = {'DISPATCHLOAD': 'MMS',
                'TRADINGLOAD': 'MMS',
                'TRADINGPRICE': 'MMS',
                'TRADINGREGIONSUM': 'MMS',
-               'TRADINGINTERCONNECT': 'MMS'
+               'TRADINGINTERCONNECT': 'MMS',
+               'MARKET_PRICE_THRESHOLDS': 'MMS'
                }
 
 return_tables = list(names.keys())
@@ -111,7 +113,8 @@ data_url = {'DISPATCHLOAD': 'aemo_data_url',
             'TRADINGLOAD': 'aemo_data_url',
             'TRADINGPRICE': 'aemo_data_url',
             'TRADINGREGIONSUM': 'aemo_data_url',
-            'TRADINGINTERCONNECT': 'aemo_data_url'
+            'TRADINGINTERCONNECT': 'aemo_data_url',
+            'MARKET_PRICE_THRESHOLDS': 'aemo_data_url'
             }
 
 filterable_cols = ['DUID', 'REGIONID', 'STATIONID', 'PARTICIPANTID', 'STARTTYPE', 'SCHEDULE_TYPE', 'GENCONID',
@@ -229,7 +232,8 @@ table_columns = {
 
     'FCAS_4s_SCADA_MAP': ['ELEMENTNUMBER', 'MARKETNAME', 'ERROR'],
     'PLANTSTATS': ['Month', 'DUID', 'CapacityFactor', 'Volume', 'TRADING_VWAP', 'DISPATCH_VWAP',
-                   'NodalPeakCapacityFactor', 'Nodal90thPercentileCapacityFactor']}
+                   'NodalPeakCapacityFactor', 'Nodal90thPercentileCapacityFactor'],
+    'MARKET_PRICE_THRESHOLDS': ['EFFECTIVEDATE', 'VERSIONNO', 'VOLL', 'MARKETPRICEFLOOR']}
 
 table_primary_keys = {'DISPATCHCONSTRAINT': ['CONSTRAINTID', 'GENCONID_EFFECTIVEDATE', 'GENCONID_VERSIONNO',
                                              'SETTLEMENTDATE', 'INTERVENTION'],
@@ -264,7 +268,8 @@ table_primary_keys = {'DISPATCHCONSTRAINT': ['CONSTRAINTID', 'GENCONID_EFFECTIVE
                       'TRADINGPRICE': ['SETTLEMENTDATE', 'REGIONID'],
                       'TRADINGREGIONSUM': ['SETTLEMENTDATE', 'REGIONID'],
                       'TRADINGINTERCONNECT': ['SETTLEMENTDATE', 'INTERCONNECTORID'],
-                      'PLANTSTATS': ['Month', 'DUID']}
+                      'PLANTSTATS': ['Month', 'DUID'],
+                      'MARKET_PRICE_THRESHOLDS': ['EFFECTIVEDATE', 'VERSIONNO']}
 
 effective_date_group_col = {'SPDREGIONCONSTRAINT': ['GENCONID'],
                             'SPDCONNECTIONPOINTCONSTRAINT': ['GENCONID'],
@@ -278,7 +283,8 @@ effective_date_group_col = {'SPDREGIONCONSTRAINT': ['GENCONID'],
                             'DUDETAILSUMMARY': ['DUID'],
                             'MNSP_PEROFFER': ['LINKID'],
                             'MNSP_DAYOFFER': ['LINKID'],
-                            'DUDETAIL': ['DUID']}
+                            'DUDETAIL': ['DUID'],
+                            'MARKET_PRICE_THRESHOLDS': []}
 
 primary_date_columns = {'DISPATCHLOAD': 'SETTLEMENTDATE',
                         'TRADINGLOAD': 'SETTLEMENTDATE',
@@ -309,7 +315,8 @@ primary_date_columns = {'DISPATCHLOAD': 'SETTLEMENTDATE',
                         'MNSP_DAYOFFER': 'SETTLEMENTDATE',
                         'LOSSMODEL': 'EFFECTIVEDATE',
                         'LOSSFACTORMODEL': 'EFFECTIVEDATE',
-                        'FCAS_4s_SCADA_MAP': None}
+                        'FCAS_4s_SCADA_MAP': None,
+                        'MARKET_PRICE_THRESHOLDS': 'EFFECTIVEDATE'}
 
 months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
 
