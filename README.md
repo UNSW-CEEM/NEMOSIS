@@ -1,6 +1,4 @@
 # NEMOSIS
-[![DOI](https://zenodo.org/badge/138520962.svg)](https://zenodo.org/badge/latestdoi/138520962)
-
 
 # Use NEMOSIS without python
 Download the latest executable file [here](https://github.com/UNSW-CEEM/NEMOSIS/releases)
