@@ -13,7 +13,7 @@ from nemosis import data_fetch_methods
 start_time = '2017/01/01 00:00:00'
 end_time = '2017/01/01 00:05:00'
 table = 'DISPATCHPRICE'
-raw_data_cache = 'C:\Users\your_data_storage'
+raw_data_cache = 'C:/Users/your_data_storage'
 
 price_data = data_fetch_methods.dynamic_data_compiler(start_time, end_time, table, raw_data_cache)
 
