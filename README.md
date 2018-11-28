@@ -1,6 +1,9 @@
 # NEMOSIS
 Check out the wiki! This is the best source of info on [how to](https://github.com/UNSW-CEEM/NEMOSIS/wiki) use the tool, [worked examples](https://github.com/UNSW-CEEM/NEMOSIS/wiki/Worked-Examples), what [data is available](https://github.com/UNSW-CEEM/NEMOSIS/wiki/AEMO-Tables) and data [column definitions](https://github.com/UNSW-CEEM/NEMOSIS/wiki/Column-Summary).  
 
+# Get Updates, Ask Questions
+Join the NEMOSIS [forum group](https://groups.google.com/forum/#!forum/nemosis-discuss).
+
 # Use NEMOSIS without python
 Download the latest executable file [here](https://github.com/UNSW-CEEM/NEMOSIS/releases)
 
