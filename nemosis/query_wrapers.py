@@ -57,5 +57,6 @@ def drop_duplicates_by_primary_key(data, start_time, table_name):
 
 
 def convert_genconid_effectivedate_to_datetime_format(data, start_time, table_name):
-    data['GENCONID_EFFECTIVEDATE'] = pd.to_datetime(data['GENCONID_EFFECTIVEDATE'])
+    if 'GENCONID_EFFECTIVEDATE' in data.columns:
+        data['GENCONID_EFFECTIVEDATE'] = pd.to_datetime(data['GENCONID_EFFECTIVEDATE'])
     return data

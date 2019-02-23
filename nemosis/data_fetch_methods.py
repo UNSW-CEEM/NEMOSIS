@@ -26,6 +26,8 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location, s
         start_search = defaults.nem_data_model_start_time
     elif search_type == 'start_to_end':
         start_search = start_time
+    elif search_type == 'end':
+        start_search = end_time
 
     start_time = datetime.strptime(start_time, '%Y/%m/%d %H:%M:%S')
     end_time = datetime.strptime(end_time, '%Y/%m/%d %H:%M:%S')
