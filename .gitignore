@@ -3,6 +3,8 @@ nemosis/__pycache__/*
 venv/*
 build/*
 dist/*
+nemosis/build/*
+nemosis/dist/*
 gui.spec
 .pkl
 cd
