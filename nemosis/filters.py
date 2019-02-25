@@ -38,7 +38,7 @@ def filter_on_interval_datetime(data, start_time, end_time):
 # Not tested, just for nemlite integration.
 def filter_on_date_and_peroid(data, start_time, end_time):
     data = construct_interval_datetime_from_period_id(data)
-    data = data[(data['SETTLEMENTDATE']  > start_time  ) & (data['SETTLEMENTDATE'] - timedelta(minutes=30) <= end_time)]
+    data = data[(data['SETTLEMENTDATE'] > start_time) & (data['SETTLEMENTDATE'] - timedelta(minutes=30) <= end_time)]
     return data
 
 
@@ -62,10 +62,12 @@ def filter_on_column_value(data, filter_cols, filter_values):
             data = data[data[filter_col].isin(filter_values)]
     return data
 
+
 # Not tested, just for nemlite integration.
 def construct_interval_datetime_from_period_id(data):
     data['SETTLEMENTDATE'] = np.vectorize(date_2_interval_datetime)(data['SETTLEMENTDATE'], data['PERIODID'])
     return data
+
 
 # Not tested, just for nemlite integration.
 def date_2_interval_datetime(date, period):
