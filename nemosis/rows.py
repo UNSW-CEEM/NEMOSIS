@@ -291,9 +291,7 @@ class Query:
             for index in filter_selection:
                 self.filter_list[column].selection_set(index)
 
-
-
-class Merge:
+class Merge_as_of:
 
     def __init__(self, master, row_number, app):
         # Create all the widgets of a merge row.
@@ -318,6 +316,16 @@ class Merge:
             self.join_types.insert(tk.END, item)
         # Create a button that deletes the row.
         self.delete = ttk.Button(self.master, text=u"\u274C", command=lambda: app.delete_row(self.row_number))
+        # Create a entry box and list to provide the keys to the left result.
+        self.left_time_keys_label = ttk.Label(self.master, text='Left time keys')
+        self.left_time_keys_entry = ttk.Entry(self.master)
+        self.left_time_keys_entry.bind('<Return>', self.add_to_list_left_time)
+        self.left_time_key_list = tk.Listbox(self.master, selectmode=tk.MULTIPLE, exportselection=False, height=8)
+        # Create a entry box and list to provide the keys to the right result.
+        self.right_time_keys_label = ttk.Label(self.master, text='Right time keys')
+        self.right_time_keys_entry = ttk.Entry(self.master)
+        self.right_time_keys_entry.bind('<Return>', self.add_to_list_right_time)
+        self.right_time_key_list = tk.Listbox(self.master, selectmode=tk.MULTIPLE, exportselection=False, height=8)
         # Create a entry box and list to provide the keys to the left result.
         self.left_keys_label = ttk.Label(self.master, text='Left keys')
         self.left_keys_entry = ttk.Entry(self.master)
@@ -366,7 +374,21 @@ class Merge:
         entry_row = defaults.query_row_offset + defaults.row_height * self.row_number + defaults.names_internal_row
         custom_list_row = defaults.query_row_offset + defaults.row_height * self.row_number + defaults.internal_filter_row
 
-        left_keys_col = self.join_types.grid_info()['column'] + defaults.list_column_span
+        left_time_keys_col = self.join_types.grid_info()['column'] + defaults.list_column_span
+        self.left_time_keys_label.grid(row=label_row, column=left_time_keys_col, sticky=label_sticky, padx=defaults.standard_x_pad)
+        self.left_time_keys_entry.grid(row=entry_row, column=left_time_keys_col, rowspan=defaults.list_row_span,
+                                  columnspan=defaults.list_column_span, sticky='nw', padx=defaults.standard_x_pad)
+        self.left_time_key_list.grid(row=custom_list_row, column=left_time_keys_col, rowspan=defaults.list_row_span,
+                                columnspan=defaults.list_column_span,sticky='nw', padx=defaults.standard_x_pad)
+
+        right_time_keys_col = self.left_time_key_list.grid_info()['column'] + defaults.list_column_span
+        self.right_time_keys_label.grid(row=label_row, column=right_time_keys_col, sticky=label_sticky, padx=defaults.standard_x_pad)
+        self.right_time_keys_entry.grid(row=entry_row, column=right_time_keys_col, rowspan=defaults.list_row_span, columnspan=defaults.list_column_span, sticky='nw',
+                                  padx=defaults.standard_x_pad)
+        self.right_time_key_list.grid(row=custom_list_row, column=right_time_keys_col, rowspan=defaults.list_row_span,columnspan=defaults.list_column_span,
+                                sticky='nw', padx=defaults.standard_x_pad)
+
+        left_keys_col = self.right_time_key_list.grid_info()['column'] + defaults.list_column_span
         self.left_keys_label.grid(row=label_row, column=left_keys_col, sticky=label_sticky, padx=defaults.standard_x_pad)
         self.left_keys_entry.grid(row=entry_row, column=left_keys_col, rowspan=defaults.list_row_span,
                                   columnspan=defaults.list_column_span, sticky='nw', padx=defaults.standard_x_pad)
@@ -379,6 +401,293 @@ class Merge:
                                   padx=defaults.standard_x_pad)
         self.right_key_list.grid(row=custom_list_row, column=right_keys_col, rowspan=defaults.list_row_span,columnspan=defaults.list_column_span,
                                 sticky='nw', padx=defaults.standard_x_pad)
+
+    def add_to_list_left_time(self, evt):
+        # Add key from entry box to list.
+        self.left_time_key_list.insert(tk.END, evt.widget.get())
+        evt.widget.delete(0, 'end')
+
+    def add_to_list_right_time(self, evt):
+        # Add key from entry box to list.
+        self.right_time_key_list.insert(tk.END, evt.widget.get())
+        evt.widget.delete(0, 'end')
+
+    def add_to_list_left(self, evt):
+        # Add key from entry box to list.
+        self.left_key_list.insert(tk.END, evt.widget.get())
+        evt.widget.delete(0, 'end')
+
+    def add_to_list_right(self, evt):
+        # Add key from entry box to list.
+        self.right_key_list.insert(tk.END, evt.widget.get())
+        evt.widget.delete(0, 'end')
+
+    def empty(self):
+        # Delete the widgets of the merge row.
+        self.merge_label.destroy()
+        del self.merge_label
+        self.name.destroy()
+        del self.name
+        self.left_table_label.destroy()
+        del self.left_table_label
+        self.left_table.destroy()
+        del self.left_table
+        self.right_table_label.destroy()
+        del self.right_table_label
+        self.right_table.destroy()
+        del self.right_table
+        self.join_types_label.destroy()
+        del self.join_types_label
+        self.join_types.destroy()
+        del self.join_types
+        self.left_time_keys_label.destroy()
+        del self.left_time_keys_label
+        self.left_time_keys_entry.destroy()
+        del self.left_time_keys_entry
+        self.left_time_key_list.destroy()
+        del self.left_time_key_list
+        self.right_time_keys_label.destroy()
+        del self.right_time_keys_label
+        self.right_time_keys_entry.destroy()
+        del self.right_time_keys_entry
+        self.right_time_key_list.destroy()
+        del self.right_time_key_list
+        self.left_keys_label.destroy()
+        del self.left_keys_label
+        self.left_keys_entry.destroy()
+        del self.left_keys_entry
+        self.left_key_list.destroy()
+        del self.left_key_list
+        self.right_keys_label.destroy()
+        del self.right_keys_label
+        self.right_keys_entry.destroy()
+        del self.right_keys_entry
+        self.right_key_list.destroy()
+        del self.right_key_list
+        self.delete.destroy()
+        del self.delete
+
+    def state(self):
+        # Return the state of the row as a dictionary.
+        state = {}
+        state['type'] = 'merge_as_of'
+        state['name'] = self.name.get()
+        state['left_table'] = self.left_table.get()
+        state['right_table'] = self.right_table.get()
+        state['join_types'] = self.join_types.curselection()
+        state['left_time_key_list'] = {}
+        state['left_time_key_list']['contents'] = self.left_time_key_list.get(0, tk.END)
+        state['left_time_key_list']['selection'] = self.left_time_key_list.curselection()
+        state['right_time_key_list'] = {}
+        state['right_time_key_list']['contents'] = self.right_time_key_list.get(0, tk.END)
+        state['right_time_key_list']['selection'] = self.right_time_key_list.curselection()
+        state['left_key_list'] = {}
+        state['left_key_list']['contents'] = self.left_key_list.get(0, tk.END)
+        state['left_key_list']['selection'] = self.left_key_list.curselection()
+        state['right_key_list'] = {}
+        state['right_key_list']['contents'] = self.right_key_list.get(0, tk.END)
+        state['right_key_list']['selection'] = self.right_key_list.curselection()
+        return state
+
+    def load_state(self, state):
+        # Update the row to match the state provided.
+        self.name.insert(0, state['name'])
+        self.left_table.insert(0, state['left_table'])
+        self.right_table.insert(0, state['right_table'])
+        if len(state['join_types']) != 0:
+            self.join_types.selection_set(state['join_types'][0])
+
+        self.left_time_key_list.insert(0, *state['left_time_key_list']['contents'])
+        for index in state['left_time_key_list']['selection']:
+            self.left_time_key_list.selection_set(index)
+
+        self.right_time_key_list.insert(0, *state['right_time_key_list']['contents'])
+        for index in state['right_time_key_list']['selection']:
+            self.right_time_key_list.selection_set(index)
+
+        self.left_key_list.insert(0, *state['left_key_list']['contents'])
+        for index in state['left_key_list']['selection']:
+            self.left_key_list.selection_set(index)
+
+        self.right_key_list.insert(0, *state['right_key_list']['contents'])
+        for index in state['right_key_list']['selection']:
+            self.right_key_list.selection_set(index)
+
+
+class FilterVersionNo:
+
+    def __init__(self, master, row_number, app):
+        # Create all the widgets of a merge row.
+        self.master = master
+        self.row_number = row_number
+        # Create a label and entry box to name the result of filter
+        self.output_label = ttk.Label(self.master, text='Output table')
+        self.name = ttk.Entry(self.master)
+        self.name.config(width=26)
+        # Create entry box to provide the name of the input.
+        self.input_label = ttk.Label(self.master, text='Input table')
+        self.input = ttk.Entry(self.master)
+        self.input.config(width=26)
+        # Create a button that deletes the row.
+        self.delete = ttk.Button(self.master, text=u"\u274C", command=lambda: app.delete_row(self.row_number))
+        self.position()
+
+    def position(self):
+        self.output_label.grid(row=defaults.query_row_offset + defaults.row_height * self.row_number,
+                              column=0,
+                              pady=defaults.query_y_pad, padx=defaults.standard_x_pad, sticky='ws')
+        self.output_label.update()
+        self.name.grid(row=defaults.query_row_offset + defaults.row_height * self.row_number
+                           + defaults.names_internal_row, column=0, padx=defaults.standard_x_pad)
+        self.name.update()
+
+        self.input_label.grid(row=defaults.query_row_offset + defaults.row_height * self.row_number
+                                       + defaults.start_time_label_internal_row, column=0,
+                                   padx=defaults.standard_x_pad, sticky='ws')
+        self.input_label.update()
+        self.input.grid(row=defaults.query_row_offset + defaults.row_height * self.row_number
+                                 + defaults.start_time_internal_row, column=0, padx=defaults.standard_x_pad)
+        self.input.update()
+        self.delete.grid(row=defaults.query_row_offset + defaults.row_height * self.row_number
+                             + defaults.delete_button_internal_row, column=defaults.last_column,
+                         sticky='nw')
+        self.delete.update()
+
+    def empty(self):
+        # Delete the widgets of the merge row.
+        self.output_label.destroy()
+        del self.output_label
+        self.name.destroy()
+        del self.name
+        self.input_label.destroy()
+        del self.input_label
+        self.input.destroy()
+        del self.input
+        self.delete.destroy()
+        del self.delete
+
+    def state(self):
+        # Return the state of the row as a dictionary.
+        state = {}
+        state['type'] = 'filter_version_no'
+        state['name'] = self.name.get()
+        state['input'] = self.input.get()
+        return state
+
+    def load_state(self, state):
+        # Update the row to match the state provided.
+        self.name.insert(0, state['name'])
+        self.input.insert(0, state['input'])
+
+
+class Merge:
+
+    def __init__(self, master, row_number, app):
+        # Create all the widgets of a merge row.
+        self.master = master
+        self.row_number = row_number
+        # Create a label and entry box to name the result of the merge
+        self.merge_label = ttk.Label(self.master, text='Merge name')
+        self.name = ttk.Entry(self.master)
+        self.name.config(width=26)
+        # Create entry box to provide the name of the left result to merge.
+        self.left_table_label = ttk.Label(self.master, text='Left table')
+        self.left_table = ttk.Entry(self.master)
+        self.left_table.config(width=26)
+        # Create an entry box to provide the name of the right result to merge.
+        self.right_table_label = ttk.Label(self.master, text='Right table')
+        self.right_table = ttk.Entry(self.master)
+        self.right_table.config(width=26)
+        # Create a list to select the merge type from.
+        self.join_types_label = ttk.Label(self.master, text='Select join type')
+        self.join_types = tk.Listbox(self.master, exportselection=False, width=28)
+        for item in defaults.join_type:
+            self.join_types.insert(tk.END, item)
+        # Create a button that deletes the row.
+        self.delete = ttk.Button(self.master, text=u"\u274C",
+                                 command=lambda: app.delete_row(self.row_number))
+        # Create a entry box and list to provide the keys to the left result.
+        self.left_keys_label = ttk.Label(self.master, text='Left keys')
+        self.left_keys_entry = ttk.Entry(self.master)
+        self.left_keys_entry.bind('<Return>', self.add_to_list_left)
+        self.left_key_list = tk.Listbox(self.master, selectmode=tk.MULTIPLE, exportselection=False,
+                                        height=8)
+        # Create a entry box and list to provide the keys to the right result.
+        self.right_keys_label = ttk.Label(self.master, text='Right keys')
+        self.right_keys_entry = ttk.Entry(self.master)
+        self.right_keys_entry.bind('<Return>', self.add_to_list_right)
+        self.right_key_list = tk.Listbox(self.master, selectmode=tk.MULTIPLE, exportselection=False,
+                                         height=8)
+        # Position all the widgets.
+        self.position()
+
+    def position(self):
+        self.merge_label.grid(row=defaults.query_row_offset + defaults.row_height * self.row_number,
+                              column=0,
+                              pady=defaults.query_y_pad, padx=defaults.standard_x_pad, sticky='ws')
+        self.merge_label.update()
+        self.name.grid(row=defaults.query_row_offset + defaults.row_height * self.row_number
+                           + defaults.names_internal_row, column=0, padx=defaults.standard_x_pad)
+        self.name.update()
+        self.left_table_label.grid(row=defaults.query_row_offset + defaults.row_height * self.row_number
+                                       + defaults.start_time_label_internal_row, column=0,
+                                   padx=defaults.standard_x_pad)
+        self.left_table_label.update()
+        self.left_table.grid(row=defaults.query_row_offset + defaults.row_height * self.row_number
+                                 + defaults.start_time_internal_row, column=0,
+                             padx=defaults.standard_x_pad)
+        self.left_table.update()
+        self.right_table_label.grid(
+            row=defaults.query_row_offset + defaults.row_height * self.row_number
+                + defaults.end_time_label_internal_row, column=0,
+            padx=defaults.standard_x_pad)
+        self.right_table_label.update()
+        self.right_table.grid(row=defaults.query_row_offset + defaults.row_height * self.row_number
+                                  + defaults.end_time_internal_row, column=0,
+                              padx=defaults.standard_x_pad)
+        self.right_table.update()
+        self.join_types_label.grid(
+            row=defaults.query_row_offset + defaults.row_height * self.row_number,
+            column=1,
+            pady=defaults.query_y_pad, sticky='sw', padx=defaults.standard_x_pad)
+        self.join_types_label.update()
+        self.join_types.grid(row=defaults.query_row_offset + defaults.row_height * self.row_number
+                                 + defaults.table_list_internal_row, column=1,
+                             rowspan=defaults.list_row_span,
+                             columnspan=defaults.list_column_span, sticky='nw',
+                             padx=defaults.standard_x_pad)
+        self.join_types.update()
+        self.delete.grid(row=defaults.query_row_offset + defaults.row_height * self.row_number
+                             + defaults.delete_button_internal_row, column=defaults.last_column,
+                         sticky='nw')
+        self.delete.update()
+
+        label_row = defaults.query_row_offset + defaults.row_height * self.row_number
+        label_sticky = 'w'
+        entry_row = defaults.query_row_offset + defaults.row_height * self.row_number + defaults.names_internal_row
+        custom_list_row = defaults.query_row_offset + defaults.row_height * self.row_number + defaults.internal_filter_row
+
+        left_keys_col = self.join_types.grid_info()['column'] + defaults.list_column_span
+        self.left_keys_label.grid(row=label_row, column=left_keys_col, sticky=label_sticky,
+                                  padx=defaults.standard_x_pad)
+        self.left_keys_entry.grid(row=entry_row, column=left_keys_col, rowspan=defaults.list_row_span,
+                                  columnspan=defaults.list_column_span, sticky='nw',
+                                  padx=defaults.standard_x_pad)
+        self.left_key_list.grid(row=custom_list_row, column=left_keys_col,
+                                rowspan=defaults.list_row_span,
+                                columnspan=defaults.list_column_span, sticky='nw',
+                                padx=defaults.standard_x_pad)
+
+        right_keys_col = self.left_key_list.grid_info()['column'] + defaults.list_column_span
+        self.right_keys_label.grid(row=label_row, column=right_keys_col, sticky=label_sticky,
+                                   padx=defaults.standard_x_pad)
+        self.right_keys_entry.grid(row=entry_row, column=right_keys_col, rowspan=defaults.list_row_span,
+                                   columnspan=defaults.list_column_span, sticky='nw',
+                                   padx=defaults.standard_x_pad)
+        self.right_key_list.grid(row=custom_list_row, column=right_keys_col,
+                                 rowspan=defaults.list_row_span,
+                                 columnspan=defaults.list_column_span,
+                                 sticky='nw', padx=defaults.standard_x_pad)
 
     def add_to_list_left(self, evt):
         # Add key from entry box to list.

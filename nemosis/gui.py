@@ -171,9 +171,21 @@ class App(ttk.Frame):
         self.plus_merge.grid(row=0, column=3)
         self.plus_merge.update()
 
+        # Button to add extra merge.
+        self.plus_merge_as_of = ttk.Button(self.row_adder, text=u"\u2795" + ' Merge on most recent  ',
+                                           command=self.add_merge_as_of)
+        self.plus_merge_as_of.grid(row=0, column=4)
+        self.plus_merge_as_of.update()
+
+        # Button to add extra filter version no.
+        self.plus_filter_version_no = ttk.Button(self.row_adder, text=u"\u2795" + ' Highest version No. ',
+                                           command=self.add_filter_version_no)
+        self.plus_filter_version_no.grid(row=0, column=5)
+        self.plus_filter_version_no.update()
+
         # Button to run the app.
         self.run = ttk.Button(self.row_adder, text=u"\u25B6" + '  Run queries ', command=self.run_queries)
-        self.run.grid(row=0, column=4)
+        self.run.grid(row=0, column=6)
         self.run.update()
 
     def add_AEMO_query(self):
@@ -189,6 +201,16 @@ class App(ttk.Frame):
     def add_merge(self):
         # Function to add extra merge.
         self.rows.append(rows.Merge(self.frame.interior, len(self.rows), self))
+        self.replace_plus()
+
+    def add_merge_as_of(self):
+        # Function to add extra merge.
+        self.rows.append(rows.Merge_as_of(self.frame.interior, len(self.rows), self))
+        self.replace_plus()
+
+    def add_filter_version_no(self):
+        # Function to add extra merge.
+        self.rows.append(rows.FilterVersionNo(self.frame.interior, len(self.rows), self))
         self.replace_plus()
 
     def delete_row(self, row_number):
@@ -214,6 +236,11 @@ class App(ttk.Frame):
                     results[save_name] = self.run_query(row, raw_data_location)
                 elif type(row).__name__ == 'Merge':
                     results[save_name] = self.run_merge(row, results)
+                elif type(row).__name__ == 'Merge_as_of':
+                    results[save_name] = self.run_merge_as_of(row, results)
+                elif type(row).__name__ == 'FilterVersionNo':
+                    results[save_name] = self.run_filter_version_no(row, results)
+
                 results[save_name].to_csv(save_location + '\\' + save_name + '.csv', index=False,
                                           date_format='%Y/%m/%d %H:%M:%S')
             messagebox.showinfo('Finished', 'Your query has finished!')
@@ -268,6 +295,48 @@ class App(ttk.Frame):
         join_type = defaults.join_type[row.join_types.curselection()[0]]
         # Merge the results.
         result = pd.merge(left_table, right_table, join_type, left_on=left_keys, right_on=right_keys)
+        return result
+
+    def run_merge_as_of(self, row, results):
+        # Run an individual merge row.
+        # Get the name of the result to put on the left of the merge.
+        left_table_name = row.left_table.get()
+        # Get the result to put on the left of the merge.
+        left_table = results[left_table_name]
+        # Get the keys to use on the right result.
+        left_keys = [row.left_key_list.get(0, tk.END)[index] for index in row.left_key_list.curselection()]
+        # Get the keys to use on the right result.
+        left_time_keys = [row.left_time_key_list.get(0, tk.END)[index] for index in row.left_time_key_list.curselection()]
+        # Get the name of the result to put on the left of the merge.
+        right_table_name = row.right_table.get()
+        # Get the result to put on the right of the merge.
+        right_table = results[right_table_name]
+        # Get the keys to use on the right result.
+        right_keys = [row.right_key_list.get(0, tk.END)[index] for index in row.right_key_list.curselection()]
+        # Get the keys to use on the right result.
+        right_time_keys = [row.right_time_key_list.get(0, tk.END)[index] for index in row.right_time_key_list.curselection()]
+        # Get the join type to use.
+        join_type = defaults.join_type[row.join_types.curselection()[0]]
+        # Merge the results.
+        left_time_key = left_time_keys[0]
+        right_time_key = right_time_keys[0]
+        left_table[left_time_key] = pd.to_datetime(left_table[left_time_key])
+        right_table[right_time_key] = pd.to_datetime(right_table[right_time_key])
+        left_table = left_table.sort_values(left_time_key)
+        right_table = right_table.sort_values(right_time_key)
+        result = pd.merge_asof(left_table, right_table, left_on=left_time_key, right_on=right_time_key,
+                          left_by=left_keys, right_by=right_keys)
+        return result
+
+    def run_filter_version_no(self, row, results):
+        input_name = row.input.get()
+        input_table = results[input_name]
+        group_cols = []
+        for key_set in defaults.table_primary_keys.values():
+            group_cols += [col for col in key_set
+                           if ((col in input_table.columns) & (col != 'VERSIONNO') & (col not in group_cols))]
+        input_table = input_table.sort_values('VERSIONNO')
+        result = input_table.groupby(by=group_cols, as_index=False).last()
         return result
 
     def set_save_location(self):
@@ -335,10 +404,14 @@ class App(ttk.Frame):
 
             elif row['type'] == 'merge':
                 self.rows.append(rows.Merge(self.frame.interior, len(self.rows), self))
+            elif row['type'] == 'merge_as_of':
+                self.rows.append(rows.Merge_as_of(self.frame.interior, len(self.rows), self))
+            elif row['type'] == 'filter_version_no':
+                self.rows.append(rows.FilterVersionNo(self.frame.interior, len(self.rows), self))
             # Load the row state.
             self.rows[-1].load_state(row)
 
-        # Put the plus button at the buttom of all the rows.
+        # Put the plus button at the bottom of all the rows.
         self.replace_plus()
 
     def replace_plus(self):
