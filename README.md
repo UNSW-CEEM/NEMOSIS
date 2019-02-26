@@ -1,3 +1,6 @@
+
+## [New Release](https://github.com/UNSW-CEEM/NEMOSIS/releases)
+
 # NEMOSIS
 Check out the wiki! This is the best source of info on [how to](https://github.com/UNSW-CEEM/NEMOSIS/wiki) use the tool, [worked examples](https://github.com/UNSW-CEEM/NEMOSIS/wiki/Worked-Examples), what [data is available](https://github.com/UNSW-CEEM/NEMOSIS/wiki/AEMO-Tables) and data [column definitions](https://github.com/UNSW-CEEM/NEMOSIS/wiki/Column-Summary).  
 
