@@ -352,5 +352,6 @@ class TestCalcTradingLoad(unittest.TestCase):
         pass
 
     def test_calc_trading_load_simple(self):
-        custom_tables.trading_and_dispatch_cost()
+        pass
+        #custom_tables.trading_and_dispatch_cost()
 

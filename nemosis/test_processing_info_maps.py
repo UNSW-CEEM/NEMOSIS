@@ -52,7 +52,7 @@ class TestSearchTypeValidity(unittest.TestCase):
                 if table_name in ['GENCONDATA', 'SPDCONNECTIONPOINTCONSTRAINT', 'SPDINTERCONNECTORCONSTRAINT',
                                   'DUDETAILSUMMARY', 'LOSSMODEL', 'LOSSFACTORMODEL', 'MNSP_DAYOFFER',
                                   'MNSP_PEROFFER', 'MNSP_INTERCONNECTOR', 'INTERCONNECTOR', 'INTERCONNECTORCONSTRAINT',
-                                  'DUDETAIL']:
+                                  'DUDETAIL', 'MARKET_PRICE_THRESHOLDS']:
                     print('{} is known to contain duplicate entries and is exempted from this test, a finalise '
                           'data processing step is included in dynamic data fetch to clean up these duplicates.'
                           .format(table_name))
@@ -106,7 +106,7 @@ class TestSearchTypeValidity(unittest.TestCase):
 
     def test_last_contains_data_from_first(self):
         for table_name in processing_info_maps.search_type.keys():
-            if processing_info_maps.search_type[table_name] == 'last':
+            if processing_info_maps.search_type[table_name] == 'end':
                 start_test_window = defaults.nem_data_model_start_time
                 #start_test_window = '2018/01/01 00:00:00'
                 start_time = datetime.strptime(start_test_window, '%Y/%m/%d %H:%M:%S')
@@ -116,7 +116,7 @@ class TestSearchTypeValidity(unittest.TestCase):
                     start_search=start_search, start_time=start_time,
                     end_time=end_time, table_name=table_name, raw_data_location='E:/raw_aemo_data',
                     select_columns=None, date_filter=None,
-                    search_type='all')
+                    search_type='end')
                 first_data_table = data_tables[35].loc[:, defaults.table_primary_keys[table_name]]
                 last_data_table = data_tables[-1]
                 comp = pd.merge(first_data_table, last_data_table, 'left', defaults.table_primary_keys[table_name])
