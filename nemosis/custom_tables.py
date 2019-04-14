@@ -356,3 +356,31 @@ def trading_and_dispatch_cost():
 
     scada_and_regions.to_csv('C:/Users/user/Documents/dispatch_trading_cost.csv')
 
+
+def get_meter_data(start_time, end_time, table_name, raw_data_location, select_columns=None, filter_cols=None,
+                   filter_values=None):
+    end_time = datetime.strptime(end_time, '%Y/%m/%d %H:%M:%S') + timedelta(minutes=5)
+    end_time = end_time.strftime('%Y/%m/%d %H:%M:%S')
+    scada = data_fetch_methods.dynamic_data_compiler(start_time, end_time, 'DISPATCH_UNIT_SCADA', raw_data_location,
+                                                     select_columns=select_columns,
+                                                     filter_cols=filter_cols,
+                                                     filter_values=filter_values)
+    meter_data_30_min_intervals = estimate_meter_data(scada)
+    return meter_data_30_min_intervals
+
+
+def estimate_meter_data(scada):
+    scada1 = scada.copy()
+    scada1['SCADAVALUE'] = pd.to_numeric(scada1['SCADAVALUE'])
+    scada2 = scada.copy()
+    scada2['SCADAVALUE_n_plus_1'] = pd.to_numeric(scada1['SCADAVALUE'])
+    scada2['SETTLEMENTDATE'] = scada2['SETTLEMENTDATE'] - timedelta(minutes=5)
+    scada2 = scada2.loc[:, ('DUID', 'SETTLEMENTDATE', 'SCADAVALUE_n_plus_1')]
+    scada1 = pd.merge(scada1, scada2, how='inner', on=['SETTLEMENTDATE', 'DUID'])
+    scada1["Interval_average_power"] = (scada1['SCADAVALUE'] + scada1['SCADAVALUE_n_plus_1']) / 2
+    scada1["Interval_energy"] = scada1["Interval_average_power"] / 12
+    scada1 = scada1.set_index('SETTLEMENTDATE')
+    scada1 = scada1.groupby('DUID').resample('30T', label='right', closed='right').aggregate({'Interval_energy': 'sum'})
+    scada1.reset_index(inplace=True)
+    scada1.columns = ['DUID', 'SETTLEMENTDATE', 'Interval_energy']
+    return scada1
