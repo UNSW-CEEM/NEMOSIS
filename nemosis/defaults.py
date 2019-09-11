@@ -74,7 +74,8 @@ display_as_AMEO = ['DISPATCHLOAD', 'DUDETAILSUMMARY', 'DUDETAIL', 'DISPATCHCONST
 
 display_as_Custom = ['FCAS_4s_SCADA_MAP', 'PLANTSTATS']
 
-static_tables = ['ELEMENTS_FCAS_4_SECOND', 'VARIABLES_FCAS_4_SECOND', 'Generators and Scheduled Loads']
+static_tables = ['ELEMENTS_FCAS_4_SECOND',
+                 'VARIABLES_FCAS_4_SECOND', 'Generators and Scheduled Loads']
 
 static_table_url = {
     'ELEMENTS_FCAS_4_SECOND': 'https://www.aemo.com.au/-/media/Files/Electricity/NEM/Data/Ancillary_Services/Elements_FCAS.csv',
@@ -132,20 +133,20 @@ table_columns = {
                      'SEMIDISPATCHCAP', 'AVAILABILITY', 'RAISEREGENABLEMENTMAX', 'RAISEREGENABLEMENTMIN',
                      'LOWERREGENABLEMENTMAX', 'LOWERREGENABLEMENTMIN'],
 
-    'TRADINGLOAD':['SETTLEMENTDATE', 'DUID', 'INITIALMW', 'TOTALCLEARED', 'RAMPDOWNRATE', 'RAMPUPRATE', 'LOWER5MIN',
-                   'LOWER60SEC', 'LOWER6SEC', 'RAISE5MIN', 'RAISE60SEC', 'RAISE6SEC', 'LOWERREG', 'RAISEREG',
-                   'SEMIDISPATCHCAP', 'AVAILABILITY'],
+    'TRADINGLOAD': ['SETTLEMENTDATE', 'DUID', 'INITIALMW', 'TOTALCLEARED', 'RAMPDOWNRATE', 'RAMPUPRATE', 'LOWER5MIN',
+                    'LOWER60SEC', 'LOWER6SEC', 'RAISE5MIN', 'RAISE60SEC', 'RAISE6SEC', 'LOWERREG', 'RAISEREG',
+                    'SEMIDISPATCHCAP', 'AVAILABILITY'],
 
     'TRADINGPRICE': ['SETTLEMENTDATE', 'REGIONID', 'RRP', 'RAISE6SECRRP', 'RAISE60SECRRP',
-                      'RAISE5MINRRP', 'RAISEREGRRP', 'LOWER6SECRRP', 'LOWER60SECRRP', 'LOWERREGRRP', 'PRICE_STATUS'],
+                     'RAISE5MINRRP', 'RAISEREGRRP', 'LOWER6SECRRP', 'LOWER60SECRRP', 'LOWER5MINRRP', 'LOWERREGRRP', 'PRICE_STATUS'],
 
     'TRADINGREGIONSUM': ['SETTLEMENTDATE', 'REGIONID', 'TOTALDEMAND',
-                          'AVAILABLEGENERATION', 'AVAILABLELOAD', 'DEMANDFORECAST', 'DISPATCHABLEGENERATION',
-                          'DISPATCHABLELOAD', 'NETINTERCHANGE', 'EXCESSGENERATION', 'LOWER5MINLOCALDISPATCH',
-                          'LOWER60SECLOCALDISPATCH', 'LOWER6SECLOCALDISPATCH', 'RAISE5MINLOCALDISPATCH',
-                          'RAISE60SECLOCALDISPATCH', 'RAISE6SECLOCALDISPATCH', 'LOWERREGLOCALDISPATCH',
-                          'RAISEREGLOCALDISPATCH', 'INITIALSUPPLY', 'CLEAREDSUPPLY', 'TOTALINTERMITTENTGENERATION',
-                          'DEMAND_AND_NONSCHEDGEN', 'UIGF', 'SEMISCHEDULE_CLEAREDMW', 'SEMISCHEDULE_COMPLIANCEMW'],
+                         'AVAILABLEGENERATION', 'AVAILABLELOAD', 'DEMANDFORECAST', 'DISPATCHABLEGENERATION',
+                         'DISPATCHABLELOAD', 'NETINTERCHANGE', 'EXCESSGENERATION', 'LOWER5MINLOCALDISPATCH',
+                         'LOWER60SECLOCALDISPATCH', 'LOWER6SECLOCALDISPATCH', 'RAISE5MINLOCALDISPATCH',
+                         'RAISE60SECLOCALDISPATCH', 'RAISE6SECLOCALDISPATCH', 'LOWERREGLOCALDISPATCH',
+                         'RAISEREGLOCALDISPATCH', 'INITIALSUPPLY', 'CLEAREDSUPPLY', 'TOTALINTERMITTENTGENERATION',
+                         'DEMAND_AND_NONSCHEDGEN', 'UIGF', 'SEMISCHEDULE_CLEAREDMW', 'SEMISCHEDULE_COMPLIANCEMW'],
 
     'TRADINGINTERCONNECT': ['SETTLEMENTDATE', 'INTERCONNECTORID', 'MWFLOW', 'METEREDMWFLOW', 'MWLOSSES'],
 
@@ -167,7 +168,7 @@ table_columns = {
                  'DISPATCHTYPE', 'MAXCAPACITY', 'STARTTYPE', 'NORMALLYONFLAG', 'LASTCHANGED'],
 
     'DISPATCHPRICE': ['SETTLEMENTDATE', 'REGIONID', 'INTERVENTION', 'RRP', 'RAISE6SECRRP', 'RAISE60SECRRP',
-                      'RAISE5MINRRP', 'RAISEREGRRP', 'LOWER6SECRRP', 'LOWER60SECRRP', 'LOWER5MINRRP', 'LOWERREGRRP', 
+                      'RAISE5MINRRP', 'RAISEREGRRP', 'LOWER6SECRRP', 'LOWER60SECRRP', 'LOWER5MINRRP', 'LOWERREGRRP',
                       'PRICE_STATUS'],
 
     'SPDREGIONCONSTRAINT': ['REGIONID', 'EFFECTIVEDATE', 'VERSIONNO', 'GENCONID', 'FACTOR', 'LASTCHANGED', 'BIDTYPE'],
@@ -228,8 +229,8 @@ table_columns = {
     'VARIABLES_FCAS_4_SECOND': ['VARIABLENUMBER', 'VARIABLETYPE'],
 
     'Generators and Scheduled Loads': ['Participant', 'Station Name', 'Region', 'Dispatch Type', 'Category', 'Classification',
-                                 'Fuel Source - Primary', 'Fuel Source - Descriptor', 'Technology Type - Primary',
-                                 'Technology Type - Descriptor', 'Aggregation', 'DUID'],
+                                       'Fuel Source - Primary', 'Fuel Source - Descriptor', 'Technology Type - Primary',
+                                       'Technology Type - Descriptor', 'Aggregation', 'DUID'],
 
     'FCAS_4s_SCADA_MAP': ['ELEMENTNUMBER', 'MARKETNAME', 'ERROR'],
     'PLANTSTATS': ['Month', 'DUID', 'CapacityFactor', 'Volume', 'TRADING_VWAP', 'DISPATCH_VWAP',
@@ -319,7 +320,8 @@ primary_date_columns = {'DISPATCHLOAD': 'SETTLEMENTDATE',
                         'FCAS_4s_SCADA_MAP': None,
                         'MARKET_PRICE_THRESHOLDS': 'EFFECTIVEDATE'}
 
-months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
+months = ['01', '02', '03', '04', '05',
+          '06', '07', '08', '09', '10', '11', '12']
 
 nem_data_model_start_time = '2009/07/01 00:00:00'
 
