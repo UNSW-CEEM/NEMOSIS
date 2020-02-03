@@ -307,10 +307,10 @@ def plant_stats(start_time, end_time, table_name, raw_data_location, select_colu
 
 def trading_and_dispatch_cost():
     gen_region = data_fetch_methods.dynamic_data_compiler('2017/01/01 00:05:00', '2018/01/01 00:05:00',
-                                                          'DUDETAILSUMMARY', 'E:/raw_aemo_data',
+                                                          'DUDETAILSUMMARY', defaults.raw_data_cache,
                                                           select_columns=['START_DATE', 'END_DATE', 'DUID', 'REGIONID'])
     scada = data_fetch_methods.dynamic_data_compiler('2017/01/01 00:05:00', '2018/01/01 00:05:00',
-                                                     'DISPATCH_UNIT_SCADA', 'E:/raw_aemo_data')
+                                                     'DISPATCH_UNIT_SCADA', defaults.raw_data_cache)
 
     ix = pd.DatetimeIndex(start=datetime.strptime('2017/01/01 00:00:00', '%Y/%m/%d %H:%M:%S'),
                           end=datetime.strptime('2018/01/01 00:00:00', '%Y/%m/%d %H:%M:%S'),
@@ -329,7 +329,7 @@ def trading_and_dispatch_cost():
     scada = pd.concat(scada_list)
 
     dispatch_price = data_fetch_methods.dynamic_data_compiler('2017/01/01 00:00:00', '2018/01/01 00:05:00',
-                                                              'DISPATCHPRICE', 'E:/raw_aemo_data')
+                                                              'DISPATCHPRICE', defaults.raw_data_cache)
     dispatch_price = select_intervention_if_present(dispatch_price, defaults.table_primary_keys['DISPATCHPRICE'])
     gen_region = gen_region.sort_values('START_DATE')
     scada = scada.sort_values('SETTLEMENTDATE')

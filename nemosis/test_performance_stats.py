@@ -221,9 +221,9 @@ class TestMergeTables(unittest.TestCase):
             'DISPATCH_RRP': [99, 110,  300, 500],
             'TRADING_RRP': [99, math.nan, 300, math.nan],
             'TOTALDEMAND': [5000, 5010, 8000, 8700]})
-        ix = pd.DatetimeIndex(start=datetime.strptime('2015/01/01 00:00:00', '%Y/%m/%d %H:%M:%S'),
-                              end=datetime.strptime('2015/01/01 00:10:00', '%Y/%m/%d %H:%M:%S') - timedelta(minutes=5),
-                              freq='5T')
+        ix = pd.date_range(start=datetime.strptime('2015/01/01 00:00:00', '%Y/%m/%d %H:%M:%S'),
+                           end=datetime.strptime('2015/01/01 00:10:00', '%Y/%m/%d %H:%M:%S') - timedelta(minutes=5),
+                           freq='5T')
         self.timeseries_df = pd.DataFrame(index=ix)
         self.timeseries_df.reset_index(inplace=True)
         self.timeseries_df.columns = ['SETTLEMENTDATE']
@@ -288,10 +288,12 @@ class TestPlantStats(unittest.TestCase):
     def test_plant_stats(self):
         if os.path.isfile('C:/Users/user/Documents/plant_stats.csv'):
             t0 = time.time()
-            plant_types = data_fetch_methods.static_table_xl('', '', 'Generators and Scheduled Loads', 'E:/raw_aemo_data',
+            plant_types = data_fetch_methods.static_table_xl('', '', 'Generators and Scheduled Loads',
+                                                             defaults.raw_data_cache,
                                                              select_columns=['DUID', 'Fuel Source - Primary',
                                                                              'Region', 'Participant'])
-            plant_stats = custom_tables.plant_stats('2017/07/01 00:05:00', '2018/07/01 00:05:00', '', 'E:/raw_aemo_data')
+            plant_stats = custom_tables.plant_stats('2017/07/01 00:05:00', '2018/07/01 00:05:00', '',
+                                                    defaults.raw_data_cache)
             plant_stats = pd.merge(plant_stats, plant_types, 'left', 'DUID')
             plant_stats['TRADING_COST'] = plant_stats['Volume'] * plant_stats['TRADING_VWAP']
             plant_stats['DISPATCH_COST'] = plant_stats['Volume'] * plant_stats['DISPATCH_VWAP']
@@ -307,7 +309,7 @@ class TestPlantsAgainstExcelNumbers(unittest.TestCase):
         if os.path.isfile('E:/plants_stats_test_data/NYNGAN1/NYNGAN1_test.xlsx'):
             xls = pd.ExcelFile('E:/plants_stats_test_data/NYNGAN1/NYNGAN1_test.xlsx')
             table = pd.read_excel(xls, 'Plant_stats', dtype=str)
-            results = custom_tables.plant_stats('2017/01/01 00:00:00', '2017/02/01 00:00:00', '', 'E:/raw_aemo_data',
+            results = custom_tables.plant_stats('2017/01/01 00:00:00', '2017/02/01 00:00:00', '', defaults.raw_data_cache,
                                                 filter_cols=['DUID'], filter_values=[('NYNGAN1',)])
             for col in [col for col in table.columns if col not in ['Month', 'DUID']]:
                 table[col] = table[col].astype(float)
@@ -318,7 +320,7 @@ class TestPlantsAgainstExcelNumbers(unittest.TestCase):
         if os.path.isfile('E:/plants_stats_test_data/EILDON2/EILDON2_test.xlsx'):
             xls = pd.ExcelFile('E:/plants_stats_test_data/EILDON2/EILDON2_test.xlsx')
             table = pd.read_excel(xls, 'Plant_stats', dtype=str)
-            results = custom_tables.plant_stats('2018/01/01 00:00:00', '2018/02/01 00:00:00', '', 'E:/raw_aemo_data',
+            results = custom_tables.plant_stats('2018/01/01 00:00:00', '2018/02/01 00:00:00', '', defaults.raw_data_cache,
                                                 filter_cols=['DUID'], filter_values=[('EILDON2',)])
             for col in [col for col in table.columns if col not in ['Month', 'DUID']]:
                 table[col] = table[col].astype(float)

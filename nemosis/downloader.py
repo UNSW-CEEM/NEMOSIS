@@ -48,7 +48,7 @@ def download_unzip_csv(url, down_load_to, filename):
 def download_csv(url, down_load_to, path_and_name):
     """This function downloads a zipped csv using a url, extracts the csv and saves it a specified location and with
     a specified filename"""
-    r = requests.get(url)
+    r = requests.get(url, headers={'User-Agent': ''})
     with open(path_and_name, 'wb') as f:
         f.write(r.content)
 
@@ -56,7 +56,7 @@ def download_csv(url, down_load_to, path_and_name):
 def download_xl(url, down_load_to, path_and_name):
     """This function downloads a zipped csv using a url, extracts the csv and saves it a specified location and with
     a specified filename"""
-    r = requests.get(url)
+    r = requests.get(url, headers={'User-Agent': ''})
     with open(path_and_name, 'wb') as f:
         f.write(r.content)
 

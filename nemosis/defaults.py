@@ -77,9 +77,9 @@ display_as_Custom = ['FCAS_4s_SCADA_MAP', 'PLANTSTATS']
 static_tables = ['ELEMENTS_FCAS_4_SECOND', 'VARIABLES_FCAS_4_SECOND', 'Generators and Scheduled Loads']
 
 static_table_url = {
-    'ELEMENTS_FCAS_4_SECOND': 'https://www.aemo.com.au/-/media/Files/Electricity/NEM/Data/Ancillary_Services/Elements_FCAS.csv',
-    'VARIABLES_FCAS_4_SECOND': 'https://www.aemo.com.au/-/media/Files/CSV/820-0079-csv.csv',
-    'Generators and Scheduled Loads': 'https://www.aemo.com.au/-/media/Files/Electricity/NEM/Participant_Information/NEM-Registration-and-Exemption-List.xls'}
+    'ELEMENTS_FCAS_4_SECOND': 'https://aemo.com.au/-/media/files/electricity/nem/data/ancillary_services/elements_fcas.csv',
+    'VARIABLES_FCAS_4_SECOND': 'https://aemo.com.au/-/media/files/electricity/nem/settlements_and_payments/settlements/auction-reports/archive/820-0079-csv.csv',
+    'Generators and Scheduled Loads': 'https://www.aemo.com.au/-/media/files/electricity/nem/participant_information/nem-registration-and-exemption-list.xls'}
 
 aemo_data_url = 'http://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/MMSDM/{}/MMSDM_{}_{}/MMSDM_Historical_Data_SQLLoader/DATA/{}.zip'
 
@@ -167,7 +167,7 @@ table_columns = {
                  'DISPATCHTYPE', 'MAXCAPACITY', 'STARTTYPE', 'NORMALLYONFLAG', 'LASTCHANGED'],
 
     'DISPATCHPRICE': ['SETTLEMENTDATE', 'REGIONID', 'INTERVENTION', 'RRP', 'RAISE6SECRRP', 'RAISE60SECRRP',
-                      'RAISE5MINRRP', 'RAISEREGRRP', 'LOWER6SECRRP', 'LOWER60SECRRP', 'LOWER5MINRRP', 'LOWERREGRRP', 
+                      'RAISE5MINRRP', 'RAISEREGRRP', 'LOWER6SECRRP', 'LOWER60SECRRP', 'LOWER5MINRRP', 'LOWERREGRRP',
                       'PRICE_STATUS'],
 
     'SPDREGIONCONSTRAINT': ['REGIONID', 'EFFECTIVEDATE', 'VERSIONNO', 'GENCONID', 'FACTOR', 'LASTCHANGED', 'BIDTYPE'],
@@ -348,4 +348,4 @@ last_column = 100
 join_type = ['inner', 'left', 'right']
 
 # Testting settings
-raw_data_cache = 'E:/raw_aemo_data'
+raw_data_cache = '/raw_aemo_data'

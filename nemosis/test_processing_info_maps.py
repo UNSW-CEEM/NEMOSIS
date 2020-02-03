@@ -25,7 +25,7 @@ class TestSearchTypeValidity(unittest.TestCase):
                 start_search = datetime.strptime(start_test_window, '%Y/%m/%d %H:%M:%S')
                 data_tables = data_fetch_methods.dynamic_data_fetch_loop(
                     start_search=start_search, start_time=start_time,
-                    end_time=end_time, table_name=table_name, raw_data_location='E:/raw_aemo_data',
+                    end_time=end_time, table_name=table_name, raw_data_location=defaults.raw_data_cache,
                     select_columns=defaults.table_primary_keys[table_name], date_filter=None,
                     search_type='start_to_end')
                 all_data = pd.concat(data_tables, sort=False)
@@ -64,7 +64,7 @@ class TestSearchTypeValidity(unittest.TestCase):
                 start_search = datetime.strptime(start_test_window, '%Y/%m/%d %H:%M:%S')
                 data_tables = data_fetch_methods.dynamic_data_fetch_loop(
                     start_search=start_search, start_time=start_time,
-                    end_time=end_time, table_name=table_name, raw_data_location='E:/raw_aemo_data',
+                    end_time=end_time, table_name=table_name, raw_data_location=defaults.raw_data_cache,
                     select_columns=defaults.table_primary_keys[table_name], date_filter=None,
                     search_type='all')
                 all_data = pd.concat(data_tables, sort=False)
@@ -83,7 +83,7 @@ class TestSearchTypeValidity(unittest.TestCase):
                 start_search = datetime.strptime(start_test_window, '%Y/%m/%d %H:%M:%S')
                 data_tables = data_fetch_methods.dynamic_data_fetch_loop(
                     start_search=start_search, start_time=start_time,
-                    end_time=end_time, table_name=table_name, raw_data_location='E:/raw_aemo_data',
+                    end_time=end_time, table_name=table_name, raw_data_location=defaults.raw_data_cache,
                     select_columns=defaults.table_primary_keys[table_name], date_filter=None,
                     search_type='all')
                 all_data = pd.concat(data_tables, sort=False)
@@ -114,7 +114,7 @@ class TestSearchTypeValidity(unittest.TestCase):
                 start_search = datetime.strptime(start_test_window, '%Y/%m/%d %H:%M:%S')
                 data_tables = data_fetch_methods.dynamic_data_fetch_loop(
                     start_search=start_search, start_time=start_time,
-                    end_time=end_time, table_name=table_name, raw_data_location='E:/raw_aemo_data',
+                    end_time=end_time, table_name=table_name, raw_data_location=defaults.raw_data_cache,
                     select_columns=None, date_filter=None,
                     search_type='end')
                 first_data_table = data_tables[35].loc[:, defaults.table_primary_keys[table_name]]
