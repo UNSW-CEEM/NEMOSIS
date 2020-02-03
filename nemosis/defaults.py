@@ -350,4 +350,4 @@ last_column = 100
 join_type = ['inner', 'left', 'right']
 
 # Testting settings
-raw_data_cache = '/raw_aemo_data'
+raw_data_cache = 'raw_aemo_data'

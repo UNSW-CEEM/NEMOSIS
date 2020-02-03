@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="nemosis",
-    version="1.3.0",
+    version="1.3.1",
     author="Nicholas Gorman",
     author_email="n.gorman305@gmail.com",
     description="A tool for accessing AEMO data.",
