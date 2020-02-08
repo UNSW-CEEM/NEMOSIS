@@ -1,5 +1,6 @@
 
-### [Download windows GUI](https://github.com/UNSW-CEEM/NEMOSIS/releases)
+### Download windows GUI
+Choose the exe from the latest [release](https://github.com/UNSW-CEEM/NEMOSIS/releases)
 
 ### Documentation 
 + Check out the [wiki](https://github.com/UNSW-CEEM/NEMOSIS/wiki)
