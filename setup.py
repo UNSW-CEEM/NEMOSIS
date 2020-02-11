@@ -13,7 +13,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/UNSW-CEEM/osdan",
     packages=setuptools.find_packages(),
-    install_requires=['requests', 'joblib', 'pyarrow', 'feather-format', 'pandas'],
+    install_requires=['requests', 'joblib', 'pyarrow', 'feather-format', 'pandas', 'xlrd'],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU General Public License (GPL)",
