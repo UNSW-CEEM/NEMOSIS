@@ -1,16 +1,17 @@
 
-## [New Release](https://github.com/UNSW-CEEM/NEMOSIS/releases)
+### Download windows GUI
+Choose the exe from the latest [release](https://github.com/UNSW-CEEM/NEMOSIS/releases)
 
-# NEMOSIS
-Check out the wiki! This is the best source of info on [how to](https://github.com/UNSW-CEEM/NEMOSIS/wiki) use the tool, [worked examples](https://github.com/UNSW-CEEM/NEMOSIS/wiki/Worked-Examples), what [data is available](https://github.com/UNSW-CEEM/NEMOSIS/wiki/AEMO-Tables) and data [column definitions](https://github.com/UNSW-CEEM/NEMOSIS/wiki/Column-Summary).  
+### Documentation 
++ Check out the [wiki](https://github.com/UNSW-CEEM/NEMOSIS/wiki)
++ View [worked examples](https://github.com/UNSW-CEEM/NEMOSIS/wiki/Worked-Examples)
++ What [data is available](https://github.com/UNSW-CEEM/NEMOSIS/wiki/AEMO-Tables) and data [column definitions](https://github.com/UNSW-CEEM/NEMOSIS/wiki/Column-Summary)
++ Watch a [tutorial video](https://youtu.be/HEAOk056Bss).
 
-# Get Updates, Ask Questions
+### Get Updates, Ask Questions
 Join the NEMOSIS [forum group](https://groups.google.com/forum/#!forum/nemosis-discuss).
 
-# Use NEMOSIS without python
-Download the latest executable file [here](https://github.com/UNSW-CEEM/NEMOSIS/releases)
-
-# Use the source code
+### Use the python interface
 pip install nemosis
 
 ```
