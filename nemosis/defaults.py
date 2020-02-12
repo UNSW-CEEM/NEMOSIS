@@ -78,9 +78,9 @@ static_tables = ['ELEMENTS_FCAS_4_SECOND',
                  'VARIABLES_FCAS_4_SECOND', 'Generators and Scheduled Loads']
 
 static_table_url = {
-    'ELEMENTS_FCAS_4_SECOND': 'https://aemo.com.au/-/media/files/electricity/nem/data/ancillary_services/elements_fcas.csv',
-    'VARIABLES_FCAS_4_SECOND': 'https://aemo.com.au/-/media/files/electricity/nem/settlements_and_payments/settlements/auction-reports/archive/820-0079-csv.csv',
-    'Generators and Scheduled Loads': 'https://www.aemo.com.au/-/media/files/electricity/nem/participant_information/nem-registration-and-exemption-list.xls'}
+    'ELEMENTS_FCAS_4_SECOND': 'https://www.aemo.com.au/-/media/Files/Electricity/NEM/Data/Ancillary_Services/Elements_FCAS.csv',
+    'VARIABLES_FCAS_4_SECOND': 'https://www.aemo.com.au/-/media/files/electricity/nem/settlements_and_payments/settlements/auction-reports/archive/820-0079-csv.csv',
+    'Generators and Scheduled Loads': 'https://www.aemo.com.au/-/media/Files/Electricity/NEM/Participant_Information/NEM-Registration-and-Exemption-List.xls'}
 
 aemo_data_url = 'http://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/MMSDM/{}/MMSDM_{}_{}/MMSDM_Historical_Data_SQLLoader/DATA/{}.zip'
 
