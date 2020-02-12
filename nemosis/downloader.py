@@ -47,8 +47,8 @@ def download_unzip_csv(url, down_load_to, filename):
         print(e)
         raise
     finally:
-        if r.status_code >= 400 & r.status_code < 500:
-            raise requests.exceptions.HTTPError("Data location may have moved, or additional authentication is required")
+        if r.status_code >= 400 and r.status_code < 500:
+            raise requests.exceptions.HTTPError(f'HTTP {r.status_code}. Data location may have moved, or additional authentication is required')
 
     z = zipfile.ZipFile(io.BytesIO(r.content))
     z.extractall(down_load_to)
@@ -63,8 +63,8 @@ def download_csv(url, down_load_to, path_and_name):
         print(e)
         raise
     finally:
-        if r.status_code >= 400 & r.status_code < 500:
-            raise requests.exceptions.HTTPError("Data location may have moved, or additional authentication is required")
+        if r.status_code >= 400 and r.status_code < 500:
+            raise requests.exceptions.HTTPError(f'HTTP {r.status_code}. Data location may have moved, or additional authentication is required')
 
     with open(path_and_name, 'wb') as f:
         f.write(r.content)
@@ -79,8 +79,8 @@ def download_xl(url, down_load_to, path_and_name):
         print(e)
         raise
     finally:
-        if r.status_code >= 400 & r.status_code < 500:
-            raise requests.exceptions.HTTPError("Data location may have moved, or additional authentication is required")
+        if r.status_code >= 400 and r.status_code < 500:
+            raise requests.exceptions.HTTPError(f'HTTP {r.status_code}. Data location may have moved, or additional authentication is required')
 
     with open(path_and_name, 'wb') as f:
         f.write(r.content)
