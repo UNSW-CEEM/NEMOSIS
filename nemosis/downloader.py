@@ -3,7 +3,7 @@ import zipfile
 import io
 from nemosis import defaults
 
-# Windows Chrome for User-Agent request headers 
+# Windows Chrome for User-Agent request headers
 USR_AGENT_HEADER = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36'}
 
 def run(year, month, day, index, filename, down_load_to):

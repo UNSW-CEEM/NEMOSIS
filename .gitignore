@@ -21,3 +21,5 @@ nemosis/build/gui/out00-EXE.toc
 nemosis/build/gui/out00-Analysis.toc
 nemosis/build/gui/gui.exe.manifest
 nemosis/build/gui/base_library.zip
+env/*
+nemosis/raw_aemo_data/*
