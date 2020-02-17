@@ -115,7 +115,8 @@ def dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
         if glob.glob(full_filename):
             data = read_function[fformat](full_filename,
                                           columns=select_columns)
-
+        elif not glob.glob(path_and_name + '.csv'):
+            continue
         else:
             csv_file = glob.glob(path_and_name + '.csv')[0]
             if day is None:
@@ -143,7 +144,6 @@ def dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
                 data = read_function['csv'](csv_file, skiprows=[0],
                                             dtype=str, names=columns)
 
-            # read in data from other format
             # Remove files of the same name
             # Deals with case of corrupted files.
             if os.path.isfile(full_filename):

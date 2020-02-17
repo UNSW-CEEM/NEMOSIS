@@ -10,7 +10,7 @@ USR_AGENT_HEADER = {'User-Agent': ('Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
                                    + 'Chrome/80.0.3987.87 Safari/537.36')}
 
 # warning for HTTP 400s
-warning_400 = ('Data location may have moved,'
+warning_400 = ('Data is unavailable, its location has moved,'
                + ' or additional authentication is required')
 
 
@@ -30,8 +30,8 @@ def run(year, month, day, index, filename_stub, down_load_to):
     finally:
         status_code = status_code_return(url_formatted)
         if status_code >= 400 and status_code < 500:
-            raise requests.exceptions.HTTPError(f'HTTP {status_code}.'
-                                                + '{warning_400}')
+            raise requests.exceptions.HTTPError(f'HTTP {status_code}. '
+                                                + f'{warning_400}')
 
 
 def run_fcas4s(year, month, day, index, filename_stub, down_load_to):
@@ -48,19 +48,20 @@ def run_fcas4s(year, month, day, index, filename_stub, down_load_to):
     except Exception:
         try:
             download_unzip_csv(url_formatted_hist, down_load_to)
-        except Exception:
+        except Exception as e:
             # FCAS csvs are bundled in 30 minute bundles
             # Check if the csv exists before warning
             file_check = os.path.join(down_load_to, filename_stub + '.csv')
             if not os.path.isfile(file_check):
                 print('Warning {} not downloaded'.format(filename_stub))
+                print(e)
     finally:
         status_codes = [status_code_return(url_formatted_latest),
                         status_code_return(url_formatted_hist)]
-        http_codes = [x for x in status_codes if x >= 400 and x < 400]
+        http_codes = [x for x in status_codes if x >= 400 and x < 500]
         if http_codes:
-            raise requests.exceptions.HTTPError(f'HTTP {http_codes}.'
-                                                + '{warning_400}')
+            raise requests.exceptions.HTTPError(f'HTTP {http_codes}. '
+                                                + f'{warning_400}')
 
 
 def download_unzip_csv(url, down_load_to):
@@ -96,7 +97,7 @@ def download_xl(url, down_load_to, path_and_name):
     finally:
         if r.status_code >= 400 and r.status_code < 500:
             raise requests.exceptions.HTTPError(f'HTTP {r.status_code}. '
-                                                + '{warning_400}')
+                                                + f'{warning_400}')
 
     with open(path_and_name, 'wb') as f:
         f.write(r.content)
