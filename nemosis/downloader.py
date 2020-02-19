@@ -59,9 +59,8 @@ def run_fcas4s(year, month, day, index, filename_stub, down_load_to):
         status_codes = [status_code_return(url_formatted_latest),
                         status_code_return(url_formatted_hist)]
         http_codes = [x for x in status_codes if x >= 400 and x < 500]
-        if http_codes:
-            raise requests.exceptions.HTTPError(f'HTTP {http_codes}. '
-                                                + f'{warning_400}')
+        if len(http_codes) == 2:
+            print(f'HTTP {http_codes}. ' + f'{warning_400}')
 
 
 def download_unzip_csv(url, down_load_to):
