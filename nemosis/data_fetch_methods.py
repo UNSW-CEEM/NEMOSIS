@@ -9,7 +9,7 @@ from nemosis import filters, downloader, \
 def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location,
                           select_columns=None, filter_cols=None,
                           filter_values=None, fformat='feather',
-                          keep_csv=True):
+                          keep_csv=True, data_merge=True):
     """
     Downloads and compiles data for all dynamic tables.
     Refer to README for tables
@@ -25,6 +25,7 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location,
                               equal to index n filter value
         format (string): "feather" or "parquet" for storage and access
         keep_csv (bool): retains CSVs in cache
+        data_merge (bool): concatenate DataFrames.
 
     Returns:
         all_data (pd.Dataframe): All data concatenated.
@@ -58,26 +59,28 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location,
                                           table_name, raw_data_location,
                                           select_columns, date_filter,
                                           search_type, fformat=fformat,
-                                          keep_csv=keep_csv)
+                                          keep_csv=keep_csv,
+                                          data_merge=data_merge)
 
-    all_data = pd.concat(data_tables, sort=False)
+    if data_merge:
+        all_data = pd.concat(data_tables, sort=False)
 
-    finalise_data = processing_info_maps.finalise[table_name]
-    if finalise_data is not None:
-        for function in finalise_data:
-            all_data = function(all_data, start_time, table_name)
+        finalise_data = processing_info_maps.finalise[table_name]
+        if finalise_data is not None:
+            for function in finalise_data:
+                all_data = function(all_data, start_time, table_name)
 
-    if filter_cols is not None:
-        all_data = filters.filter_on_column_value(all_data, filter_cols,
-                                                  filter_values)
+        if filter_cols is not None:
+            all_data = filters.filter_on_column_value(all_data, filter_cols,
+                                                      filter_values)
 
-    return all_data
+        return all_data
 
 
 def dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
                             raw_data_location, select_columns,
                             date_filter, search_type, fformat='feather',
-                            keep_csv=True):
+                            keep_csv=True, data_merge=True):
     data_tables = []
     read_function = {'feather': pd.read_feather,
                      'csv': pd.read_csv,
@@ -166,8 +169,8 @@ def dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
             # Filter by the start and end time.
             if date_filter is not None:
                 data = date_filter(data, start_time, end_time)
-
-            data_tables.append(data)
+            if data_merge:
+                data_tables.append(data)
 
     return data_tables
 
