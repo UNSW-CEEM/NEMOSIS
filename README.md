@@ -6,7 +6,11 @@ Choose the exe from the latest [release](https://github.com/UNSW-CEEM/NEMOSIS/re
 + Check out the [wiki](https://github.com/UNSW-CEEM/NEMOSIS/wiki)
 + View [worked examples](https://github.com/UNSW-CEEM/NEMOSIS/wiki/Worked-Examples)
 + What [data is available](https://github.com/UNSW-CEEM/NEMOSIS/wiki/AEMO-Tables) and data [column definitions](https://github.com/UNSW-CEEM/NEMOSIS/wiki/Column-Summary)
-+ Watch a [tutorial video](https://youtu.be/HEAOk056Bss).
++ Watch a video, [Download generator dispatch data](https://youtu.be/HEAOk056Bss), [Download dispatch data by fuel type](https://youtu.be/aKEI7URiJlI).
++ Read our [paper](https://www.researchgate.net/publication/329798805_NEMOSIS_-_NEM_Open_Source_Information_Service_open-source_access_to_Australian_National_Electricity_Market_Data) introducting NEMOSIS
+
+### Support NEMOSIS
+Cite our [paper](https://www.researchgate.net/publication/329798805_NEMOSIS_-_NEM_Open_Source_Information_Service_open-source_access_to_Australian_National_Electricity_Market_Data) in your publications that use data from NEMOSIS.
 
 ### Get Updates, Ask Questions
 Join the NEMOSIS [forum group](https://groups.google.com/forum/#!forum/nemosis-discuss).
