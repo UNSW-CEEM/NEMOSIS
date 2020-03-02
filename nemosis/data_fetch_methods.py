@@ -9,7 +9,7 @@ from nemosis import filters, downloader, \
 def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location,
                           select_columns=None, filter_cols=None,
                           filter_values=None, fformat='feather',
-                          keep_csv=True, data_merge=True):
+                          keep_csv=True, data_merge=True, **kwargs):
     """
     Downloads and compiles data for all dynamic tables.
     Refer to README for tables
@@ -23,9 +23,10 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location,
         filter_cols (list): filter on columns
         filter_values (list): filter index n filter col such that values are
                               equal to index n filter value
-        format (string): "feather" or "parquet" for storage and access
+        fformat (string): "feather" or "parquet" for storage and access
         keep_csv (bool): retains CSVs in cache
         data_merge (bool): concatenate DataFrames.
+        **kwargs: additional arguments passed to the pd.to_{fformat}() function
 
     Returns:
         all_data (pd.Dataframe): All data concatenated.
@@ -60,7 +61,8 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location,
                                           select_columns, date_filter,
                                           search_type, fformat=fformat,
                                           keep_csv=keep_csv,
-                                          data_merge=data_merge)
+                                          data_merge=data_merge,
+                                          write_kwargs=kwargs)
 
     if data_merge:
         all_data = pd.concat(data_tables, sort=False)
@@ -80,7 +82,7 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location,
 def dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
                             raw_data_location, select_columns,
                             date_filter, search_type, fformat='feather',
-                            keep_csv=True, data_merge=True):
+                            keep_csv=True, data_merge=True, write_kwargs=None):
     data_tables = []
     read_function = {'feather': pd.read_feather,
                      'csv': pd.read_csv,
@@ -103,7 +105,7 @@ def dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
         if not glob.glob(full_filename):
             if day is None:
                 print(f'Downloading data for table {table_name}, '
-                      'year {year}, month {month}')
+                      + f'year {year}, month {month}')
             else:
                 print(f'Downloading data for table {table_name}, '
                       + f'year {year}, month {month}, day {day},'
@@ -118,10 +120,10 @@ def dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
         if glob.glob(full_filename):
             data = read_function[fformat](full_filename,
                                           columns=select_columns)
-        elif not glob.glob(path_and_name + '.csv'):
+        elif not glob.glob(path_and_name + '.[cC][sS][vV]'):
             continue
         else:
-            csv_file = glob.glob(path_and_name + '.csv')[0]
+            csv_file = glob.glob(path_and_name + '.[cC][sS][vV]')[0]
             if day is None:
                 print(f'Creating {fformat} file for '
                       + f'{table_name}, {year}, {month}.')
@@ -155,7 +157,7 @@ def dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
             to_function = {'feather': data.to_feather,
                            'csv': data.to_csv,
                            'parquet': data.to_parquet}
-            to_function[fformat](full_filename)
+            to_function[fformat](full_filename, **write_kwargs)
             if not keep_csv:
                 os.remove(csv_file)
 
