@@ -142,12 +142,12 @@ def dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
                            defaults.table_columns[table_name]
                            if column in headers]
                 data = read_function['csv'](csv_file, skiprows=[0],
-                                            dtype=str, usecols=columns)
+                                            usecols=columns)
                 data = data[:-1]
             else:
                 columns = defaults.table_columns[table_name]
                 data = read_function['csv'](csv_file, skiprows=[0],
-                                            dtype=str, names=columns)
+                                            names=columns)
 
             # Remove files of the same name
             # Deals with case of corrupted files.
