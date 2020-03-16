@@ -201,7 +201,7 @@ def static_table(start_time, end_time, table_name, raw_data_location, select_col
     return table
 
 
-def static_table_xl(table_name, raw_data_location, select_columns=None,
+def static_table_xl(start_time, end_time, table_name, raw_data_location, select_columns=None,
                     filter_cols=None, filter_values=None):
     path_and_name = (raw_data_location + '/'
                      + defaults.names[table_name] + '.xls')
