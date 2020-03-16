@@ -177,8 +177,8 @@ def dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
     return data_tables
 
 
-def static_table(start_time, end_time, table_name, raw_data_location, select_columns=None, filter_cols=None,
-                 filter_values=None):
+def static_table(table_name, raw_data_location, select_columns=None,
+                 filter_cols=None, filter_values=None):
     print('Retrieving static table {}.'.format(table_name))
     path_and_name = raw_data_location + '/' + defaults.names[table_name]
     if not os.path.isfile(path_and_name):
