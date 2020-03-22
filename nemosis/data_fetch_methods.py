@@ -211,13 +211,18 @@ def static_table_xl(start_time, end_time, table_name, raw_data_location, select_
         downloader.download_xl(defaults.static_table_url[table_name],
                                raw_data_location, path_and_name)
     xls = pd.ExcelFile(path_and_name)
-    table = pd.read_excel(xls, 'Generators and Scheduled Loads', dtype=str)
+    table = pd.read_excel(xls, defaults.reg_exemption_list_tabs[table_name], dtype=str)
     if select_columns is not None:
         table = table.loc[:, select_columns]
     if filter_cols is not None:
         table = filters.filter_on_column_value(table, filter_cols,
                                                filter_values)
-    table = table.drop_duplicates(['DUID'])
+    if table_name in defaults.table_primary_keys.keys():
+        primary_keys = defaults.table_primary_keys[table_name]
+        table = table.drop_duplicates(primary_keys)
+
+    table.dropna(axis=0, how='all', inplace=True)
+    table.dropna(axis=1, how='all', inplace=True)
 
     return table
 
