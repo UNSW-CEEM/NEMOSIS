@@ -14,7 +14,9 @@ def fcas4s_scada_match(start_time, end_time, table_name, raw_data_location, sele
         start_time, end_time, table_name_fcas4s, raw_data_location)
     # Pull in the 4 second fcas variable types.
     table_name_variable_types = 'VARIABLES_FCAS_4_SECOND'
-    fcas4s_variable_types = data_fetch_methods.static_table(table_name_variable_types, raw_data_location)
+    fcas4s_variable_types = data_fetch_methods.static_table(start_time, end_time,
+                                                            table_name_variable_types,
+                                                            raw_data_location)
 
     # Select the variable types that measure MW on an interconnector and Gen_MW from a dispatch unit.
     fcas4s_variable_types = fcas4s_variable_types[fcas4s_variable_types['VARIABLETYPE'].isin([
