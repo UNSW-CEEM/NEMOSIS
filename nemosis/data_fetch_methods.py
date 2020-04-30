@@ -118,8 +118,8 @@ def dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
         # If the data exists in the desired format, read it in
         # If it does not, then read in from the csv and save to desired format
         if glob.glob(full_filename) and fformat != 'csv':
-                data = read_function[fformat](full_filename,
-                                              columns=select_columns)
+            data = read_function[fformat](full_filename,
+                                          columns=select_columns)
         elif not glob.glob(path_and_name + '.[cC][sS][vV]'):
             continue
         else:
@@ -157,7 +157,11 @@ def dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
             to_function = {'feather': data.to_feather,
                            'csv': data.to_csv,
                            'parquet': data.to_parquet}
-            to_function[fformat](full_filename, **write_kwargs)
+            if fformat == 'feather':
+                to_function[fformat](full_filename, **write_kwargs)
+            else:
+                to_function[fformat](full_filename, index=False,
+                                     **write_kwargs)
             if not keep_csv:
                 os.remove(csv_file)
 
