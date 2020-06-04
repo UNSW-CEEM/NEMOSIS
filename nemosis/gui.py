@@ -10,6 +10,7 @@ import pickle
 import traceback
 import os
 import sys
+from pathlib import Path
 
 
 class VerticalScrollFrame(ttk.Frame):
@@ -230,6 +231,8 @@ class App(ttk.Frame):
         save_location = self.save_location.get()
         raw_data_location = self.raw_data_location.get()
         try:
+            Path(save_location).mkdir(parents=False, exist_ok=True)
+            Path(raw_data_location).mkdir(parents=False, exist_ok=True)
             for row in self.rows:
                 save_name = row.name.get()
                 if type(row).__name__ == 'Query':
