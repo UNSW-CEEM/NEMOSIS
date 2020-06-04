@@ -244,8 +244,8 @@ class App(ttk.Frame):
                 elif type(row).__name__ == 'FilterVersionNo':
                     results[save_name] = self.run_filter_version_no(row, results)
 
-                results[save_name].to_csv(save_location + '\\' + save_name + '.csv', index=False,
-                                          date_format='%Y/%m/%d %H:%M:%S')
+                results[save_name].to_csv(Path(save_location) / (save_name + '.csv'),
+                                          index=False, date_format='%Y/%m/%d %H:%M:%S')
             messagebox.showinfo('Finished', 'Your query has finished!')
         except Exception:
                 traceback.print_exc()
