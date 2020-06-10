@@ -1,4 +1,4 @@
-### Update to the latest version of NEMOSIS for compatibility with AEMO's new website!
+### Update to the latest version of NEMOSIS for fixes to file paths on mac.
 
 ### Download windows GUI
 Choose the exe from the latest [release](https://github.com/UNSW-CEEM/NEMOSIS/releases)
