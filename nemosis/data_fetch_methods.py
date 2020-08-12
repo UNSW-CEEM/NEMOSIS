@@ -102,7 +102,8 @@ def dynamic_data_fetch_loop(start_search, start_time, end_time, table_name, raw_
             if os.path.isfile(path_and_name_feather):
                 os.unlink(path_and_name_feather)
             # Write to feather file.
-            data.to_feather(path_and_name_feather)
+            if create_feather:
+                data.to_feather(path_and_name_feather)
             # Delete any columns in data that were not explicitly selected.
             if select_columns is not None:
                 for column in columns:
