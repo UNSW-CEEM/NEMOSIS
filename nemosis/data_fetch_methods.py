@@ -9,6 +9,10 @@ print(custom_tables.__file__)
 def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location, select_columns=None, filter_cols=None,
                           filter_values=None, create_feather=True):
     print('Compiling data for table {}.'.format(table_name))
+    if create_feather:
+        print("Creating a feather if not found.")
+    else:
+        print("Not creating a feather.")
     # Generic setup common to all tables.
     if select_columns is None:
         select_columns = defaults.table_columns[table_name]
