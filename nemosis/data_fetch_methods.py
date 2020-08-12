@@ -7,7 +7,7 @@ print(custom_tables.__file__)
 
 
 def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location, select_columns=None, filter_cols=None,
-                          filter_values=None):
+                          filter_values=None, create_feather=True):
     print('Compiling data for table {}.'.format(table_name))
     # Generic setup common to all tables.
     if select_columns is None:
@@ -34,7 +34,7 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location, s
     start_search = datetime.strptime(start_search, '%Y/%m/%d %H:%M:%S')
 
     data_tables = dynamic_data_fetch_loop(start_search, start_time, end_time, table_name, raw_data_location,
-                                          select_columns, date_filter, search_type)
+                                          select_columns, date_filter, search_type, create_feather)
 
     all_data = pd.concat(data_tables, sort=False)
 
@@ -50,7 +50,7 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location, s
 
 
 def dynamic_data_fetch_loop(start_search, start_time, end_time, table_name, raw_data_location, select_columns,
-                             date_filter, search_type):
+                             date_filter, search_type, create_feather=True):
     data_tables = []
     table_type = defaults.table_types[table_name]
     date_gen = processing_info_maps.date_gen[table_type](start_search, end_time)
@@ -75,10 +75,10 @@ def dynamic_data_fetch_loop(start_search, start_time, end_time, table_name, raw_
         if os.path.isfile(path_and_name_feather) and os.stat(path_and_name_feather).st_size > 2000:
             data = feather.read_dataframe(path_and_name_feather, select_columns)
         elif os.path.isfile(path_and_name):
-            if day is None:
+            if day is None and create_feather:
                 print('Creating feather file for faster future access of table {}, year {}, month {}.'.
                       format(table_name, year, month))
-            else:
+            elif create_feather:
                 print('Creating feather file for faster future access of table {}, year {}, month {}, day {}, time {}.'.
                       format(table_name, year, month, day, index))
             # Check what headers the data has.
