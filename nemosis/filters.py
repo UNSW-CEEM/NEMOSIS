@@ -24,8 +24,19 @@ def filter_on_settlementdate(data, start_time, end_time):
 
 
 def filter_on_timestamp(data, start_time, end_time):
-    data['TIMESTAMP'] = pd.to_datetime(data['TIMESTAMP'], format='%Y/%m/%d %H:%M:%S')
-    data = data[(data['TIMESTAMP'] > start_time) & (data['TIMESTAMP'] <= end_time)]
+    try:
+        data['TIMESTAMP'] = pd.to_datetime(data['TIMESTAMP'], format='%Y/%m/%d %H:%M:%S')
+    except Exception as e:
+        print(e)
+        # if date format is wrong, str may be too short
+        med_str_len = np.median(data['TIMESTAMP'].str.len())
+        not_data = data.loc[data['TIMESTAMP'].str.len() < med_str_len, :]
+        data = data.loc[data['TIMESTAMP'].str.len() >= med_str_len, :]
+        data['TIMESTAMP'] = pd.to_datetime(data['TIMESTAMP'], format='%Y/%m/%d %H:%M:%S')
+        print('Rows with incorrect data formats omitted')
+        print(not_data)
+    finally:
+        data = data[(data['TIMESTAMP'] > start_time) & (data['TIMESTAMP'] <= end_time)]
     return data
 
 

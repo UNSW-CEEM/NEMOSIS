@@ -437,13 +437,15 @@ class TestStaticTables(unittest.TestCase):
         pass
 
     def test_fcas_elements_table(self):
-        start_time = ''
-        end_time = ''
+        start_time = '2011/12/31 23:55:04'
+        end_time = '2012/01/01 00:05:00'
         table = 'ELEMENTS_FCAS_4_SECOND'
         cols = ['ELEMENTNUMBER', 'EMSNAME']
         filter_cols = ('ELEMENTNUMBER',)
-        data = data_fetch_methods.static_table( start_time, end_time, table, defaults.raw_data_cache,
-            select_columns=cols, filter_cols=filter_cols, filter_values=(['1'],))
+        data = data_fetch_methods.static_table(start_time, end_time,
+                                               table, defaults.raw_data_cache,
+                                               select_columns=cols, filter_cols=filter_cols,
+                                               filter_values=(['1'],))
         expected_length = 1
         expected_number_of_columns = 2
         self.assertEqual(expected_length, data.shape[0])
@@ -451,13 +453,15 @@ class TestStaticTables(unittest.TestCase):
         print('Passed')
 
     def test_fcas_variable_table(self):
-        start_time = ''
-        end_time = ''
+        start_time = '2011/12/31 23:55:04'
+        end_time = '2012/01/01 00:05:00'
         table = 'VARIABLES_FCAS_4_SECOND'
         cols = ['VARIABLENUMBER', 'VARIABLETYPE']
         filter_cols = ('VARIABLENUMBER',)
-        data = data_fetch_methods.static_table( start_time, end_time, table, defaults.raw_data_cache,
-            select_columns=cols, filter_cols=filter_cols, filter_values=(['2'],))
+        data = data_fetch_methods.static_table(start_time, end_time,
+                                               table, defaults.raw_data_cache,
+                                               select_columns=cols, filter_cols=filter_cols,
+                                                filter_values=(['2'],))
         expected_length = 1
         expected_number_of_columns = 2
         self.assertEqual(expected_length, data.shape[0])
@@ -465,12 +469,10 @@ class TestStaticTables(unittest.TestCase):
         print('Passed')
 
     def test_registration_list(self):
-        start_time = ''
-        end_time = ''
         table = 'Generators and Scheduled Loads'
         cols = ['DUID', 'Technology Type - Primary']
         filter_cols = ('DUID',)
-        data = data_fetch_methods.static_table_xl( start_time, end_time, table, defaults.raw_data_cache,
+        data = data_fetch_methods.static_table_xl(table, defaults.raw_data_cache,
             select_columns=cols, filter_cols=filter_cols, filter_values=(['AGLHAL'],))
         expected_length = 1
         expected_number_of_columns = 2
