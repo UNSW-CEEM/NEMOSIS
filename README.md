@@ -116,8 +116,8 @@ data_fetch_methods.dynamic_data_compiler(start_time, end_time, table, raw_data_c
                                          filter_values=(['SA1'],))
 ```
 
-#### Data from static csv tables
-Static csv tables do not include a time column and cannot be filtered by start and end time.
+#### Data from static tables
+Static tables do not include a time column and cannot be filtered by start and end time.
 
 You can view the dynamic tables available by printing the NEMOSIS default settings. To learn more about each static
 table visit the wiki.
@@ -140,12 +140,12 @@ gens = data_fetch_methods.static_table_xl(table='Generators and Scheduled Loads'
 The static_table function can be used to access the table 'VARIABLES_FCAS_4_SECOND'.
 
 ```
-fcas_variables = data_fetch_methods.static_table_xl(table='VARIABLES_FCAS_4_SECOND', raw_data_cache)
+fcas_variables = data_fetch_methods.static_table(table='VARIABLES_FCAS_4_SECOND', raw_data_cache)
 ```
 
 ##### static_table_FCAS_elements_file
 The static_table_FCAS_elements_file function can be used to access the table 'ELEMENTS_FCAS_4_SECOND'.
 
 ```
-fcas_variables = data_fetch_methods.ELEMENTS_FCAS_4_SECOND(table='ELEMENTS_FCAS_4_SECOND', raw_data_cache)
+fcas_variables = data_fetch_methods.static_table_FCAS_elements_file(table='ELEMENTS_FCAS_4_SECOND', raw_data_cache)
 ```
