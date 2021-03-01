@@ -46,7 +46,7 @@ raw_data_cache = 'C:/Users/your_data_storage'
 price_data = data_fetch_methods.dynamic_data_compiler(start_time, end_time, table, raw_data_cache)
 ```
 
-Using the dynamic_data_compiler's default settings this will download CSV data from AEMO's nemweb portal and save it to 
+Using the dynamic_data_compiler's default settings will download CSV data from AEMO's nemweb portal and save it to 
 the raw_data_cache directory, a feather file version of each CSV will also be create, feather files are faster to read 
 from disk, this means subsequent dynamic_data_compiler calls that require the cached data will be faster.
 
@@ -64,7 +64,7 @@ price_data = data_fetch_methods.dynamic_data_compiler(start_time, end_time, tabl
 If the option fformat='parquet' is provided then no feather files will be created, and a parquet file will be used instead. 
 While feather might have faster read/write, parquet has excellent compression characteristics and good compatability 
 with packages for handling large on-memory/cluster datasets (e.g. Dask). This helps with local storage 
-(especially for Causer Pays data) and file size for version control. This may be useful if your using NEMOSIS to
+(especially for Causer Pays data) and file size for version control. This may be useful if you're using NEMOSIS to
 build the data cache but then processing the cache using other packages.
 
 ```
@@ -80,7 +80,7 @@ price_data = data_fetch_methods.dynamic_data_compiler(start_time, end_time, tabl
                                                       keep_csv=False)
 ```
 
-If just using the dynamic_data_compiler to build the cache, the process can be sped up by setting merge_data=False, this
+If you're just using the dynamic_data_compiler to build the cache, the process can be sped up by setting merge_data=False, this
 will download and build the cache but not merge the results from each cache file, in this case a None value will be 
 returned.
 
@@ -112,8 +112,7 @@ In the example below the table will be filter to just rows where REGIONID == 'SA
 
 ```
 data_fetch_methods.dynamic_data_compiler(start_time, end_time, table, raw_data_cache,
-                                         filter_cols=['REGIONID', 'SETTLEMENTDATE', 'RRP']
-                                         filter_values=(['SA1'],))
+                                         filter_cols=['REGIONID'], filter_values=(['SA1'],))
 ```
 
 #### Data from static tables
