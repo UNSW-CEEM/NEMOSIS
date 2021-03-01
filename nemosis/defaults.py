@@ -66,6 +66,8 @@ table_types = {'FCAS Providers': 'STATICXL',
                'MARKET_PRICE_THRESHOLDS': 'MMS'
                }
 
+dynamic_tables = [table for table, type in table_types.items() if type in ['MMS', 'FCAS']]
+
 return_tables = list(names.keys())
 
 display_as_AMEO = ['FCAS Providers', 'DISPATCHLOAD', 'DUDETAILSUMMARY', 'DUDETAIL', 'DISPATCHCONSTRAINT', 'GENCONDATA', 'DISPATCH_UNIT_SCADA',
@@ -82,7 +84,7 @@ static_tables = ['ELEMENTS_FCAS_4_SECOND',
                  'FCAS Providers']
 
 static_table_url = {
-    'ELEMENTS_FCAS_4_SECOND': 'https://www.aemo.com.au/-/media/Files/Electricity/NEM/Data/Ancillary_Services/Elements_FCAS.csv',
+    'ELEMENTS_FCAS_4_SECOND': 'https://www.nemweb.com.au/Reports/Current/Causer_Pays_Elements/',
     'VARIABLES_FCAS_4_SECOND': 'https://www.aemo.com.au/-/media/files/electricity/nem/settlements_and_payments/settlements/auction-reports/archive/820-0079-csv.csv',
     'Generators and Scheduled Loads': 'https://www.aemo.com.au/-/media/Files/Electricity/NEM/Participant_Information/NEM-Registration-and-Exemption-List.xls',
     'FCAS Providers': 'https://www.aemo.com.au/-/media/Files/Electricity/NEM/Participant_Information/NEM-Registration-and-Exemption-List.xls'}
@@ -187,8 +189,8 @@ table_columns = {
                                     'LASTCHANGED'],
 
     'BIDPEROFFER_D': ['DUID', 'BANDAVAIL1', 'BANDAVAIL2', 'BANDAVAIL3', 'BANDAVAIL4', 'BANDAVAIL5', 'BANDAVAIL6',
-                      'BANDAVAIL7', 'BANDAVAIL8', 'BANDAVAIL9', 'BANDAVAIL10', 'MAXAVAIL', 'RAMPUPRATE',
-                      'RAMPDOWNRATE', 'BIDTYPE', 'SETTLEMENTDATE', 'ENABLEMENTMIN', 'ENABLEMENTMAX', 'LOWBREAKPOINT',
+                      'BANDAVAIL7', 'BANDAVAIL8', 'BANDAVAIL9', 'BANDAVAIL10', 'MAXAVAIL', 'BIDTYPE', 'SETTLEMENTDATE',
+                      'ENABLEMENTMIN', 'ENABLEMENTMAX', 'LOWBREAKPOINT',
                       'HIGHBREAKPOINT', 'INTERVAL_DATETIME', 'OFFERDATE'],
 
     'DISPATCHINTERCONNECTORRES': ['SETTLEMENTDATE', 'INTERCONNECTORID', 'DISPATCHINTERVAL', 'INTERVENTION', 'MWFLOW',
@@ -276,7 +278,7 @@ table_primary_keys = {'DISPATCHCONSTRAINT': ['CONSTRAINTID', 'GENCONID_EFFECTIVE
                       'FCAS_4_SECOND': ['TIMESTAMP', 'ELEMENTNUMBER', 'VARIABLENUMBER'],
                       'ELEMENTS_FCAS_4_SECOND': ['ELEMENTNUMBER'],
                       'VARIABLES_FCAS_4_SECOND': ['VARIABLENUMBER', 'VARIABLETYPE'],
-                      'Generators and Scheduled Loads': ['DUID', 'Physical Unit No.'],
+                      'Generators and Scheduled Loads': ['DUID'],
                       'FCAS Providers': ['DUID', 'Bid Type'],
                       'FCAS_4s_SCADA_MAP': ['ELEMENTNUMBER', 'MARKETNAME'],
                       'TRADINGLOAD': ['SETTLEMENTDATE', 'DUID'],

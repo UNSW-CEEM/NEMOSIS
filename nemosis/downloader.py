@@ -1,5 +1,6 @@
 import os
 import requests
+from bs4 import BeautifulSoup
 import zipfile
 import io
 from nemosis import defaults
@@ -8,10 +9,6 @@ from nemosis import defaults
 USR_AGENT_HEADER = {'User-Agent': ('Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
                                    + ' AppleWebKit/537.36 (KHTML, like Gecko) '
                                    + 'Chrome/80.0.3987.87 Safari/537.36')}
-
-# warning for HTTP 400s
-warning_400 = ('Data is unavailable, its location has moved,'
-               + ' or additional authentication is required')
 
 
 def run(year, month, day, index, filename_stub, down_load_to):
@@ -26,12 +23,6 @@ def run(year, month, day, index, filename_stub, down_load_to):
         status_code = download_unzip_csv(url_formatted, down_load_to)
     except Exception:
         print('Warning {} not downloaded'.format(filename_stub))
-        raise
-    finally:
-        status_code = status_code_return(url_formatted)
-        if status_code >= 400 and status_code < 500:
-            raise requests.exceptions.HTTPError(f'HTTP {status_code}. '
-                                                + f'{warning_400}')
 
 
 def run_fcas4s(year, month, day, index, filename_stub, down_load_to):
@@ -54,13 +45,6 @@ def run_fcas4s(year, month, day, index, filename_stub, down_load_to):
             file_check = os.path.join(down_load_to, filename_stub + '.csv')
             if not os.path.isfile(file_check):
                 print('Warning {} not downloaded'.format(filename_stub))
-                print(e)
-    finally:
-        status_codes = [status_code_return(url_formatted_latest),
-                        status_code_return(url_formatted_hist)]
-        http_codes = [x for x in status_codes if x >= 400 and x < 500]
-        if len(http_codes) == 2:
-            print(f'HTTP {http_codes}. ' + f'{warning_400}')
 
 
 def download_unzip_csv(url, down_load_to):
@@ -83,21 +67,24 @@ def download_csv(url, down_load_to, path_and_name):
         f.write(r.content)
 
 
+def download_elements_file(url, down_load_to, path_and_name):
+    page = requests.get(url)
+    text = page.text
+    soup = BeautifulSoup(text, "html.parser")
+    links = soup.find_all('a')
+    last_file_name = links[-1].text
+    link = url + last_file_name
+    r = requests.get(link, headers=USR_AGENT_HEADER)
+    with open(path_and_name, 'wb') as f:
+        f.write(r.content)
+
+
 def download_xl(url, down_load_to, path_and_name):
     """
     This function downloads a zipped csv using a url, extracts the csv and
     saves it a specified location
     """
-    try:
-        r = requests.get(url, headers=USR_AGENT_HEADER)
-    except requests.exceptions.RequestException as e:
-        print(e)
-        raise
-    finally:
-        if r.status_code >= 400 and r.status_code < 500:
-            raise requests.exceptions.HTTPError(f'HTTP {r.status_code}. '
-                                                + f'{warning_400}')
-
+    r = requests.get(url, headers=USR_AGENT_HEADER)
     with open(path_and_name, 'wb') as f:
         f.write(r.content)
 

@@ -58,7 +58,6 @@ class TestSearchTypeValidity(unittest.TestCase):
                           .format(table_name))
                     continue
                 start_test_window = defaults.nem_data_model_start_time
-                #start_test_window = '2018/01/01 00:00:00'
                 start_time = datetime.strptime(start_test_window, '%Y/%m/%d %H:%M:%S')
                 end_time = datetime.strptime('2018/01/01 00:00:00', '%Y/%m/%d %H:%M:%S')
                 start_search = datetime.strptime(start_test_window, '%Y/%m/%d %H:%M:%S')
