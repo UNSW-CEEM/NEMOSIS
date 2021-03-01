@@ -133,19 +133,19 @@ print(defaults.static_tables)
 The static_table_xl function can be used to access the tables 'Generators and Scheduled Loads' and 'FCAS Providers'.
 
 ```
-gens = data_fetch_methods.static_table_xl(table='Generators and Scheduled Loads', raw_data_cache)
+gens = data_fetch_methods.static_table_xl('Generators and Scheduled Loads', raw_data_cache)
 ```
 
 ##### static_table
 The static_table function can be used to access the table 'VARIABLES_FCAS_4_SECOND'.
 
 ```
-fcas_variables = data_fetch_methods.static_table(table='VARIABLES_FCAS_4_SECOND', raw_data_cache)
+fcas_variables = data_fetch_methods.static_table('VARIABLES_FCAS_4_SECOND', raw_data_cache)
 ```
 
 ##### static_table_FCAS_elements_file
 The static_table_FCAS_elements_file function can be used to access the table 'ELEMENTS_FCAS_4_SECOND'.
 
 ```
-fcas_variables = data_fetch_methods.static_table_FCAS_elements_file(table='ELEMENTS_FCAS_4_SECOND', raw_data_cache)
+fcas_variables = data_fetch_methods.static_table_FCAS_elements_file('ELEMENTS_FCAS_4_SECOND', raw_data_cache)
 ```
