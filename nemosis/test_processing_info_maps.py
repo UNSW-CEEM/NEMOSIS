@@ -18,16 +18,14 @@ class TestSearchTypeValidity(unittest.TestCase):
         for table_name in processing_info_maps.search_type.keys():
             if processing_info_maps.search_type[table_name] == 'start_to_end':
                 print('Validating start_to_end type for table {}'.format(table_name))
-                start_test_window = '2018/01/01 00:00:00'
-                start_time = datetime.strptime(start_test_window, '%Y/%m/%d %H:%M:%S')
+                start_time = datetime.strptime('2018/01/01 00:00:00', '%Y/%m/%d %H:%M:%S')
                 end_time = datetime.strptime('2018/03/01 00:00:00', '%Y/%m/%d %H:%M:%S')
                 if table_name == 'FCAS_4_SECOND':
                     start_test_window = self.start_day
                     start_time = self.start_day
                     end_time = self.start_day + timedelta(days=1)
-                start_search = start_test_window
                 data_tables = data_fetch_methods.dynamic_data_fetch_loop(
-                    start_search=start_search, start_time=start_time,
+                    start_search=start_time, start_time=start_time,
                     end_time=end_time, table_name=table_name, raw_data_location=defaults.raw_data_cache,
                     select_columns=defaults.table_primary_keys[table_name], date_filter=None,
                     keep_csv=False, search_type='start_to_end')
