@@ -9,7 +9,9 @@ from nemosis import filters, downloader, \
 def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location,
                           select_columns=None, filter_cols=None,
                           filter_values=None, fformat='feather',
-                          keep_csv=True, data_merge=True, **kwargs):
+                          keep_csv=True, data_merge=True,
+                          parse_data_types=True,
+                          **kwargs):
     """
     Downloads and compiles data for all dynamic tables.
     Refer to README for tables
@@ -26,6 +28,8 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location,
         fformat (string): "csv", "feather" or "parquet" for storage and access
         keep_csv (bool): retains CSVs in cache
         data_merge (bool): concatenate DataFrames.
+        parse_data_types (bool): infers data types of columns when reading 
+                                 data, default True for CLI use.
         **kwargs: additional arguments passed to the pd.to_{fformat}() function
 
     Returns:
@@ -62,6 +66,7 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location,
                                           search_type, fformat=fformat,
                                           keep_csv=keep_csv,
                                           data_merge=data_merge,
+                                          parse_data_types=parse_data_types,
                                           write_kwargs=kwargs)
 
     if data_merge:
@@ -75,14 +80,15 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location,
         if filter_cols is not None:
             all_data = filters.filter_on_column_value(all_data, filter_cols,
                                                       filter_values)
-
         return all_data
 
 
 def dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
                             raw_data_location, select_columns,
                             date_filter, search_type, fformat='feather',
-                            keep_csv=True, data_merge=True, write_kwargs={}):
+                            keep_csv=True, data_merge=True,
+                            parse_data_types=True,
+                            write_kwargs={}):
     data_tables = []
     read_function = {'feather': pd.read_feather,
                      'csv': pd.read_csv,
@@ -93,8 +99,8 @@ def dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
 
     for year, month, day, index in date_gen:
         data = None
-        # Write the file names and paths
-        # for where the data is stored in the cache.
+        # Gather the file names and paths for where 
+        # the data is stored in the cache.
         filename_stub, path_and_name = \
             processing_info_maps.write_filename[table_type](table_name, month,
                                                             year, day, index,
@@ -130,6 +136,10 @@ def dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
             else:
                 print(f'Creating {fformat} file for '
                       + f'{table_name}, {year}, {month}, {day}, {index}.')
+            # if parse_data_types is True, infer, otherwise read in as str
+            data_type = str
+            if parse_data_types:
+                data_type = None
             # Check what headers the data has.
             if defaults.table_types[table_name] == 'MMS':
                 headers = read_function['csv'](csv_file,
@@ -142,12 +152,12 @@ def dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
                            defaults.table_columns[table_name]
                            if column in headers]
                 data = read_function['csv'](csv_file, skiprows=[0],
-                                            usecols=columns, dtype=str)
+                                            usecols=columns, dtype=data_type)
                 data = data[:-1]
             else:
                 columns = defaults.table_columns[table_name]
                 data = read_function['csv'](csv_file, skiprows=[0],
-                                            names=columns, dtype=str)
+                                            names=columns, dtype=data_type)
 
             # Remove files of the same name
             # Deals with case of corrupted files.
@@ -186,11 +196,13 @@ def dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
 def static_table_wrapper_for_gui(start_time, end_time, table_name,
                                  raw_data_location, select_columns=None,
                                  filter_cols=None, filter_values=None):
-    table = static_table(table_name, raw_data_location, select_columns, filter_cols, filter_values)
+    table = static_table(table_name, raw_data_location, select_columns,
+                         filter_cols, filter_values)
     return table
 
 
-def static_table(table_name, raw_data_location, select_columns=None, filter_cols=None, filter_values=None):
+def static_table(table_name, raw_data_location, select_columns=None,
+                 filter_cols=None, filter_values=None):
     print('Retrieving static table {}.'.format(table_name))
     path_and_name = raw_data_location + '/' + defaults.names[table_name]
     if not os.path.isfile(path_and_name):
@@ -213,21 +225,29 @@ def static_table(table_name, raw_data_location, select_columns=None, filter_cols
     return table
 
 
-def static_table_FCAS_elements_file_wrapper_for_gui(start_time, end_time, table_name,
-                                 raw_data_location, select_columns=None,
-                                 filter_cols=None, filter_values=None):
-    table = static_table_FCAS_elements_file(table_name, raw_data_location, select_columns, filter_cols, filter_values)
+def static_table_FCAS_elements_file_wrapper_for_gui(start_time, 
+                                                    end_time, table_name,
+                                                    raw_data_location,
+                                                    select_columns=None,
+                                                    filter_cols=None,
+                                                    filter_values=None):
+    table = static_table_FCAS_elements_file(table_name, raw_data_location,
+                                            select_columns, filter_cols,
+                                            filter_values)
     return table
 
 
-def static_table_FCAS_elements_file(table_name, raw_data_location, select_columns=None, filter_cols=None,
+def static_table_FCAS_elements_file(table_name, raw_data_location,
+                                    select_columns=None, filter_cols=None,
                                     filter_values=None):
     print('Retrieving static table {}.'.format(table_name))
     path_and_name = raw_data_location + '/' + defaults.names[table_name]
     if not os.path.isfile(path_and_name):
         print('Downloading data for table {}.'.format(table_name))
-        downloader.download_elements_file(defaults.static_table_url[table_name],
-                                raw_data_location, path_and_name)
+        downloader.download_elements_file(
+            defaults.static_table_url[table_name],
+            raw_data_location, path_and_name
+        )
 
     table = pd.read_csv(raw_data_location + '/' + defaults.names[table_name],
                         dtype=str,
@@ -247,11 +267,13 @@ def static_table_FCAS_elements_file(table_name, raw_data_location, select_column
 def static_table_xl_wrapper_for_gui(start_time, end_time, table_name,
                                     raw_data_location, select_columns=None,
                                     filter_cols=None, filter_values=None):
-    table = static_table_xl(table_name, raw_data_location, select_columns, filter_cols, filter_values)
+    table = static_table_xl(table_name, raw_data_location, select_columns,
+                            filter_cols, filter_values)
     return table
 
 
-def static_table_xl(table_name, raw_data_location, select_columns=None, filter_cols=None, filter_values=None):
+def static_table_xl(table_name, raw_data_location, select_columns=None, 
+                    filter_cols=None, filter_values=None):
     path_and_name = (raw_data_location + '/'
                      + defaults.names[table_name] + '.xls')
     print('Retrieving static table {}.'.format(table_name))
@@ -260,7 +282,8 @@ def static_table_xl(table_name, raw_data_location, select_columns=None, filter_c
         downloader.download_xl(defaults.static_table_url[table_name],
                                raw_data_location, path_and_name)
     xls = pd.ExcelFile(path_and_name)
-    table = pd.read_excel(xls, defaults.reg_exemption_list_tabs[table_name], dtype=str)
+    table = pd.read_excel(xls, defaults.reg_exemption_list_tabs[table_name],
+                          dtype=str)
     if select_columns is not None:
         table = table.loc[:, select_columns]
     if filter_cols is not None:
@@ -276,36 +299,51 @@ def static_table_xl(table_name, raw_data_location, select_columns=None, filter_c
     return table
 
 
-method_map = {'DISPATCHLOAD': dynamic_data_compiler,
-              'DISPATCHPRICE': dynamic_data_compiler,
-              'TRADINGLOAD': dynamic_data_compiler,
-              'TRADINGPRICE': dynamic_data_compiler,
-              'TRADINGREGIONSUM': dynamic_data_compiler,
-              'TRADINGINTERCONNECT': dynamic_data_compiler,
-              'DISPATCH_UNIT_SCADA': dynamic_data_compiler,
-              'DISPATCHCONSTRAINT': dynamic_data_compiler,
-              'DUDETAILSUMMARY': dynamic_data_compiler,
-              'DUDETAIL': dynamic_data_compiler,
-              'GENCONDATA': dynamic_data_compiler,
-              'SPDREGIONCONSTRAINT': dynamic_data_compiler,
-              'SPDCONNECTIONPOINTCONSTRAINT': dynamic_data_compiler,
-              'SPDINTERCONNECTORCONSTRAINT': dynamic_data_compiler,
-              'FCAS_4_SECOND': dynamic_data_compiler,
-              'ELEMENTS_FCAS_4_SECOND': static_table_FCAS_elements_file_wrapper_for_gui,
+def dynamic_data_wrapper_for_gui(start_time, end_time, table,
+                                 raw_data_location, columns, filter_cols,
+                                 filter_values):
+    data = dynamic_data_compiler(start_time=start_time, end_time=end_time, 
+                                 table_name=table,
+                                 raw_data_location=raw_data_location,
+                                 select_columns=columns,
+                                 filter_cols=filter_cols, 
+                                 filter_values=filter_values,
+                                 parse_data_types=False)
+    return data
+
+
+method_map = {'DISPATCHLOAD': dynamic_data_wrapper_for_gui,
+              'DISPATCHPRICE': dynamic_data_wrapper_for_gui,
+              'TRADINGLOAD': dynamic_data_wrapper_for_gui,
+              'TRADINGPRICE': dynamic_data_wrapper_for_gui,
+              'TRADINGREGIONSUM': dynamic_data_wrapper_for_gui,
+              'TRADINGINTERCONNECT': dynamic_data_wrapper_for_gui,
+              'DISPATCH_UNIT_SCADA': dynamic_data_wrapper_for_gui,
+              'DISPATCHCONSTRAINT': dynamic_data_wrapper_for_gui,
+              'DUDETAILSUMMARY': dynamic_data_wrapper_for_gui,
+              'DUDETAIL': dynamic_data_wrapper_for_gui,
+              'GENCONDATA': dynamic_data_wrapper_for_gui,
+              'SPDREGIONCONSTRAINT': dynamic_data_wrapper_for_gui,
+              'SPDCONNECTIONPOINTCONSTRAINT': dynamic_data_wrapper_for_gui,
+              'SPDINTERCONNECTORCONSTRAINT': dynamic_data_wrapper_for_gui,
+              'FCAS_4_SECOND': dynamic_data_wrapper_for_gui,
+              'ELEMENTS_FCAS_4_SECOND':
+              static_table_FCAS_elements_file_wrapper_for_gui,
               'VARIABLES_FCAS_4_SECOND': static_table_wrapper_for_gui,
-              'Generators and Scheduled Loads': static_table_xl_wrapper_for_gui,
+              'Generators and Scheduled Loads':
+              static_table_xl_wrapper_for_gui,
               'FCAS Providers': static_table_xl_wrapper_for_gui,
-              'BIDDAYOFFER_D': dynamic_data_compiler,
-              'BIDPEROFFER_D': dynamic_data_compiler,
+              'BIDDAYOFFER_D': dynamic_data_wrapper_for_gui,
+              'BIDPEROFFER_D': dynamic_data_wrapper_for_gui,
               'FCAS_4s_SCADA_MAP': custom_tables.fcas4s_scada_match,
               'PLANTSTATS': custom_tables.plant_stats,
-              'DISPATCHINTERCONNECTORRES': dynamic_data_compiler,
-              'DISPATCHREGIONSUM': dynamic_data_compiler,
-              'LOSSMODEL': dynamic_data_compiler,
-              'LOSSFACTORMODEL': dynamic_data_compiler,
-              'MNSP_DAYOFFER': dynamic_data_compiler,
-              'MNSP_PEROFFER': dynamic_data_compiler,
-              'MNSP_INTERCONNECTOR': dynamic_data_compiler,
-              'INTERCONNECTOR': dynamic_data_compiler,
-              'INTERCONNECTORCONSTRAINT': dynamic_data_compiler,
-              'MARKET_PRICE_THRESHOLDS': dynamic_data_compiler}
+              'DISPATCHINTERCONNECTORRES': dynamic_data_wrapper_for_gui,
+              'DISPATCHREGIONSUM': dynamic_data_wrapper_for_gui,
+              'LOSSMODEL': dynamic_data_wrapper_for_gui,
+              'LOSSFACTORMODEL': dynamic_data_wrapper_for_gui,
+              'MNSP_DAYOFFER': dynamic_data_wrapper_for_gui,
+              'MNSP_PEROFFER': dynamic_data_wrapper_for_gui,
+              'MNSP_INTERCONNECTOR': dynamic_data_wrapper_for_gui,
+              'INTERCONNECTOR': dynamic_data_wrapper_for_gui,
+              'INTERCONNECTORCONSTRAINT': dynamic_data_wrapper_for_gui,
+              'MARKET_PRICE_THRESHOLDS': dynamic_data_wrapper_for_gui}
