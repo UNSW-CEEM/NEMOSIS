@@ -54,7 +54,7 @@ class TestFormatOptions(unittest.TestCase):
                 expected_length = 2
                 expected_last_time = '2018/02/01 00:00:00'
                 expected_last_time = pd.to_datetime(expected_last_time, format='%Y/%m/%d %H:%M:%S')
-                expected_first_time = '2015/04/30 00:00:00'
+                expected_first_time = '2018/01/31 00:00:00'
                 expected_first_time = pd.to_datetime(expected_first_time, format='%Y/%m/%d %H:%M:%S')
             data = data_fetch_methods.dynamic_data_compiler(
                     start_time, end_time, table, defaults.raw_data_cache,
@@ -104,7 +104,7 @@ class TestFormatOptions(unittest.TestCase):
                 expected_length = 2
                 expected_last_time = '2018/02/01 00:00:00'
                 expected_last_time = pd.to_datetime(expected_last_time, format='%Y/%m/%d %H:%M:%S')
-                expected_first_time = '2015/04/30 00:00:00'
+                expected_first_time = '2018/01/31 00:00:00'
                 expected_first_time = pd.to_datetime(expected_first_time, format='%Y/%m/%d %H:%M:%S')
             data = data_fetch_methods.dynamic_data_compiler(
                     start_time, end_time, table, defaults.raw_data_cache,
@@ -148,7 +148,7 @@ class TestFormatOptions(unittest.TestCase):
                 expected_length = 2
                 expected_last_time = '2018/02/01 00:00:00'
                 expected_last_time = pd.to_datetime(expected_last_time, format='%Y/%m/%d %H:%M:%S')
-                expected_first_time = '2015/04/30 00:00:00'
+                expected_first_time = '2018/01/31 00:00:00'
                 expected_first_time = pd.to_datetime(expected_first_time, format='%Y/%m/%d %H:%M:%S')
             data = data_fetch_methods.dynamic_data_compiler(
                     start_time, end_time, table, defaults.raw_data_cache,
@@ -195,7 +195,7 @@ class TestFormatOptions(unittest.TestCase):
                     expected_length = 2
                     expected_last_time = '2018/02/01 00:00:00'
                     expected_last_time = pd.to_datetime(expected_last_time, format='%Y/%m/%d %H:%M:%S')
-                    expected_first_time = '2015/04/30 00:00:00'
+                    expected_first_time = '2018/01/31 00:00:00'
                     expected_first_time = pd.to_datetime(expected_first_time, format='%Y/%m/%d %H:%M:%S')
                 data = data_fetch_methods.dynamic_data_compiler(
                     start_time, end_time, table, defaults.raw_data_cache,
@@ -241,7 +241,7 @@ class TestFormatOptions(unittest.TestCase):
                 expected_length = 2
                 expected_last_time = '2018/02/01 00:00:00'
                 expected_last_time = pd.to_datetime(expected_last_time, format='%Y/%m/%d %H:%M:%S')
-                expected_first_time = '2015/04/30 00:00:00'
+                expected_first_time = '2018/01/31 00:00:00'
                 expected_first_time = pd.to_datetime(expected_first_time, format='%Y/%m/%d %H:%M:%S')
             print(table)
             data = data_fetch_methods.dynamic_data_compiler(
@@ -287,7 +287,7 @@ class TestFormatOptions(unittest.TestCase):
                 expected_length = 2
                 expected_last_time = '2018/02/01 00:00:00'
                 expected_last_time = pd.to_datetime(expected_last_time, format='%Y/%m/%d %H:%M:%S')
-                expected_first_time = '2015/04/30 00:00:00'
+                expected_first_time = '2018/01/31 00:00:00'
                 expected_first_time = pd.to_datetime(expected_first_time, format='%Y/%m/%d %H:%M:%S')
             data = data_fetch_methods.dynamic_data_compiler(
                     start_time, end_time, table, defaults.raw_data_cache,
