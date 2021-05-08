@@ -3,31 +3,34 @@ from nemosis import processing_info_maps
 from nemosis import data_fetch_methods
 from nemosis import defaults
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 from nemosis import query_wrapers
 
 
 class TestSearchTypeValidity(unittest.TestCase):
     def setUp(self):
+        self.start_day = (datetime.now() - timedelta(30)).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
         pass
 
     def test_start_to_end_no_duplication_between_batches(self):
         for table_name in processing_info_maps.search_type.keys():
             if processing_info_maps.search_type[table_name] == 'start_to_end':
                 print('Validating start_to_end type for table {}'.format(table_name))
-                start_test_window = defaults.nem_data_model_start_time
                 start_test_window = '2018/01/01 00:00:00'
                 start_time = datetime.strptime(start_test_window, '%Y/%m/%d %H:%M:%S')
-                end_time = datetime.strptime('2018/05/01 00:00:00', '%Y/%m/%d %H:%M:%S')
+                end_time = datetime.strptime('2018/03/01 00:00:00', '%Y/%m/%d %H:%M:%S')
                 if table_name == 'FCAS_4_SECOND':
-                    start_test_window = '2015/01/01 00:00:00'
-                    end_time = datetime.strptime('2015/01/02 00:00:00', '%Y/%m/%d %H:%M:%S')
-                start_search = datetime.strptime(start_test_window, '%Y/%m/%d %H:%M:%S')
+                    start_test_window = self.start_day
+                    start_time = self.start_day
+                    end_time = self.start_day + timedelta(days=1)
+                start_search = start_test_window
                 data_tables = data_fetch_methods.dynamic_data_fetch_loop(
                     start_search=start_search, start_time=start_time,
                     end_time=end_time, table_name=table_name, raw_data_location=defaults.raw_data_cache,
                     select_columns=defaults.table_primary_keys[table_name], date_filter=None,
-                    search_type='start_to_end')
+                    keep_csv=False, search_type='start_to_end')
                 all_data = pd.concat(data_tables, sort=False)
                 contains_duplicates = all_data.duplicated().any()
                 self.assertEqual(False, contains_duplicates, 'table {}'.format(table_name))
@@ -65,7 +68,7 @@ class TestSearchTypeValidity(unittest.TestCase):
                     start_search=start_search, start_time=start_time,
                     end_time=end_time, table_name=table_name, raw_data_location=defaults.raw_data_cache,
                     select_columns=defaults.table_primary_keys[table_name], date_filter=None,
-                    search_type='all')
+                    keep_csv=False, search_type='all')
                 all_data = pd.concat(data_tables, sort=False)
                 contains_duplicates = all_data.duplicated().any()
                 self.assertEqual(False, contains_duplicates, 'table {}'.format(table_name))
@@ -84,7 +87,7 @@ class TestSearchTypeValidity(unittest.TestCase):
                     start_search=start_search, start_time=start_time,
                     end_time=end_time, table_name=table_name, raw_data_location=defaults.raw_data_cache,
                     select_columns=defaults.table_primary_keys[table_name], date_filter=None,
-                    search_type='all')
+                    keep_csv=False, search_type='all')
                 all_data = pd.concat(data_tables, sort=False)
                 all_data = query_wrapers.drop_duplicates_by_primary_key(all_data, start_time, table_name)
                 contains_duplicates = all_data.duplicated().any()
@@ -115,7 +118,7 @@ class TestSearchTypeValidity(unittest.TestCase):
                     start_search=start_search, start_time=start_time,
                     end_time=end_time, table_name=table_name, raw_data_location=defaults.raw_data_cache,
                     select_columns=None, date_filter=None,
-                    search_type='end')
+                    keep_csv=False, search_type='end')
                 first_data_table = data_tables[35].loc[:, defaults.table_primary_keys[table_name]]
                 last_data_table = data_tables[-1]
                 comp = pd.merge(first_data_table, last_data_table, 'left', defaults.table_primary_keys[table_name])
@@ -123,7 +126,3 @@ class TestSearchTypeValidity(unittest.TestCase):
                                   if col not in defaults.table_primary_keys[table_name]][0]
                 missing_from_last = comp[comp[non_primary_col].isnull()]
                 self.assertEqual(False, missing_from_last.empty)
-
-
-
-
