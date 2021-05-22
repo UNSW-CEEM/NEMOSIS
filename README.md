@@ -1,4 +1,4 @@
-### Update to the latest version of NEMOSIS for fixes to file paths on mac.
+### NEMOSIS: An open-source tool to make it easier to download and analyise historical data published by AEMO 
 
 ### Download windows GUI
 Choose the exe from the latest [release](https://github.com/UNSW-CEEM/NEMOSIS/releases)
