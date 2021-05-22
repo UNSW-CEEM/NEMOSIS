@@ -115,8 +115,8 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             expected_length = 36
             expected_number_of_columns = 2
             expected_first_time =\
-                (pd.to_datetime(start_time, format=('%Y/%m/%d %H:%M:%S') +
-                 timedelta(minutes=5)))
+                (pd.to_datetime(start_time, format=('%Y/%m/%d %H:%M:%S')) +
+                 timedelta(minutes=5))
             expected_last_time =\
                 pd.to_datetime(end_time, format='%Y/%m/%d %H:%M:%S')
             if table in ['TRADINGLOAD', 'TRADINGPRICE', 'TRADINGREGIONSUM',
