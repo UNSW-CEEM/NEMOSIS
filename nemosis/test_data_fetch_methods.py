@@ -421,7 +421,7 @@ class TestStaticTables(unittest.TestCase):
         table = 'ELEMENTS_FCAS_4_SECOND'
         cols = ['ELEMENTNUMBER', 'EMSNAME']
         filter_cols = ('ELEMENTNUMBER',)
-        data = data_fetch_methods.static_table_FCAS_elements_file_wrapper_for_gui(start_time, end_time,
+        data = data_fetch_methods._static_table_FCAS_elements_file_wrapper_for_gui(start_time, end_time,
                                                table, defaults.raw_data_cache,
                                                select_columns=cols, filter_cols=filter_cols,
                                                filter_values=(['1'],))
@@ -437,7 +437,7 @@ class TestStaticTables(unittest.TestCase):
         table = 'VARIABLES_FCAS_4_SECOND'
         cols = ['VARIABLENUMBER', 'VARIABLETYPE']
         filter_cols = ('VARIABLENUMBER',)
-        data = data_fetch_methods.static_table_wrapper_for_gui(start_time, end_time,
+        data = data_fetch_methods._static_table_wrapper_for_gui(start_time, end_time,
                                                table, defaults.raw_data_cache,
                                                select_columns=cols, filter_cols=filter_cols,
                                                 filter_values=(['2'],))
