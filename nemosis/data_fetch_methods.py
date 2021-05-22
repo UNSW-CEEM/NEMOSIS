@@ -104,7 +104,7 @@ def cache_compiler(start_time, end_time, table_name, raw_data_location,
         return
     print(f'Caching data for table {table_name}')
 
-    select_columns, _, start_search, _ =\
+    start_time, end_time, select_columns, _, start_search, _ =\
         _set_up_dynamic_compilers(table_name, start_time, end_time,
                                   None)
     start_time = _datetime.strptime(start_time, '%Y/%m/%d %H:%M:%S')
