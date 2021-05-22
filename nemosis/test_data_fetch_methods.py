@@ -288,6 +288,48 @@ class TestDynamicDataCompilerWithEffectiveDateFiltering(unittest.TestCase):
             print('Passed')
 
 
+class TestCacheCompiler(unittest.TestCase):
+    def setUp(self):
+        self.table_names = ['DISPATCHLOAD', 'DISPATCHPRICE']
+    
+    def test_caching_and_typing_works_feather(self):
+        start_time = '2018/02/20 23:00:00'
+        end_time = '2018/02/20 23:05:00'
+        for table in self.table_names:
+            print('Testing {} returing values for 1 interval.'.format(table))
+            data_fetch_methods.cache_compiler(
+                start_time, end_time, table, defaults.raw_data_cache,
+                fformat="feather"
+                )
+            data = data_fetch_methods.dynamic_data_compiler(
+                start_time, end_time, table, defaults.raw_data_cache,
+                fformat="feather"
+            )
+            not_empty = data.shape[0] > 0
+            not_typed = all(data.dtypes == "object")
+            self.assertTrue(not_empty)
+            self.assertFalse(not_typed)
+            print('Passed')
+
+    def test_caching_and_typing_works_parquet(self):
+        start_time = '2018/02/20 23:00:00'
+        end_time = '2018/02/20 23:05:00'
+        for table in self.table_names:
+            print('Testing {} returing values for 1 interval.'.format(table))
+            data_fetch_methods.cache_compiler(
+                start_time, end_time, table, defaults.raw_data_cache,
+                fformat="parquet"
+                )
+            data = data_fetch_methods.dynamic_data_compiler(
+                start_time, end_time, table, defaults.raw_data_cache,
+                fformat="parquet"
+            )
+            not_empty = data.shape[0] > 0
+            not_typed = all(data.dtypes == "object")
+            self.assertTrue(not_empty)
+            self.assertFalse(not_typed)
+            print('Passed')
+
 class TestDynamicDataCompilerWithStartDateFiltering(unittest.TestCase):
     def setUp(self):
         self.table_names = ['DUDETAILSUMMARY']
