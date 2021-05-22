@@ -325,7 +325,9 @@ def _read_data_and_create_file(read_function, fformat, table_name,
     Reads CSV file, returns data from file and write to appropriate fformat.
     Data is returned with selected columns, but data retains all columns.
 
-    Returns: data, printstr
+    If a CSV is not available, will print compilation failed and return None.
+
+    Returns: data, printstr or None, printstr
     '''
     printstr = (f'Creating {fformat} file for '
                 + f'{table_name}, {year}, {month}')
