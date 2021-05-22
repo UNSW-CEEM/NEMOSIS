@@ -43,9 +43,9 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location,
     Returns:
         all_data (pd.Dataframe): All data concatenated.
     """
-
     print('Compiling data for table {}.'.format(table_name))
-    select_columns, date_filter, start_search, search_type =\
+    start_time, end_time, select_columns,\
+        date_filter, start_search, search_type =\
         _set_up_dynamic_compilers(table_name, start_time, end_time,
                                   select_columns)
     start_time = _datetime.strptime(start_time, '%Y/%m/%d %H:%M:%S')
@@ -216,7 +216,8 @@ def _set_up_dynamic_compilers(table_name, start_time, end_time,
     '''
     Set up function for compilers that deal with dynamic data.
 
-    Returns: select_columns, date_filter, start_search, search_type.
+    Returns: start_time, end_time, select_columns, date_filter,
+             start_search, search_type.
     '''
     # Generic setup common to all tables.
     if select_columns is None:
@@ -236,7 +237,8 @@ def _set_up_dynamic_compilers(table_name, start_time, end_time,
         start_search = start_time
     elif search_type == 'end':
         start_search = end_time
-    return select_columns, date_filter, start_search, search_type
+    return start_time, end_time, select_columns,\
+        date_filter, start_search, search_type
 
 
 def _dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
