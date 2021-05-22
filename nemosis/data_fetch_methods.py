@@ -295,7 +295,7 @@ def _dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
             if data_merge:
                 data_tables.append(data)
         else:
-            print(printstr + 'FAILED')
+            print(printstr + ' FAILED')
 
     return data_tables
 
