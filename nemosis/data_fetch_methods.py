@@ -332,7 +332,10 @@ def _read_data_and_create_file(read_function, fformat, table_name,
     else:
         output = (printstr + f' {day}, {index}')
     print(output)
-    csv_file = _glob.glob(path_and_name + '.[cC][sS][vV]')[0]
+    try:
+        csv_file = _glob.glob(path_and_name + '.[cC][sS][vV]')[0]
+    except IndexError:
+        return None, printstr
     read_csv_func = read_function['csv']
     data, columns = _determine_columns_and_read_csv(table_name,
                                                     csv_file,
