@@ -118,7 +118,6 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                     filter_cols=filter_cols, filter_values=self.filter_values[table_type])
             data = data.sort_values(dat_col)
             data = data.reset_index(drop=True)
-            print(data)
             self.assertEqual(expected_length, data.shape[0])
             self.assertEqual(expected_number_of_columns, data.shape[1])
             self.assertEqual(expected_first_time, data[dat_col][0])
