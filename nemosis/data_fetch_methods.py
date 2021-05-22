@@ -58,7 +58,6 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location,
                                            search_type, fformat=fformat,
                                            keep_csv=keep_csv,
                                            data_merge=data_merge,
-                                           parse_data_types=parse_data_types,
                                            write_kwargs=kwargs)
     if data_merge:
         all_data = _pd.concat(data_tables, sort=False)
@@ -70,6 +69,8 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location,
         if filter_cols is not None:
             all_data = _filters.filter_on_column_value(all_data, filter_cols,
                                                        filter_values)
+        if parse_data_types:
+            all_data = _infer_column_data_types(all_data)
         return all_data
 
 
@@ -98,7 +99,7 @@ def cache_compiler(start_time, end_time, table_name, raw_data_location,
     Returns:
         Nothing
     """
-    if fformat != "parquet" or fformat != "feather":
+    if fformat != "parquet" and fformat != "feather":
         print("Argument fformat must be 'feather' or 'parquet'")
         return
     print(f'Caching data for table {table_name}')
@@ -126,14 +127,15 @@ def cache_compiler(start_time, end_time, table_name, raw_data_location,
             data = read_function[fformat](full_filename,
                                           columns=select_columns)
         else:
-            delete_csv = True
+            retain_csv = False
             _download_data(table_name, table_type, filename_stub, day, month,
                            year, index, raw_data_location)
             data, printstr =\
                 _read_data_and_create_file(read_function, fformat, table_name,
                                            day, month, year, index,
                                            path_and_name, full_filename,
-                                           delete_csv, select_columns, kwargs)
+                                           retain_csv, select_columns, kwargs,
+                                           dtypes="all")
     return
 
 
@@ -241,7 +243,6 @@ def _dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
                              raw_data_location, select_columns,
                              date_filter, search_type, fformat='feather',
                              keep_csv=True, data_merge=True,
-                             parse_data_types=True,
                              write_kwargs={}):
     '''
     Loops through generated dates and checks if the appropriate file exists.
@@ -289,8 +290,6 @@ def _dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
         if data is not None:
             if date_filter is not None:
                 data = date_filter(data, start_time, end_time)
-            if parse_data_types:
-                data = _infer_column_data_types(data)
             if data_merge:
                 data_tables.append(data)
         else:
@@ -319,7 +318,7 @@ def _create_filename(table_name, table_type, raw_data_location, fformat,
 def _read_data_and_create_file(read_function, fformat, table_name,
                                day, month, year, index,
                                path_and_name, full_filename, keep_csv,
-                               select_columns, write_kwargs):
+                               select_columns, write_kwargs, dtypes="str"):
     '''
     Reads CSV file, returns data from file and write to appropriate fformat.
     Data is returned with selected columns, but data retains all columns.
@@ -337,7 +336,8 @@ def _read_data_and_create_file(read_function, fformat, table_name,
     read_csv_func = read_function['csv']
     data, columns = _determine_columns_and_read_csv(table_name,
                                                     csv_file,
-                                                    read_csv_func)
+                                                    read_csv_func,
+                                                    dtypes)
     if fformat != 'csv':
         _write_to_format(data, fformat, full_filename, write_kwargs)
     if not keep_csv:
@@ -346,10 +346,11 @@ def _read_data_and_create_file(read_function, fformat, table_name,
         for column in columns:
             if column not in select_columns:
                 del data[column]
-    return data, columns, printstr
+    return data, printstr
 
 
-def _determine_columns_and_read_csv(table_name, csv_file, read_csv_func):
+def _determine_columns_and_read_csv(table_name, csv_file, read_csv_func, 
+                                    dtypes):
     '''
     Used by read_data_and_create_file
     Determining columns:
@@ -364,17 +365,21 @@ def _determine_columns_and_read_csv(table_name, csv_file, read_csv_func):
 
     Returns: data, columns
     '''
+    if dtypes == "all":
+        type = None
+    else:
+        type = str
     if _defaults.table_types[table_name] == 'MMS':
         headers = read_csv_func(csv_file, skiprows=[0],
                                 nrows=1).columns.tolist()
         columns = [column for column in _defaults.table_columns[table_name]
                    if column in headers]
         data = read_csv_func(csv_file, skiprows=[0], usecols=columns,
-                             dtype=str)
+                             dtype=type)
         data = data[:-1]
     else:
         columns = _defaults.table_columns[table_name]
-        data = read_csv_func(csv_file, skiprows=[0], names=columns, dtype=str)
+        data = read_csv_func(csv_file, skiprows=[0], names=columns, dtype=type)
     return data, columns
 
 
@@ -429,20 +434,24 @@ def _infer_column_data_types(data):
 
     Returns: Data with inferred types.
     """
-    for col in data:
-        series = data[col]
-        if col.dtype == "object":
+    def _get_series_type(series):
+        if series.dtype == "object":
             try:
                 col_new = _pd.to_datetime(series)
-                data.loc[:, col] = col_new
+                return col_new
             except Exception as e:
                 try:
                     col_new = _pd.to_numeric(series)
-                    data.loc[:, col] = col_new
+                    return col_new
                 except Exception as e:
-                    continue
+                    return series
         else:
-            continue
+            return series
+
+    for col in data:
+        series = data[col]
+        typed = _get_series_type(series)
+        data[col] = typed
     return data
 
 # GUI wrappers and mappers below
