@@ -1,150 +1,199 @@
-### NEMOSIS: An open-source tool to make it easier to download and analyise historical data published by AEMO 
+# NEMOSIS
 
-### Download windows GUI
+## An open-source tool to make it easier to download and analyse historical data published by the Australian Energy Market Operator (AEMO)
+
+-----
+
+## Table of Contents
+
+
+-----
+
+## Download Windows Application (GUI)
+
 Choose the exe from the latest [release](https://github.com/UNSW-CEEM/NEMOSIS/releases)
 
-### Documentation 
-+ Check out the [wiki](https://github.com/UNSW-CEEM/NEMOSIS/wiki)
-+ View [worked examples](https://github.com/UNSW-CEEM/NEMOSIS/wiki/Worked-Examples)
-+ What [data is available](https://github.com/UNSW-CEEM/NEMOSIS/wiki/AEMO-Tables) and data [column definitions](https://github.com/UNSW-CEEM/NEMOSIS/wiki/Column-Summary)
-+ Watch a video 
-  * [Download generator dispatch data](https://youtu.be/HEAOk056Bss)
-  * [Download dispatch data by fuel type](https://youtu.be/aKEI7URiJlI).
-+ Read our [paper](https://www.researchgate.net/publication/329798805_NEMOSIS_-_NEM_Open_Source_Information_Service_open-source_access_to_Australian_National_Electricity_Market_Data) introducting NEMOSIS
+## Documentation
 
-### Support NEMOSIS
+- Check out the [wiki](https://github.com/UNSW-CEEM/NEMOSIS/wiki)
+- View [worked examples](https://github.com/UNSW-CEEM/NEMOSIS/wiki/Worked-Examples)
+- What [data is available](https://github.com/UNSW-CEEM/NEMOSIS/wiki/AEMO-Tables) and data [column definitions](https://github.com/UNSW-CEEM/NEMOSIS/wiki/Column-Summary)
+- Watch a video
+  - [Download generator dispatch data](https://youtu.be/HEAOk056Bss)
+  - [Download dispatch data by fuel type](https://youtu.be/aKEI7URiJlI).
+- Read our [paper](https://www.researchgate.net/publication/329798805_NEMOSIS_-_NEM_Open_Source_Information_Service_open-source_access_to_Australian_National_Electricity_Market_Data) introducting NEMOSIS
+
+## Support NEMOSIS
+
 Cite our [paper](https://www.researchgate.net/publication/329798805_NEMOSIS_-_NEM_Open_Source_Information_Service_open-source_access_to_Australian_National_Electricity_Market_Data) in your publications that use data from NEMOSIS.
 
-### Get Updates, Ask Questions
+## Get Updates, Ask Questions
+
 Join the NEMOSIS [forum group](https://groups.google.com/forum/#!forum/nemosis-discuss).
 
-### Use the python interface
-pip install nemosis
+## Using the Python Interface (API)
 
-#### Data from dynamic tables
+### Installing NEMOSIS
+
+`pip install nemosis`
+
+### Data from dynamic tables
+
 Dynamic tables contain a datetime column that allows NEMOSIS to filter their content by a start and end time. 
 
-You can view the dynamic tables available by printing the NEMOSIS default settings.
+To learn more about each dynamic table visit the [wiki](https://github.com/UNSW-CEEM/NEMOSIS/wiki).
 
-```
+You can view the static tables available by printing the NEMOSIS default settings.
+
+```python
 from nemosis import defaults
 
 print(defaults.dynamic_tables)
-# ['DISPATCHLOAD', 'DUDETAILSUMMARY', 'DUDETAIL', 'DISPATCHCONSTRAINT', 'GENCONDATA', 'DISPATCH_UNIT_SCADA', 'DISPATCHPRICE', . . .
+
+#['DISPATCHLOAD', 'DUDETAILSUMMARY', 'DUDETAIL', 'DISPATCHCONSTRAINT', 'GENCONDATA', 'DISPATCH_UNIT_SCADA', 'DISPATCHPRICE', . . .
 ```
 
-The dynamic_data_compiler can be used to download and compile data from dynamic tables.  
+#### Workflows
 
-```
-from nemosis import data_fetch_methods
+Your workflow may determine how you use NEMOSIS. Because the GUI relies on data being stored as strings (rather than numeric types such as integers or floats), we suggest the following:
+
+- If you are using **NEMOSIS' API in your code, or using the same cache for the GUI and API**, use `dynamic_data_compiler`. This will allow your data to be handled by both the GUI and the API. Data read in via the API will be typed, i.e. datetime columns will be a datetime type, numeric columns will be integer/float, etc.
+- If you are using **NEMOSIS to cache data in feather or parquet format for use with another application**, use `cache_compiler`. This will ensure that cached feather/parquet files are appropriately typed to make further external processing easier. It will also cache faster as it doesn't prepare a DataFrame for further analysis.
+
+##### Dynamic data compiler
+
+`dynamic_data_compiler` can be used to download and compile data from dynamic tables.  
+
+```python
+from nemosis import dynamic_data_compiler
 
 start_time = '2017/01/01 00:00:00'
 end_time = '2017/01/01 00:05:00'
 table = 'DISPATCHPRICE'
 raw_data_cache = 'C:/Users/your_data_storage'
 
-price_data = data_fetch_methods.dynamic_data_compiler(start_time, end_time, table, raw_data_cache)
+price_data = dynamic_data_compiler(start_time, end_time, table, raw_data_cache)
 ```
 
-Using the dynamic_data_compiler's default settings will download CSV data from AEMO's nemweb portal and save it to 
-the raw_data_cache directory, a feather file version of each CSV will also be create, feather files are faster to read 
-from disk, this means subsequent dynamic_data_compiler calls that require the cached data will be faster.
+Using the default settings of `dynamic_data_compiler` will download CSV data from AEMO's NEMWeb portal and save it to the `raw_data_cache` directory. It will also create a feather file version of each CSV (feather files have a faster read time). Subsequent `dynamic_data_compiler` calls will check if any data in `raw_data_cache` matches the query and loads it. This means that subsequent `dynamic_data_compiler` will be faster so long as the cached data is available.
 
-A number of options are available to configure how NEMOSIS handles caching. 
+A number of options are available to configure filtering (i.e. what data NEMOSIS returns as a pandas DataFrame) and caching.
 
-##### Cache formatting options
-By default the options fformat='feather', keep_csv=True and data_merge=True are used.
+###### Filter options
 
-If the option fformat='csv' is used then no feather files will be created, and all caching will be done using CSVs.
+`dynamic_data_compiler` can be used to filter data before returning results.
 
-```
-price_data = data_fetch_methods.dynamic_data_compiler(start_time, end_time, table, raw_data_cache, fformat='csv')
-```
+To return only a subset of a particular table's columns, use the `select_columns` argument.
 
-If the option fformat='parquet' is provided then no feather files will be created, and a parquet file will be used instead. 
-While feather might have faster read/write, parquet has excellent compression characteristics and good compatability 
-with packages for handling large on-memory/cluster datasets (e.g. Dask). This helps with local storage 
-(especially for Causer Pays data) and file size for version control. This may be useful if you're using NEMOSIS to
-build the data cache but then processing the cache using other packages.
+```python
+from nemosis import dynamic_data_compiler
 
-```
-price_data = data_fetch_methods.dynamic_data_compiler(start_time, end_time, table, raw_data_cache, fformat='parquet')
+dynamic_data_compiler(start_time, end_time, table, raw_data_cache,
+                      select_columns=['REGIONID', 'SETTLEMENTDATE', 'RRP'])
 ```
 
-By default the original AEMO CSVs will still be cached. To get the most benefit for saving disk space you can also 
-use keep_csv=False in combination with fformat='parquet'. This will delete the AEMO CSVs after the parquet file 
-is created.
+To see what columns a table has, you can inspect NEMOSIS' defaults.
 
-```
-price_data = data_fetch_methods.dynamic_data_compiler(start_time, end_time, table, raw_data_cache, fformat='parquet',
-                                                      keep_csv=False)
-```
-
-If you're just using the dynamic_data_compiler to build the cache, the process can be sped up by setting merge_data=False, this
-will download and build the cache but not merge the results from each cache file, in this case a None value will be 
-returned.
-
-```
-data_fetch_methods.dynamic_data_compiler(start_time, end_time, table, raw_data_cache, merge_data=False)
-```
-
-##### Filter options
-The dynamic_data_compiler can be used to filter data before returning results.
-
-To return only a subsets of the tables columns uses the select_columns argument.
-
-```
-data_fetch_methods.dynamic_data_compiler(start_time, end_time, table, raw_data_cache,
-                                         select_columns=['REGIONID', 'SETTLEMENTDATE', 'RRP'])
-```
-
-To see what columns a table has you can inspect the NEMOSIS defaults.
-
-```
+```python
 from nemosis import defaults
 
 print(defaults.table_columns['DISPATCHPRICE'])
 # ['SETTLEMENTDATE', 'REGIONID', 'INTERVENTION', 'RRP', 'RAISE6SECRRP', 'RAISE60SECRRP', 'RAISE5MINRRP', . . .
 ```
 
-Columns can also be filtered by value. Note to filter by a column the column must be included as a filter column.
-In the example below the table will be filter to just rows where REGIONID == 'SA1'.
+Columns can also be filtered by value. To do this, you need provide a column to be filtered (`filter_cols`) and a value or values to filter (`filter_values`) a corresponding column by. to filter by a column the column must be included as a filter column.
 
-```
-data_fetch_methods.dynamic_data_compiler(start_time, end_time, table, raw_data_cache,
-                                         filter_cols=['REGIONID'], filter_values=(['SA1'],))
+In the example below, the table will be filtered to only return rows where `REGIONID == 'SA1'`.
+
+```python
+from nemosis import dynamic_data_compiler
+
+dynamic_data_compiler(start_time, end_time, table, raw_data_cache, filter_cols=['REGIONID'], filter_values=(['SA1'],))
 ```
 
-#### Data from static tables
+Several filters can be applied simultaneously. A common filter is to extract pricing data excluding any physical intervention dispatch runs (`INTERVENTION == 0` is the appropriate filter, see [here](https://github.com/UNSW-CEEM/NEMOSIS/wiki/Column-Summary#intervention)). Below is an example of filtering to get data for Gladstone Unit 1 and Hornsdale Wind Farm 2 excluding any physical dispatch runs:
+
+```python
+from nemosis import dynamic_data_compiler
+
+dynamic_data_compiler(start_time, end_time, 'DISPATCHLOAD', raw_data_cache, filter_cols=['DUID', 'INTERVENTION'], filter_values=(['GSTONE1', 'HDWF2'], [0]))
+```
+
+###### Caching options
+
+By default the options fformat='feather', keep_csv=True and data_merge=True are used.
+
+If the option fformat='csv' is used then no feather files will be created, and all caching will be done using CSVs.
+
+```python
+price_data = dynamic_data_compiler(start_time, end_time, table, raw_data_cache, fformat='csv')
+```
+
+If you supply fformat='feather', the original AEMO CSVs will still be cached by default. To save disk space but still ensure your data will work with the API & GUI, use `keep_csv=False` in combination with `fformat='feather'` (which is the default option). This will delete the AEMO CSVs after the feather file is created.
+
+```python
+price_data = dynamic_data_compiler(start_time, end_time, table, raw_data_cache, keep_csv=False)
+```
+
+If the option `fformat='parquet'` is provided then no feather files will be created, and a parquet file will be used instead.
+While feather might have faster read/write, parquet has excellent compression characteristics and good compatability with packages for handling large on-memory/cluster datasets (e.g. Dask). This helps with local storage (especially for Causer Pays data) and file size for version control. We recommend you use `cache_compiler` if you are building a feather or parquet cache.
+
+##### Cache compiler
+
+This may be useful if you're using NEMOSIS to
+build a data cache, but then process the cache using other packages or applications. It is particularly useful because `cache_compiler` will infer the data types of the columns before saving to parquet or feather, thereby eliminating the need to type convert data that is obtained using `dynamic_data_compiler`.
+
+`cache_compiler` can be used to compile a cache of parquet or feather files. Parquet will likely be smaller, but feather can be read faster. `cache_compiler` will not run if it detects the appropriate files in the `raw_data_cache` directory. Otherwise, it will download CSVs, covert to the requested format and then delete the CSVs. It does not return any data, unlike `dynamic_data_compiler`.
+
+The example below downloads parquet data into the cache.
+
+```python
+from nemosis import cache_compiler
+
+price_data = cache_compiler(start_time, end_time, table, raw_data_cache, fformat='parquet')
+```
+
+### Data from static tables
+
 Static tables do not include a time column and cannot be filtered by start and end time.
 
-You can view the dynamic tables available by printing the NEMOSIS default settings. To learn more about each static
-table visit the wiki.
+To learn more about each static table visit the [wiki](https://github.com/UNSW-CEEM/NEMOSIS/wiki).
 
-```
+You can view the static tables available by printing the tables in NEMOSIS' defaults:
+
+```python
 from nemosis import defaults
 
 print(defaults.static_tables)
 # ['ELEMENTS_FCAS_4_SECOND', 'VARIABLES_FCAS_4_SECOND', 'Generators and Scheduled Loads', 'FCAS Providers']
 ```
 
-##### static_table_xl
-The static_table_xl function can be used to access the tables 'Generators and Scheduled Loads' and 'FCAS Providers'.
+#### static_table_xl
 
-```
-gens = data_fetch_methods.static_table_xl('Generators and Scheduled Loads', raw_data_cache)
-```
+The `static_table_xl` function can be used to access the tables 'Generators and Scheduled Loads' and 'FCAS Providers'.
 
-##### static_table
-The static_table function can be used to access the table 'VARIABLES_FCAS_4_SECOND'.
+```python
+from nemosis import static_table_xl
 
-```
-fcas_variables = data_fetch_methods.static_table('VARIABLES_FCAS_4_SECOND', raw_data_cache)
+gens = static_table_xl('Generators and Scheduled Loads', raw_data_cache)
 ```
 
-##### static_table_FCAS_elements_file
-The static_table_FCAS_elements_file function can be used to access the table 'ELEMENTS_FCAS_4_SECOND'.
+#### static_table
 
+The `static_table` function can be used to access the table 'VARIABLES_FCAS_4_SECOND'.
+
+```python
+from nemosis import static_table
+
+fcas_variables = static_table('VARIABLES_FCAS_4_SECOND', raw_data_cache)
 ```
-fcas_variables = data_fetch_methods.static_table_FCAS_elements_file('ELEMENTS_FCAS_4_SECOND', raw_data_cache)
+
+#### static_table_FCAS_elements_file
+
+The `static_table_FCAS_elements_file` function can be used to access the table 'ELEMENTS_FCAS_4_SECOND'.
+
+```python
+from nemosis import static_table_FCAS_elements_file
+
+fcas_variables = static_table_FCAS_elements_file('ELEMENTS_FCAS_4_SECOND', raw_data_cache)
 ```
