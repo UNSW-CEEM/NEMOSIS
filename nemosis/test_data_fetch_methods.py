@@ -371,7 +371,7 @@ class TestCacheCompiler(unittest.TestCase):
 
     def test_caching_and_typing_works_feather(self):
         start_time = '2018/02/20 23:00:00'
-        end_time = '2018/02/20 23:05:00'
+        end_time = '2018/02/20 23:30:00'
         for table in self.table_names:
             dat_col = defaults.primary_date_columns[table]
             id_col = self.id_cols[table]
@@ -396,7 +396,7 @@ class TestCacheCompiler(unittest.TestCase):
 
     def test_caching_and_typing_works_parquet(self):
         start_time = '2018/02/20 23:00:00'
-        end_time = '2018/02/20 23:05:00'
+        end_time = '2018/02/20 23:30:00'
         for table in self.table_names:
             dat_col = defaults.primary_date_columns[table]
             id_col = self.id_cols[table]
