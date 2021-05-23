@@ -5,23 +5,24 @@
 -----
 
 ## Table of Contents
-* [Table of Contents](#table-of-contents)
-* [Download Windows Application (GUI)](#download-windows-application--gui-)
-* [Documentation](#documentation)
-* [Support NEMOSIS](#support-nemosis)
-* [Get Updates, Ask Questions](#get-updates--ask-questions)
-* [Using the Python Interface (API)](#using-the-python-interface--api-)
-  + [Installing NEMOSIS](#installing-nemosis)
-  + [Data from dynamic tables](#data-from-dynamic-tables)
+
+- [Download Windows Application (GUI)](#download-windows-application--gui-)
+- [Documentation](#documentation)
+- [Support NEMOSIS](#support-nemosis)
+- [Get Updates, Ask Questions](#get-updates--ask-questions)
+- [Using the Python Interface (API)](#using-the-python-interface--api-)
+  - [Installing NEMOSIS](#installing-nemosis)
+  - [Data from dynamic tables](#data-from-dynamic-tables)
     - [Workflows](#workflows)
-      * [Dynamic data compiler](#dynamic-data-compiler)
-        + [Filter options](#filter-options)
-        + [Caching options](#caching-options)
-      * [Cache compiler](#cache-compiler)
-  + [Data from static tables](#data-from-static-tables)
+      - [Dynamic data compiler](#dynamic-data-compiler)
+        - [Filter options](#filter-options)
+        - [Caching options](#caching-options)
+      - [Cache compiler](#cache-compiler)
+  - [Data from static tables](#data-from-static-tables)
     - [static_table_xl](#static-table-xl)
     - [static_table](#static-table)
     - [static_table_FCAS_elements_file](#static-table-fcas-elements-file)
+
 -----
 
 ## Download Windows Application (GUI)
