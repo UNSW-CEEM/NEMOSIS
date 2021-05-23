@@ -73,8 +73,8 @@ print(defaults.dynamic_tables)
 
 Your workflow may determine how you use NEMOSIS. Because the GUI relies on data being stored as strings (rather than numeric types such as integers or floats), we suggest the following:
 
-- If you are using **NEMOSIS' API in your code, or using the same cache for the GUI and API**, use `dynamic_data_compiler`. This will allow your data to be handled by both the GUI and the API. Data read in via the API will be typed, i.e. datetime columns will be a datetime type, numeric columns will be integer/float, etc.
-- If you are using **NEMOSIS to cache data in feather or parquet format for use with another application**, use `cache_compiler`. This will ensure that cached feather/parquet files are appropriately typed to make further external processing easier. It will also cache faster as it doesn't prepare a DataFrame for further analysis.
+- If you are using **NEMOSIS' API in your code, or using the same cache for the GUI and API**, use `dynamic_data_compiler`. This will allow your data to be handled by both the GUI and the API. Data read in via the API will be typed, i.e. datetime columns will be a datetime type, numeric columns will be integer/float, etc. See [this section](#dynamic-data-compiler).
+- If you are using **NEMOSIS to cache data in feather or parquet format for use with another application**, use `cache_compiler`. This will ensure that cached feather/parquet files are appropriately typed to make further external processing easier. It will also cache faster as it doesn't prepare a DataFrame for further analysis. See [this section](#cache-compiler).
 
 ##### Dynamic data compiler
 
