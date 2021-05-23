@@ -124,8 +124,8 @@ def cache_compiler(start_time, end_time, table_name, raw_data_location,
                                              fformat, day, month,
                                              year, index)
         if _glob.glob(full_filename):
-            data = read_function[fformat](full_filename,
-                                          columns=select_columns)
+            print(f'Cache for {table_name} in date range already compiled in'
+                  + f' {raw_data_location}.')
         else:
             retain_csv = False
             _download_data(table_name, table_type, filename_stub, day, month,
@@ -356,7 +356,7 @@ def _read_data_and_create_file(read_function, fformat, table_name,
     return data, printstr
 
 
-def _determine_columns_and_read_csv(table_name, csv_file, read_csv_func, 
+def _determine_columns_and_read_csv(table_name, csv_file, read_csv_func,
                                     dtypes):
     '''
     Used by read_data_and_create_file
