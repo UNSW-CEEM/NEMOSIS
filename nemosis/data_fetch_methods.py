@@ -271,8 +271,11 @@ def _dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
                                              fformat, day, month,
                                              year, index)
         if _glob.glob(full_filename):
-            data = read_function[fformat](full_filename,
-                                          columns=select_columns)
+            try:
+                data = read_function[fformat](full_filename,
+                                              columns=select_columns)
+            except Exception as e:
+                data = read_function[fformat](full_filename)
         elif _glob.glob(path_and_name + '.[cC][sS][vV]'):
             data, printstr =\
                 _read_data_and_create_file(read_function, fformat, table_name,
