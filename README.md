@@ -6,11 +6,11 @@
 
 ## Table of Contents
 
-- [Download Windows Application (GUI)](#download-windows-application--gui-)
+- [Download Windows Application (GUI)](#download-windows-application-gui)
 - [Documentation](#documentation)
 - [Support NEMOSIS](#support-nemosis)
-- [Get Updates, Ask Questions](#get-updates--ask-questions)
-- [Using the Python Interface (API)](#using-the-python-interface--api-)
+- [Get Updates, Ask Questions](#get-updates-ask-questions)
+- [Using the Python Interface (API)](#using-the-python-interface-api)
   - [Installing NEMOSIS](#installing-nemosis)
   - [Data from dynamic tables](#data-from-dynamic-tables)
     - [Workflows](#workflows)
@@ -19,9 +19,9 @@
         - [Caching options](#caching-options)
       - [Cache compiler](#cache-compiler)
   - [Data from static tables](#data-from-static-tables)
-    - [static_table_xl](#static-table-xl)
-    - [static_table](#static-table)
-    - [static_table_FCAS_elements_file](#static-table-fcas-elements-file)
+    - [static_table_xl](#static_table_xl)
+    - [static_table](#static_table)
+    - [static_table_FCAS_elements_file](#static_table_fcas_elements_file)
 
 -----
 
