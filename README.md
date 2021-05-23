@@ -29,6 +29,8 @@
 
 Choose the exe from the latest [release](https://github.com/UNSW-CEEM/NEMOSIS/releases)
 
+-----
+
 ## Documentation
 
 - Check out the [wiki](https://github.com/UNSW-CEEM/NEMOSIS/wiki)
@@ -46,6 +48,8 @@ Cite our [paper](https://www.researchgate.net/publication/329798805_NEMOSIS_-_NE
 ## Get Updates, Ask Questions
 
 Join the NEMOSIS [forum group](https://groups.google.com/forum/#!forum/nemosis-discuss).
+
+-----
 
 ## Using the Python Interface (API)
 
