@@ -66,11 +66,11 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location,
             for function in finalise_data:
                 all_data = function(all_data, start_time, table_name)
 
+        if parse_data_types:
+            all_data = _infer_column_data_types(all_data)
         if filter_cols is not None:
             all_data = _filters.filter_on_column_value(all_data, filter_cols,
                                                        filter_values)
-        if parse_data_types:
-            all_data = _infer_column_data_types(all_data)
         return all_data
 
 
