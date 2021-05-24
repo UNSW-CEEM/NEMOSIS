@@ -120,7 +120,6 @@ def cache_compiler(start_time, end_time, table_name, raw_data_location,
     date_gen = _processing_info_maps.date_gen[table_type](start_search,
                                                           end_time)
     for year, month, day, index in date_gen:
-        data = None
         filename_stub, full_filename,\
             path_and_name = _create_filename(table_name, table_type,
                                              raw_data_location,
@@ -133,7 +132,7 @@ def cache_compiler(start_time, end_time, table_name, raw_data_location,
             retain_csv = False
             _download_data(table_name, table_type, filename_stub, day, month,
                            year, index, raw_data_location)
-            data, printstr =\
+            _ =\
                 _read_data_and_create_file(read_function, fformat, table_name,
                                            day, month, year, index,
                                            path_and_name, full_filename,
