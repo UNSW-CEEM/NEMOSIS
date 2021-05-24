@@ -1,6 +1,5 @@
 import os as _os
 import glob as _glob
-from numpy import full
 import pandas as _pd
 from datetime import datetime as _datetime
 from nemosis import filters as _filters
@@ -291,7 +290,7 @@ def _dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
                 else:
                     print(f'{select_columns} not in {full_filename}.')
         elif _glob.glob(path_and_name + '.[cC][sS][vV]'):
-            data, printstr =\
+            data =\
                 _read_data_and_create_file(read_function, fformat, table_name,
                                            day, month, year, index,
                                            path_and_name, full_filename,
@@ -300,7 +299,7 @@ def _dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
         else:
             _download_data(table_name, table_type, filename_stub, day, month,
                            year, index, raw_data_location)
-            data, printstr =\
+            data =\
                 _read_data_and_create_file(read_function, fformat, table_name,
                                            day, month, year, index,
                                            path_and_name, full_filename,
@@ -363,9 +362,9 @@ def _read_data_and_create_file(read_function, fformat, table_name,
     Reads CSV file, returns data from file and write to appropriate fformat.
     Data is returned with selected columns, but data retains all columns.
 
-    If a CSV is not available, will print compilation failed and return None.
+    If a CSV is not available, will return None.
 
-    Returns: data, printstr or None, printstr
+    Returns: data or None
     '''
     printstr = (f'Creating {fformat} file for '
                 + f'{table_name}, {year}, {month}')
@@ -379,10 +378,10 @@ def _read_data_and_create_file(read_function, fformat, table_name,
     except IndexError:
         return None, printstr
     read_csv_func = read_function['csv']
-    data, columns = _determine_columns_and_read_csv(table_name,
-                                                    csv_file,
-                                                    read_csv_func,
-                                                    dtypes)
+    data = _determine_columns_and_read_csv(table_name,
+                                           csv_file,
+                                           read_csv_func,
+                                           dtypes)
     if fformat != 'csv':
         _write_to_format(data, fformat, full_filename, write_kwargs)
     if not keep_csv:
@@ -391,7 +390,7 @@ def _read_data_and_create_file(read_function, fformat, table_name,
         keep_cols = _validate_select_columns(data, select_columns,
                                              full_filename)
         data = data.loc[:, keep_cols]
-    return data, printstr
+    return data
 
 
 def _determine_columns_and_read_csv(table_name, csv_file, read_csv_func,
@@ -425,7 +424,7 @@ def _determine_columns_and_read_csv(table_name, csv_file, read_csv_func,
     else:
         columns = _defaults.table_columns[table_name]
         data = read_csv_func(csv_file, skiprows=[0], names=columns, dtype=type)
-    return data, columns
+    return data
 
 
 def _write_to_format(data, fformat, full_filename, write_kwargs):
