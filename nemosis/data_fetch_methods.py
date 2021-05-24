@@ -124,6 +124,7 @@ def cache_compiler(start_time, end_time, table_name, raw_data_location,
                      'csv': _pd.read_csv,
                      'parquet': _pd.read_parquet}
     table_type = _defaults.table_types[table_name]
+    date_cols = _processing_info_maps.date_cols[table_name]
     date_gen = _processing_info_maps.date_gen[table_type](start_search,
                                                           end_time)
     for year, month, day, index in date_gen:
@@ -143,7 +144,8 @@ def cache_compiler(start_time, end_time, table_name, raw_data_location,
                 _read_data_and_create_file(read_function, fformat, table_name,
                                            day, month, year, index,
                                            path_and_name, full_filename,
-                                           retain_csv, select_columns, kwargs,
+                                           retain_csv, select_columns,
+                                           date_cols, kwargs,
                                            dtypes="all")
     return
 
@@ -385,7 +387,7 @@ def _read_data_and_create_file(read_function, fformat, table_name,
     try:
         csv_file = _glob.glob(path_and_name + '.[cC][sS][vV]')[0]
     except IndexError:
-        return None, printstr
+        return None
     read_csv_func = read_function['csv']
     data = _determine_columns_and_read_csv(table_name,
                                            csv_file,
