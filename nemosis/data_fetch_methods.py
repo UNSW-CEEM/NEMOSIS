@@ -44,7 +44,7 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location,
         all_data (pd.Dataframe): All data concatenated.
     """
     print('Compiling data for table {}.'.format(table_name))
-    start_time, end_time, select_columns,\
+    start_time, end_time, select_columns, default_columns,\
         date_filter, start_search, search_type =\
         _set_up_dynamic_compilers(table_name, start_time, end_time,
                                   select_columns)
@@ -54,8 +54,9 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location,
 
     data_tables = _dynamic_data_fetch_loop(start_search, start_time, end_time,
                                            table_name, raw_data_location,
-                                           select_columns, date_filter,
-                                           search_type, fformat=fformat,
+                                           select_columns, default_columns,
+                                           date_filter, search_type,
+                                           fformat=fformat,
                                            keep_csv=keep_csv,
                                            data_merge=data_merge,
                                            write_kwargs=kwargs)
@@ -104,7 +105,7 @@ def cache_compiler(start_time, end_time, table_name, raw_data_location,
         return
     print(f'Caching data for table {table_name}')
 
-    start_time, end_time, select_columns, _, start_search, _ =\
+    start_time, end_time, select_columns, _, _, start_search, _ =\
         _set_up_dynamic_compilers(table_name, start_time, end_time,
                                   None)
     start_time = _datetime.strptime(start_time, '%Y/%m/%d %H:%M:%S')
@@ -216,12 +217,13 @@ def _set_up_dynamic_compilers(table_name, start_time, end_time,
     '''
     Set up function for compilers that deal with dynamic data.
 
-    Returns: start_time, end_time, select_columns, date_filter,
-             start_search, search_type.
+    Returns: start_time, end_time, select_columns, defaults_columns,
+             date_filter, start_search, search_type.
     '''
     # Generic setup common to all tables.
+    default_cols = _defaults.table_columns[table_name]
     if select_columns is None:
-        select_columns = _defaults.table_columns[table_name]
+        select_columns = default_cols
 
     # Pre loop setup, done at table type basis.
     date_filter = _processing_info_maps.filter[table_name]
@@ -237,13 +239,14 @@ def _set_up_dynamic_compilers(table_name, start_time, end_time,
         start_search = start_time
     elif search_type == 'end':
         start_search = end_time
-    return start_time, end_time, select_columns,\
+    return start_time, end_time, select_columns, default_cols,\
         date_filter, start_search, search_type
 
 
 def _dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
                              raw_data_location, select_columns,
-                             date_filter, search_type, fformat='feather',
+                             default_columns, date_filter,
+                             search_type, fformat='feather',
                              keep_csv=True, data_merge=True,
                              write_kwargs={}):
     '''
@@ -275,7 +278,10 @@ def _dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
                 data = read_function[fformat](full_filename,
                                               columns=select_columns)
             except Exception as e:
-                data = read_function[fformat](full_filename)
+                file_cols = read_function[fformat](full_filename).columns
+                available_cols = file_cols.isin(default_columns)
+                data = read_function[fformat](full_filename,
+                                              columns=available_cols)
         elif _glob.glob(path_and_name + '.[cC][sS][vV]'):
             data, printstr =\
                 _read_data_and_create_file(read_function, fformat, table_name,
