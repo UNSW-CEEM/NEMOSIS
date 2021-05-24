@@ -121,6 +121,7 @@ class TestSearchTypeValidity(unittest.TestCase):
                 data_tables = data_fetch_methods._dynamic_data_fetch_loop(
                     start_search=start_search, start_time=start_time,
                     end_time=end_time, table_name=table_name, raw_data_location=defaults.raw_data_cache,
+                    select_columns=defaults.table_primary_keys[table_name],
                     default_columns=defaults.table_columns[table_name],
                     date_filter=None,
                     keep_csv=False, search_type='end')
