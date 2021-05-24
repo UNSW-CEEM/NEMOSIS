@@ -15,7 +15,7 @@ names = {'FCAS Providers': 'NEM Registration and Exemption List',
          'DISPATCHREGIONSUM': 'PUBLIC_DVD_DISPATCHREGIONSUM',
          'FCAS_4_SECOND': 'FCAS',
          'ELEMENTS_FCAS_4_SECOND': 'Elements_FCAS.csv',
-         'VARIABLES_FCAS_4_SECOND': '820-0079 csv.csv',
+         'VARIABLES_FCAS_4_SECOND': 'Ancillary Services Market Causer Pays Variables File.csv',
          'Generators and Scheduled Loads': 'NEM Registration and Exemption List',
          'MNSP_INTERCONNECTOR': 'PUBLIC_DVD_MNSP_INTERCONNECTOR',
          'MNSP_PEROFFER': 'PUBLIC_DVD_MNSP_PEROFFER',
@@ -85,7 +85,7 @@ static_tables = ['ELEMENTS_FCAS_4_SECOND',
 
 static_table_url = {
     'ELEMENTS_FCAS_4_SECOND': 'https://www.nemweb.com.au/Reports/Current/Causer_Pays_Elements/',
-    'VARIABLES_FCAS_4_SECOND': 'https://www.aemo.com.au/-/media/files/electricity/nem/settlements_and_payments/settlements/auction-reports/archive/820-0079-csv.csv',
+    'VARIABLES_FCAS_4_SECOND': 'https://aemo.com.au/-/media/files/electricity/nem/settlements_and_payments/settlements/auction-reports/archive/ancillary-services-market-causer-pays-variables-file.csv',
     'Generators and Scheduled Loads': 'https://www.aemo.com.au/-/media/Files/Electricity/NEM/Participant_Information/NEM-Registration-and-Exemption-List.xls',
     'FCAS Providers': 'https://www.aemo.com.au/-/media/Files/Electricity/NEM/Participant_Information/NEM-Registration-and-Exemption-List.xls'}
 
