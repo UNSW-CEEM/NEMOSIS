@@ -51,7 +51,9 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location,
     start_time = _datetime.strptime(start_time, '%Y/%m/%d %H:%M:%S')
     end_time = _datetime.strptime(end_time, '%Y/%m/%d %H:%M:%S')
     start_search = _datetime.strptime(start_search, '%Y/%m/%d %H:%M:%S')
-
+    if filter_cols and set(filter_cols).issubset(set(select_columns)):
+        print('Filter columns not valid.',
+              ' They must be a part of select_columns or the table defaults.')
     data_tables = _dynamic_data_fetch_loop(start_search, start_time, end_time,
                                            table_name, raw_data_location,
                                            select_columns, default_columns,
@@ -70,8 +72,13 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location,
         if parse_data_types:
             all_data = _infer_column_data_types(all_data)
         if filter_cols is not None:
-            all_data = _filters.filter_on_column_value(all_data, filter_cols,
-                                                       filter_values)
+            if not set(filter_cols).issubset(set(all_data.columns)):
+                print('Filter columns not in data. '
+                      + f'Compiling data for table {table_name} FAILED.')
+            else:
+                all_data = _filters.filter_on_column_value(all_data,
+                                                           filter_cols,
+                                                           filter_values)
         return all_data
     else:
         print(f'Compiling data for table {table_name} FAILED.')
@@ -267,33 +274,30 @@ def _dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
     table_type = _defaults.table_types[table_name]
     date_gen = _processing_info_maps.date_gen[table_type](start_search,
                                                           end_time)
+    date_cols = _processing_info_maps.date_cols[table_name]
     for year, month, day, index in date_gen:
-        data = _pd.DataFrame()
+        data = None
         filename_stub, full_filename,\
             path_and_name = _create_filename(table_name, table_type,
                                              raw_data_location,
                                              fformat, day, month,
                                              year, index)
         if _glob.glob(full_filename):
-            try:
+            data_on_file = read_function[fformat](full_filename)
+            read_cols = _validate_select_columns(data_on_file,
+                                                 select_columns,
+                                                 date_cols, full_filename)
+            if read_cols:
                 data = read_function[fformat](full_filename,
-                                              columns=select_columns)
-            except Exception as e:
-                data_on_file = read_function[fformat](full_filename)
-                read_cols = _validate_select_columns(data_on_file,
-                                                     select_columns,
-                                                     full_filename)
-                if read_cols:
-                    data = read_function[fformat](full_filename,
-                                                  columns=read_cols)
-                else:
-                    print(f'{select_columns} not in {full_filename}.')
+                                              columns=read_cols)
+            else:
+                print(f'{select_columns} not in {full_filename}.')
         elif _glob.glob(path_and_name + '.[cC][sS][vV]'):
             data =\
                 _read_data_and_create_file(read_function, fformat, table_name,
                                            day, month, year, index,
                                            path_and_name, full_filename,
-                                           keep_csv, select_columns,
+                                           keep_csv, select_columns, date_cols,
                                            write_kwargs)
         else:
             _download_data(table_name, table_type, filename_stub, day, month,
@@ -302,11 +306,13 @@ def _dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
                 _read_data_and_create_file(read_function, fformat, table_name,
                                            day, month, year, index,
                                            path_and_name, full_filename,
-                                           keep_csv, select_columns,
+                                           keep_csv, select_columns, date_cols,
                                            write_kwargs)
-        if not data.empty:
+        if data is not None:
             if date_filter is not None:
                 data = date_filter(data, start_time, end_time)
+                if not set(date_cols).issubset(set(select_columns)):
+                    data = data.drop(*date_cols, axis=1)
             if data_merge:
                 data_tables.append(data)
         else:
@@ -332,31 +338,35 @@ def _create_filename(table_name, table_type, raw_data_location, fformat,
     return filename_stub, full_filename, path_and_name
 
 
-def _validate_select_columns(data, select_columns, full_filename):
+def _validate_select_columns(data, select_columns, date_cols, full_filename):
     '''
     Checks whether select_columns are in the file. If at least one is,
-    then it will return any of select_columns that are available.
-    If not, it will return an empty list.
+    then it will return any of select_columns that are available as well as
+    the date col (for date filtering).  If not, it will return an empty list.
 
-    Returns: True/False, select_columns
+    Returns: List
     '''
     file_cols = data.columns
-    available_cols = file_cols[file_cols.isin(select_columns)]
+    available_cols = file_cols[file_cols.isin(select_columns)].tolist()
     rejected_cols = set(select_columns) - set(available_cols)
-    if available_cols.empty:
+    if not available_cols:
         print('Columns ', rejected_cols,
               f' not in {full_filename}. DataFrame is empty.')
         return []
     else:
-        print(f'{rejected_cols} not in {full_filename}. '
-              + f'Loading {available_cols.tolist()}')
-        return available_cols.tolist()
+        if rejected_cols:
+            print(f'{rejected_cols} not in {full_filename}. '
+                  + f'Loading {available_cols}')
+        if not set(date_cols).issubset(set(available_cols)):
+            available_cols = date_cols + available_cols
+        return available_cols
 
 
 def _read_data_and_create_file(read_function, fformat, table_name,
                                day, month, year, index,
                                path_and_name, full_filename, keep_csv,
-                               select_columns, write_kwargs, dtypes="str"):
+                               select_columns, date_cols, 
+                               write_kwargs, dtypes="str"):
     '''
     Reads CSV file, returns data from file and write to appropriate fformat.
     Data is returned with selected columns, but data retains all columns.
@@ -386,9 +396,11 @@ def _read_data_and_create_file(read_function, fformat, table_name,
     if not keep_csv:
         _os.remove(csv_file)
     if select_columns is not None:
-        keep_cols = _validate_select_columns(data, select_columns,
+        keep_cols = _validate_select_columns(data, select_columns, date_cols,
                                              full_filename)
         data = data.loc[:, keep_cols]
+    if data.empty:
+        data = None
     return data
 
 
