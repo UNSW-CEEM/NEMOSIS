@@ -63,7 +63,7 @@ Dynamic tables contain a datetime column that allows NEMOSIS to filter their con
 
 To learn more about each dynamic table visit the [wiki](https://github.com/UNSW-CEEM/NEMOSIS/wiki).
 
-You can view the static tables available by printing the NEMOSIS default settings.
+You can view the dynamic tables available by printing the NEMOSIS default settings.
 
 ```python
 from nemosis import defaults
@@ -108,8 +108,8 @@ To return only a subset of a particular table's columns, use the `select_columns
 ```python
 from nemosis import dynamic_data_compiler
 
-dynamic_data_compiler(start_time, end_time, table, raw_data_cache,
-                      select_columns=['REGIONID', 'SETTLEMENTDATE', 'RRP'])
+price_data = dynamic_data_compiler(start_time, end_time, table, raw_data_cache,
+                                   select_columns=['REGIONID', 'SETTLEMENTDATE', 'RRP'])
 ```
 
 To see what columns a table has, you can inspect NEMOSIS' defaults.
@@ -128,7 +128,7 @@ In the example below, the table will be filtered to only return rows where `REGI
 ```python
 from nemosis import dynamic_data_compiler
 
-dynamic_data_compiler(start_time, end_time, table, raw_data_cache, filter_cols=['REGIONID'], filter_values=(['SA1'],))
+price_data = dynamic_data_compiler(start_time, end_time, table, raw_data_cache, filter_cols=['REGIONID'], filter_values=(['SA1'],))
 ```
 
 Several filters can be applied simultaneously. A common filter is to extract pricing data excluding any physical intervention dispatch runs (`INTERVENTION == 0` is the appropriate filter, see [here](https://github.com/UNSW-CEEM/NEMOSIS/wiki/Column-Summary#intervention)). Below is an example of filtering to get data for Gladstone Unit 1 and Hornsdale Wind Farm 2 excluding any physical dispatch runs:
@@ -136,7 +136,7 @@ Several filters can be applied simultaneously. A common filter is to extract pri
 ```python
 from nemosis import dynamic_data_compiler
 
-dynamic_data_compiler(start_time, end_time, 'DISPATCHLOAD', raw_data_cache, filter_cols=['DUID', 'INTERVENTION'], filter_values=(['GSTONE1', 'HDWF2'], [0]))
+unit_dispatch_data = dynamic_data_compiler(start_time, end_time, 'DISPATCHLOAD', raw_data_cache, filter_cols=['DUID', 'INTERVENTION'], filter_values=(['GSTONE1', 'HDWF2'], [0]))
 ```
 
 ###### Caching options
@@ -170,7 +170,7 @@ The example below downloads parquet data into the cache.
 ```python
 from nemosis import cache_compiler
 
-price_data = cache_compiler(start_time, end_time, table, raw_data_cache, fformat='parquet')
+cache_compiler(start_time, end_time, table, raw_data_cache, fformat='parquet')
 ```
 
 ### Data from static tables
