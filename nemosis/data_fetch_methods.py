@@ -80,7 +80,7 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location,
                                                            filter_cols,
                                                            filter_values)
         print(f'Returning {table_name}. Check warnings for failed downloads '
-              + 'or data loading.')
+              + 'or failure to load data')
         return all_data
     else:
         print(f'Compiling data for table {table_name} FAILED.')
