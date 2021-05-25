@@ -1,4 +1,6 @@
 import unittest
+
+from soupsieve import select
 from nemosis import processing_info_maps
 from nemosis import data_fetch_methods
 from nemosis import defaults
@@ -118,10 +120,17 @@ class TestSearchTypeValidity(unittest.TestCase):
                 start_time = datetime.strptime(start_test_window, '%Y/%m/%d %H:%M:%S')
                 end_time = datetime.strptime('2018/01/01 00:00:00', '%Y/%m/%d %H:%M:%S')
                 start_search = datetime.strptime(start_test_window, '%Y/%m/%d %H:%M:%S')
+                select_columns = None
+                _, _, select_columns, _,\
+                    _, _, _ =\
+                    data_fetch_methods._set_up_dynamic_compilers(table_name,
+                                                                 start_time,
+                                                                 end_time,
+                                                                 select_columns)
                 data_tables = data_fetch_methods._dynamic_data_fetch_loop(
                     start_search=start_search, start_time=start_time,
                     end_time=end_time, table_name=table_name, raw_data_location=defaults.raw_data_cache,
-                    select_columns=None,
+                    select_columns=select_columns,
                     default_columns=defaults.table_columns[table_name],
                     date_filter=None,
                     keep_csv=False, search_type='end')
