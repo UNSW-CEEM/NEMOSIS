@@ -51,9 +51,10 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location,
     start_time = _datetime.strptime(start_time, '%Y/%m/%d %H:%M:%S')
     end_time = _datetime.strptime(end_time, '%Y/%m/%d %H:%M:%S')
     start_search = _datetime.strptime(start_search, '%Y/%m/%d %H:%M:%S')
-    if filter_cols and set(filter_cols).issubset(set(select_columns)):
+    if filter_cols and not set(filter_cols).issubset(set(select_columns)):
         print('Filter columns not valid.',
               ' They must be a part of select_columns or the table defaults.')
+        return None
     data_tables = _dynamic_data_fetch_loop(start_search, start_time, end_time,
                                            table_name, raw_data_location,
                                            select_columns, default_columns,
