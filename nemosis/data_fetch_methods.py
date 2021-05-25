@@ -79,6 +79,8 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location,
                 all_data = _filters.filter_on_column_value(all_data,
                                                            filter_cols,
                                                            filter_values)
+        print(f'Returning {table_name}. Check warnings for failed downloads '
+              + 'or data loading.')
         return all_data
     else:
         print(f'Compiling data for table {table_name} FAILED.')
@@ -383,10 +385,10 @@ def _read_data_and_create_file(read_function, fformat, table_name,
         output = (printstr)
     else:
         output = (printstr + f' {day}, {index}')
-    print(output)
     try:
         csv_file = _glob.glob(path_and_name + '.[cC][sS][vV]')[0]
     except IndexError:
+        print(output + ' FAILED.')
         return None
     read_csv_func = read_function['csv']
     data = _determine_columns_and_read_csv(table_name,
@@ -397,6 +399,7 @@ def _read_data_and_create_file(read_function, fformat, table_name,
         _write_to_format(data, fformat, full_filename, write_kwargs)
     if not keep_csv:
         _os.remove(csv_file)
+    print(output)
     if select_columns is not None:
         keep_cols = _validate_select_columns(data, select_columns, date_cols,
                                              full_filename)
