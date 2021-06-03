@@ -87,7 +87,7 @@ static_table_url = {
     'ELEMENTS_FCAS_4_SECOND': 'https://www.nemweb.com.au/Reports/Current/Causer_Pays_Elements/',
     'VARIABLES_FCAS_4_SECOND': 'https://aemo.com.au/-/media/files/electricity/nem/settlements_and_payments/settlements/auction-reports/archive/ancillary-services-market-causer-pays-variables-file.csv',
     'Generators and Scheduled Loads': 'https://www.aemo.com.au/-/media/Files/Electricity/NEM/Participant_Information/NEM-Registration-and-Exemption-List.xls',
-    'FCAS Providers': 'https://www.aemo.com.au/-/media/Files/Electricity/NEM/Participant_Information/NEM-Registration-and-Exemption-List.xls'}
+    '_downloader.download_xl': 'https://www.aemo.com.au/-/media/Files/Electricity/NEM/Participant_Information/NEM-Registration-and-Exemption-List.xls'}
 
 aemo_data_url = 'http://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/MMSDM/{}/MMSDM_{}_{}/MMSDM_Historical_Data_SQLLoader/DATA/{}.zip'
 

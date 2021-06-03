@@ -22,7 +22,7 @@ def run(year, month, day, index, filename_stub, down_load_to):
     try:
         status_code = download_unzip_csv(url_formatted, down_load_to)
     except Exception:
-        print('Warning {} not downloaded'.format(filename_stub))
+        print('Warning: {} not downloaded'.format(filename_stub))
 
 
 def run_fcas4s(year, month, day, index, filename_stub, down_load_to):
@@ -44,7 +44,7 @@ def run_fcas4s(year, month, day, index, filename_stub, down_load_to):
             # Check if the csv exists before warning
             file_check = os.path.join(down_load_to, filename_stub + '.csv')
             if not os.path.isfile(file_check):
-                print('Warning {} not downloaded'.format(filename_stub))
+                print('Warning: {} not downloaded'.format(filename_stub))
 
 
 def download_unzip_csv(url, down_load_to):
@@ -57,7 +57,7 @@ def download_unzip_csv(url, down_load_to):
     z.extractall(down_load_to)
 
 
-def download_csv(url, down_load_to, path_and_name):
+def download_csv(url, path_and_name):
     """
     This function downloads a zipped csv using a url,
     extracts the csv and saves it a specified location
@@ -67,7 +67,7 @@ def download_csv(url, down_load_to, path_and_name):
         f.write(r.content)
 
 
-def download_elements_file(url, down_load_to, path_and_name):
+def download_elements_file(url, path_and_name):
     page = requests.get(url)
     text = page.text
     soup = BeautifulSoup(text, "html.parser")
@@ -79,7 +79,7 @@ def download_elements_file(url, down_load_to, path_and_name):
         f.write(r.content)
 
 
-def download_xl(url, down_load_to, path_and_name):
+def download_xl(url, path_and_name):
     """
     This function downloads a zipped csv using a url, extracts the csv and
     saves it a specified location
