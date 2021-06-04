@@ -141,7 +141,7 @@ unit_dispatch_data = dynamic_data_compiler(start_time, end_time, 'DISPATCHLOAD',
 
 ###### Caching options
 
-By default the options fformat='feather', keep_csv=True and data_merge=True are used.
+By default the options fformat='feather' and keep_csv=True are used.
 
 If the option fformat='csv' is used then no feather files will be created, and all caching will be done using CSVs.
 
@@ -156,7 +156,7 @@ price_data = dynamic_data_compiler(start_time, end_time, table, raw_data_cache, 
 ```
 
 If the option `fformat='parquet'` is provided then no feather files will be created, and a parquet file will be used instead.
-While feather might have faster read/write, parquet has excellent compression characteristics and good compatability with packages for handling large on-memory/cluster datasets (e.g. Dask). This helps with local storage (especially for Causer Pays data) and file size for version control. We recommend you use `cache_compiler` if you are building a feather or parquet cache.
+While feather might have faster read/write, parquet has excellent compression characteristics and good compatability with packages for handling large on-memory/cluster datasets (e.g. Dask). This helps with local storage (especially for Causer Pays data) and file size for version control.
 
 ##### Cache compiler
 
@@ -188,32 +188,12 @@ print(defaults.static_tables)
 # ['ELEMENTS_FCAS_4_SECOND', 'VARIABLES_FCAS_4_SECOND', 'Generators and Scheduled Loads', 'FCAS Providers']
 ```
 
-#### static_table_xl
-
-The `static_table_xl` function can be used to access the tables 'Generators and Scheduled Loads' and 'FCAS Providers'.
-
-```python
-from nemosis import static_table_xl
-
-gens = static_table_xl('Generators and Scheduled Loads', raw_data_cache)
-```
-
 #### static_table
 
-The `static_table` function can be used to access the table 'VARIABLES_FCAS_4_SECOND'.
+The `static_table` function can be used to access these tables
 
 ```python
 from nemosis import static_table
 
 fcas_variables = static_table('VARIABLES_FCAS_4_SECOND', raw_data_cache)
-```
-
-#### static_table_FCAS_elements_file
-
-The `static_table_FCAS_elements_file` function can be used to access the table 'ELEMENTS_FCAS_4_SECOND'.
-
-```python
-from nemosis import static_table_FCAS_elements_file
-
-fcas_variables = static_table_FCAS_elements_file('ELEMENTS_FCAS_4_SECOND', raw_data_cache)
 ```

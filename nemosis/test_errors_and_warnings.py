@@ -1,10 +1,16 @@
 import unittest
-from datetime import datetime, timedelta
 from nemosis import dynamic_data_compiler, cache_compiler, static_table, defaults
 import os
 
 
 class TestDynamicDataCompilerRaisesExpectedErrors(unittest.TestCase):
+    def test_raise_error_for_incorrect_table_name(self):
+        with self.assertRaises(Exception) as context:
+            dynamic_data_compiler('2000/01/01 00:00:00', '2000/02/01 00:00:00', 'NOTATABLE',
+                                  defaults.raw_data_cache)
+        self.assertTrue("Table name provided is not a dynamic table."
+                        in str(context.exception))
+
     def test_raise_error_for_no_data_returned(self):
         with self.assertRaises(Exception) as context:
             dynamic_data_compiler('2000/01/01 00:00:00', '2000/02/01 00:00:00', 'DISPATCHPRICE',
@@ -54,7 +60,7 @@ class TestDynamicDataCompilerRaisesExpectedErrors(unittest.TestCase):
     def test_using_select_columns_all_does_not_raise_error(self):
         price_data = dynamic_data_compiler('2019/01/01 00:00:00', '2019/02/01 00:00:00', 'DISPATCHPRICE',
                                            defaults.raw_data_cache, select_columns='all', fformat='csv')
-        expected_columns = ['I', 'DISPATCH', 'PRICE', '1', 'RUNNO', 'REGIONID', 'DISPATCHINTERVAL',
+        expected_columns = ['I', 'DISPATCH', 'PRICE', '1', 'SETTLEMENTDATE', 'RUNNO', 'REGIONID', 'DISPATCHINTERVAL',
                             'INTERVENTION', 'RRP', 'EEP', 'ROP', 'APCFLAG', 'MARKETSUSPENDEDFLAG',
                             'LASTCHANGED', 'RAISE6SECRRP', 'RAISE6SECROP', 'RAISE6SECAPCFLAG',
                             'RAISE60SECRRP', 'RAISE60SECROP', 'RAISE60SECAPCFLAG', 'RAISE5MINRRP',
@@ -75,6 +81,13 @@ class TestDynamicDataCompilerRaisesExpectedErrors(unittest.TestCase):
 
 
 class TestCacheCompilerRaisesExpectedErrors(unittest.TestCase):
+    def test_raise_error_for_incorrect_table_name(self):
+        with self.assertRaises(Exception) as context:
+            cache_compiler('2019/01/01 00:00:00', '2019/02/01 00:00:00', 'NOTATABLE',
+                           defaults.raw_data_cache, fformat='db')
+        self.assertTrue("Table name provided is not a dynamic table."
+                        in str(context.exception))
+
     def test_raise_error_if_fformat_not_in_expected_set(self):
         with self.assertRaises(Exception) as context:
             cache_compiler('2019/01/01 00:00:00', '2019/02/01 00:00:00', 'DISPATCHPRICE',
@@ -82,8 +95,22 @@ class TestCacheCompilerRaisesExpectedErrors(unittest.TestCase):
         self.assertTrue("Argument fformat must be 'feather' or 'parquet'"
                         in str(context.exception))
 
+    def test_raise_error_if_select_columns_used_without_rebuild_true(self):
+        with self.assertRaises(Exception) as context:
+            cache_compiler('2019/01/01 00:00:00', '2019/02/01 00:00:00', 'DISPATCHPRICE',
+                           defaults.raw_data_cache, select_columns='all')
+        self.assertTrue(("The select_columns argument must be used with rebuild=True " +
+                         "to ensure the cache is built with the correct columns.")
+                        in str(context.exception))
+
 
 class TestStaticTableRaisesExpectedErrors(unittest.TestCase):
+    def test_raise_error_for_incorrect_table_name(self):
+        with self.assertRaises(Exception) as context:
+            static_table('NOTATABLE', defaults.raw_data_cache)
+        self.assertTrue("Table name provided is not a static table."
+                        in str(context.exception))
+
     def test_raise_error_for_no_data_returned(self):
         good_url = defaults.static_table_url['VARIABLES_FCAS_4_SECOND']
         defaults.static_table_url['VARIABLES_FCAS_4_SECOND'] = 'bad_url'

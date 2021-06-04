@@ -1,4 +1,5 @@
 import unittest
+import os
 from datetime import datetime, timedelta
 from nemosis import data_fetch_methods
 from nemosis import defaults
@@ -417,6 +418,30 @@ class TestCacheCompiler(unittest.TestCase):
             self.assertEqual(dat_col_type, "<M8[ns]")
             self.assertEqual(id_col_type, "object")
             print('Passed')
+
+    def test_caching_with_select_columns_works(self):
+        start_time = '2018/02/20 23:00:00'
+        end_time = '2018/02/20 23:30:00'
+        table = 'DISPATCHPRICE'
+        print('Testing {} returing values for 1 interval.'.format(table))
+        data_fetch_methods.cache_compiler(
+            start_time, end_time, table, defaults.raw_data_cache,
+            fformat="parquet", rebuild=True
+            )
+        data_fetch_methods.cache_compiler(
+            start_time, end_time, table, defaults.raw_data_cache,
+            fformat="parquet", select_columns=['SETTLEMENTDATE', 'REGIONID'],
+            rebuild=True
+            )
+        data = pd.read_parquet(os.path.join(defaults.raw_data_cache, 'PUBLIC_DVD_DISPATCHPRICE_201802010000.parquet'))
+        data_fetch_methods.cache_compiler(
+            start_time, end_time, table, defaults.raw_data_cache,
+            fformat="parquet", rebuild=True
+            )
+        got_columns = list(data.columns)
+        expected_columns = ['SETTLEMENTDATE', 'REGIONID']
+        self.assertSequenceEqual(got_columns, expected_columns)
+        print('Passed')
 
 
 class TestDynamicDataCompilerWithStartDateFiltering(unittest.TestCase):

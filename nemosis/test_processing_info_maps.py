@@ -30,9 +30,8 @@ class TestSearchTypeValidity(unittest.TestCase):
                     start_search=start_time, start_time=start_time,
                     end_time=end_time, table_name=table_name, raw_data_location=defaults.raw_data_cache,
                     select_columns=defaults.table_primary_keys[table_name],
-                    default_columns=defaults.table_columns[table_name],
                     date_filter=None,
-                    keep_csv=False, search_type='start_to_end')
+                    keep_csv=False)
                 all_data = pd.concat(data_tables, sort=False)
                 contains_duplicates = all_data.duplicated().any()
                 self.assertEqual(False, contains_duplicates, 'table {}'.format(table_name))
@@ -70,9 +69,8 @@ class TestSearchTypeValidity(unittest.TestCase):
                     start_search=start_search, start_time=start_time,
                     end_time=end_time, table_name=table_name, raw_data_location=defaults.raw_data_cache,
                     select_columns=defaults.table_primary_keys[table_name],
-                    default_columns=defaults.table_columns[table_name],
                     date_filter=None,
-                    keep_csv=False, search_type='all')
+                    keep_csv=False)
                 all_data = pd.concat(data_tables, sort=False)
                 contains_duplicates = all_data.duplicated().any()
                 self.assertEqual(False, contains_duplicates, 'table {}'.format(table_name))
@@ -91,9 +89,8 @@ class TestSearchTypeValidity(unittest.TestCase):
                     start_search=start_search, start_time=start_time,
                     end_time=end_time, table_name=table_name, raw_data_location=defaults.raw_data_cache,
                     select_columns=defaults.table_primary_keys[table_name],
-                    default_columns=defaults.table_columns[table_name],
                     date_filter=None,
-                    keep_csv=False, search_type='all')
+                    keep_csv=False)
                 all_data = pd.concat(data_tables, sort=False)
                 all_data = query_wrapers.drop_duplicates_by_primary_key(all_data, start_time, table_name)
                 contains_duplicates = all_data.duplicated().any()
@@ -121,8 +118,7 @@ class TestSearchTypeValidity(unittest.TestCase):
                 end_time = datetime.strptime('2018/01/01 00:00:00', '%Y/%m/%d %H:%M:%S')
                 start_search = datetime.strptime(start_test_window, '%Y/%m/%d %H:%M:%S')
                 select_columns = None
-                _, _, select_columns, _,\
-                    _, _, _ =\
+                _, _, select_columns, _, _ =\
                     data_fetch_methods._set_up_dynamic_compilers(table_name,
                                                                  start_time,
                                                                  end_time,
@@ -131,9 +127,8 @@ class TestSearchTypeValidity(unittest.TestCase):
                     start_search=start_search, start_time=start_time,
                     end_time=end_time, table_name=table_name, raw_data_location=defaults.raw_data_cache,
                     select_columns=select_columns,
-                    default_columns=defaults.table_columns[table_name],
                     date_filter=None,
-                    keep_csv=False, search_type='end')
+                    keep_csv=False)
                 first_data_table = data_tables[35].loc[:, defaults.table_primary_keys[table_name]]
                 last_data_table = data_tables[-1]
                 comp = pd.merge(first_data_table, last_data_table, 'left', defaults.table_primary_keys[table_name])

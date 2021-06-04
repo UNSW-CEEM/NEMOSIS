@@ -47,6 +47,9 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location,
     Returns:
         all_data (pd.Dataframe): All data concatenated.
     """
+    if table_name not in _defaults.dynamic_tables:
+        raise UserInputError("Table name provided is not a dynamic table.")
+
     if fformat not in ["csv", "feather", "parquet"]:
         raise UserInputError("Argument fformat must be 'csv', 'feather' or 'parquet'")
 
@@ -99,7 +102,7 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location,
 
 
 def cache_compiler(start_time, end_time, table_name, raw_data_location, select_columns=None,
-                   fformat='feather', **kwargs):
+                   fformat='feather', rebuild=False, keep_csv=False, **kwargs):
     """
     Downloads and compiles typed data for all dynamic tables as either parquet
     or feather format (i.e. will save data with columns as appropriate data
@@ -114,21 +117,32 @@ def cache_compiler(start_time, end_time, table_name, raw_data_location, select_c
         table_name (str): table as per Wiki.
         raw_data_location (str): directory to download and cache data to.
                                  existing data will be used if in this dir.
-        select_columns (list or str): a list of columns to return or the string
-                              'all' to return all columns from AMEO raw
-                              data. Default is None, will return a
-                              default set of columns.
+        select_columns (list or str): a list of columns to return, or the string
+                                     'all' to return all columns from AMEO raw
+                                     data. Determines which columns are included in cache file.
+                                     Default is None, will return a default set of columns.
         fformat (string): "feather" or "parquet" for storage and access.
                           Stored parquet and feather files will store columns
                           as object type (compatbile with GUI use). For
                           type inference for a cache, use cache_compiler.
+        rebuild (bool): If True then cache files are rebuilt
+                        even if they exist already. False by default.
+        keep_csv (bool): If True raw CSVs from AEMO are not deleted after
+                         the cache is built. False by default
         **kwargs: additional arguments passed to the pd.to_{fformat}() function
 
     Returns:
         Nothing
     """
+    if table_name not in _defaults.dynamic_tables:
+        raise UserInputError("Table name provided is not a dynamic table.")
+
     if fformat != "parquet" and fformat != "feather":
         raise UserInputError("Argument fformat must be 'feather' or 'parquet'")
+
+    if select_columns is not None and not rebuild:
+        raise UserInputError(("The select_columns argument must be used with rebuild=True " +
+                              "to ensure the cache is built with the correct columns."))
 
     print(f'Caching data for table {table_name}')
 
@@ -143,14 +157,40 @@ def cache_compiler(start_time, end_time, table_name, raw_data_location, select_c
                              table_name, raw_data_location,
                              select_columns, date_filter=None,
                              fformat=fformat,
-                             keep_csv=False,
+                             keep_csv=keep_csv,
                              caching_mode=True,
+                             rebuild=rebuild,
                              write_kwargs=kwargs)
     return
 
 
 def static_table(table_name, raw_data_location, select_columns=None,
                  filter_cols=None, filter_values=None, update_static_file=False):
+    """
+    Downloads and compiles data for all static tables.
+    Args:
+        table_name (str): table as per Wiki.
+        raw_data_location (str): directory to download and cache data to.
+                                 existing data will be used if in this dir.
+        select_columns (list or str): a list of columns to return or the string
+                                      'all' to return all columns from AMEO raw
+                                      data, 'all argument must be used will
+                                      fformat='csv'. Default is None, will return a
+                                      default set of columns.
+        filter_cols (list): filter on columns.
+        filter_values (tuple[list]): filter index n filter col such that values are
+                              equal to index n filter value.
+        update_static_file (bool): If True download latest version of file
+                                   even if a version already exists.
+                                   Default is False.
+        **kwargs: additional arguments passed to the pd.to_{fformat}() function
+
+    Returns:
+        data (pd.Dataframe)
+    """
+    if table_name not in _defaults.static_tables:
+        raise UserInputError("Table name provided is not a static table.")
+
     if filter_cols and not set(filter_cols).issubset(set(select_columns)):
         raise UserInputError(('Filter columns not valid. They must be a part of ' +
                               'select_columns or the table defaults.'))
@@ -175,7 +215,7 @@ def static_table(table_name, raw_data_location, select_columns=None,
         if select_columns is None:
             select_columns = _defaults.table_columns[table_name]
 
-        read_cols = _validate_select_columns(table, select_columns, [], path_and_name)
+        read_cols = _validate_select_columns(table, select_columns, path_and_name)
 
         if not read_cols:
             raise DataMismatchError((f'None of columns {select_columns} are in {path_and_name}. '
@@ -186,7 +226,7 @@ def static_table(table_name, raw_data_location, select_columns=None,
         table = table.loc[:, read_cols]
 
     for column in table.select_dtypes(['object']).columns:
-        table[column] = table[column].map(lambda x: x.strip())
+        table[column] = table[column].map(lambda x: _strip_if_string(x))
 
     if filter_cols is not None:
         if not set(filter_cols).issubset(set(table.columns)):
@@ -202,13 +242,32 @@ def static_table(table_name, raw_data_location, select_columns=None,
     return table
 
 
-def _read_mms_csv(path_and_name, dtype, usecols=None, nrows=None, names=None):
+def _strip_if_string(x):
+    if isinstance(x, str):
+        x = x.strip()
+    return x
+
+
+def _get_read_function(fformat, table_type):
+    if fformat == 'feather':
+        func = _pd.read_feather
+    elif fformat == 'parquet':
+        func = _pd.read_parquet
+    elif fformat == 'csv':
+        if table_type == 'MMS':
+            func = _read_mms_csv
+        elif table_type == 'FCAS':
+            func = _read_fcas_causer_pays_csv
+    return func
+
+
+def _read_mms_csv(path_and_name, dtype=None, usecols=None, nrows=None, names=None):
     data = _pd.read_csv(path_and_name, skiprows=[0], dtype=dtype,
                         usecols=usecols, nrows=nrows, names=names)
     return data[:-1]
 
 
-def _read_fcas_causer_pays_csv(path_and_name, dtype, usecols=None, nrows=None, names=None):
+def _read_fcas_causer_pays_csv(path_and_name, dtype=None, usecols=None, nrows=None, names=None):
     data = _pd.read_csv(path_and_name, dtype=dtype, usecols=usecols, nrows=nrows, names=names)
     return data
 
@@ -220,15 +279,15 @@ def _read_static_csv(path_and_name, table_name):
 
 def _read_excel(path_and_name, table_name):
     xls = _pd.ExcelFile(path_and_name)
-    return _pd.read_excel(xls, dtype=str)
+    return _pd.read_excel(xls, _defaults.reg_exemption_list_tabs[table_name], dtype=str)
 
 
 def _finalise_excel_data(data, table_name):
     if table_name in _defaults.table_primary_keys.keys():
         primary_keys = _defaults.table_primary_keys[table_name]
         data = data.drop_duplicates(primary_keys)
-    data.dropna(axis=0, how='all', inplace=True)
-    data.dropna(axis=1, how='all', inplace=True)
+    data = data.dropna(axis=0, how='all')
+    data = data.dropna(axis=1, how='all')
     return data
 
 
@@ -310,6 +369,7 @@ def _dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
                              raw_data_location, select_columns,
                              date_filter, fformat='feather',
                              keep_csv=True, caching_mode=False,
+                             rebuild=False,
                              write_kwargs={}):
     '''
     Loops through generated dates and checks if the appropriate file exists.
@@ -323,15 +383,6 @@ def _dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
     '''
     data_tables = []
 
-    read_function = {'feather': _pd.read_feather,
-                     'csv': _pd.read_csv,
-                     'parquet': _pd.read_parquet}
-
-    csv_read_function = {
-        'MMS': _read_mms_csv,
-        'FCAS': _read_fcas_causer_pays_csv
-    }
-
     table_type = _defaults.table_types[table_name]
     date_gen = _processing_info_maps.date_gen[table_type](start_search,
                                                           end_time)
@@ -343,21 +394,19 @@ def _dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
                                          fformat, day, month,
                                          year, index)
 
-        # If the file or csv copy of the data does not exist then download it.
-        if not (_glob.glob(full_filename) or _glob.glob(path_and_name + '.[cC][sS][vV]')):
+        if (not (_glob.glob(full_filename) or _glob.glob(path_and_name + '.[cC][sS][vV]')) or
+                (not _glob.glob(path_and_name + '.[cC][sS][vV]') and rebuild)):
             _download_data(table_name, table_type, filename_stub, day, month,
                            year, index, raw_data_location)
 
-        # If the file exists in the required format then just read it.
-        if _glob.glob(full_filename):
+        if _glob.glob(full_filename) and fformat != 'csv' and not rebuild:
             if not caching_mode:
-                data = read_function[fformat](full_filename)
+                data = _get_read_function(fformat, table_type)(full_filename)
             else:
                 data = None
                 print(f'Cache for {table_name} in date range already compiled in'
                       + f' {raw_data_location}.')
 
-        # If data didn't exist in fformat but does exist as csv then read from csv.
         elif _glob.glob(path_and_name + '.[cC][sS][vV]'):
 
             if select_columns != 'all':
@@ -372,39 +421,48 @@ def _dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
 
             csv_path_and_name = _glob.glob(path_and_name + '.[cC][sS][vV]')[0]
 
-            read_function  csv_read_function[_defaults.table_types[table_name]]
-            data = _determine_columns_and_read_csv(table_name, csv_path_and_name, _pd.read_csv,
+            csv_read_function = _get_read_function(fformat='csv', table_type=table_type)
+            data = _determine_columns_and_read_csv(table_name, csv_path_and_name, csv_read_function,
                                                    read_all_columns=read_all_columns, dtypes=dtypes)
+
+            if caching_mode:
+                data = _perform_column_selection(data, select_columns, full_filename)
 
             if data is not None and fformat != 'csv':
                 _print_file_creation_message(fformat, table_name, year, month, day, index)
                 _write_to_format(data, fformat, full_filename, write_kwargs)
 
-            if date_filter is not None:
-                data = date_filter(data, start_time, end_time)
-
-            if data is not None and select_columns != 'all':
-                keep_cols = _validate_select_columns(data, select_columns,
-                                                     date_cols, full_filename)
-                if keep_cols:
-                    data = data.loc[:, keep_cols]
-                else:
-                    raise DataMismatchError((f'None of columns {select_columns} are in {full_filename}. '
-                                             "This may be caused by user input if the 'select_columns' "
-                                             "argument is being used, or by changed AEMO data formats. "
-                                             "This error can be avoided by using the argument select_columns='all'."))
             if not keep_csv:
-                _os.remove(_glob.glob(path_and_name + '.[cC][sS][vV]'))
+                _os.remove(_glob.glob(path_and_name + '.[cC][sS][vV]')[0])
         else:
             data = None
 
-        if not caching_mode:
-            if data is not None:
-                data_tables.append(data)
-            else:
-                print(f'Warning: Loading data from {full_filename} failed.')
+        if not caching_mode and data is not None:
+
+            if date_filter is not None:
+                data = date_filter(data, start_time, end_time)
+
+            data = _perform_column_selection(data, select_columns, full_filename)
+
+            data_tables.append(data)
+        elif not caching_mode:
+            print(f'Warning: Loading data from {full_filename} failed.')
 
     return data_tables
+
+
+def _perform_column_selection(data, select_columns, full_filename):
+    if select_columns != 'all':
+        keep_cols = _validate_select_columns(data, select_columns,
+                                             full_filename)
+        if keep_cols:
+            data = data.loc[:, keep_cols]
+        else:
+            raise DataMismatchError((f'None of columns {select_columns} are in {full_filename}. '
+                                     "This may be caused by user input if the 'select_columns' "
+                                     "argument is being used, or by changed AEMO data formats. "
+                                     "This error can be avoided by using the argument select_columns='all'."))
+    return data
 
 
 def _create_filename(table_name, table_type, raw_data_location, fformat,
@@ -424,7 +482,7 @@ def _create_filename(table_name, table_type, raw_data_location, fformat,
     return filename_stub, full_filename, path_and_name
 
 
-def _validate_select_columns(data, select_columns, date_cols, full_filename):
+def _validate_select_columns(data, select_columns, full_filename):
     '''
     Checks whether select_columns are in the file. If at least one is,
     then it will return any of select_columns that are available as well as
@@ -441,8 +499,6 @@ def _validate_select_columns(data, select_columns, date_cols, full_filename):
         if rejected_cols:
             print(f'{rejected_cols} not in {full_filename}. '
                   + f'Loading {available_cols}')
-        if not set(date_cols).issubset(set(available_cols)):
-            available_cols = date_cols + available_cols
         return available_cols
 
 
@@ -532,8 +588,7 @@ def _determine_columns_and_read_csv(table_name, csv_file, read_csv_func,
     else:
         type = str
     if _defaults.table_types[table_name] == 'MMS' and not read_all_columns:
-        headers = read_csv_func(csv_file, skiprows=[0],
-                                nrows=1).columns.tolist()
+        headers = read_csv_func(csv_file, nrows=1).columns.tolist()
         columns = [column for column in _defaults.table_columns[table_name]
                    if column in headers]
         data = read_csv_func(csv_file, usecols=columns, dtype=type)
