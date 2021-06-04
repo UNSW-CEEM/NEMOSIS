@@ -513,60 +513,6 @@ def _print_file_creation_message(fformat, table_name, year, month, day, index):
     print(output)
 
 
-def _read_data_and_create_file(read_function, fformat, table_name,
-                               day, month, year, index,
-                               path_and_name, full_filename, keep_csv,
-                               select_columns, date_cols,
-                               write_kwargs, dtypes="str"):
-    '''
-    Reads CSV file, returns data from file and write to appropriate fformat.
-    Data is returned with selected columns, but data retains all columns.
-
-    If a CSV is not available, will return None.
-
-    Returns: data or None
-    '''
-    printstr = (f'Creating {fformat} file for '
-                + f'{table_name}, {year}, {month}')
-    if day is None:
-        output = (printstr)
-    else:
-        output = (printstr + f' {day}, {index}')
-
-    try:
-        csv_file = _glob.glob(path_and_name + '.[cC][sS][vV]')[0]
-    except IndexError:
-        print(output + ' FAILED.')
-        return None
-
-    read_csv_func = read_function['csv']
-
-    if select_columns != 'all':
-        data = _determine_columns_and_read_csv(table_name,
-                                               csv_file,
-                                               read_csv_func,
-                                               dtypes)
-    else:
-        data = _determine_columns_and_read_csv(table_name,
-                                               csv_file,
-                                               read_csv_func,
-                                               dtypes,
-                                               read_all_columns=True)
-
-    if fformat != 'csv':
-        _write_to_format(data, fformat, full_filename, write_kwargs)
-        print(output)
-    if not keep_csv:
-        _os.remove(csv_file)
-    if select_columns != 'all':
-        keep_cols = _validate_select_columns(data, select_columns, date_cols,
-                                             full_filename)
-        data = data.loc[:, keep_cols]
-    if data.empty:
-        data = None
-    return data
-
-
 def _determine_columns_and_read_csv(table_name, csv_file, read_csv_func,
                                     dtypes, read_all_columns=False):
     '''
