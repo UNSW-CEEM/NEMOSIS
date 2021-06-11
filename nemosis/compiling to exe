@@ -1,10 +1,50 @@
-
-Use call like:
-
-# Add to spec file
+1. Clone repo
+2. Create venv
+3. Activate venv then comlpete the next steps
+4. Install NEMOSIS to venv: pip install e .
+5. Also install pyinstaller: pip install pyinstaller
+6. run pyinstaller: PyInstaller --onefile  nemosis\gui.py
+7. edit gui.spec by adding the following line after the 'a' variable is defined. The file path will need to be
+adjusted.
 a.datas += [('favicon.ico', 'C:\\Users\\user\\Documents\\GitHub\\nemosis\\nemosis\\favicon.ico',  'DATA')]
+8. rerun pyinstaller but use the spec file: Pyinstaller --onefile --icon=favicon.ico --clean  gui.spec
 
-# Run in terminal
-C:\Users\user\AppData\Local\Programs\Python\Python36\python.exe -m PyInstaller --onefile --icon=favicon.ico gui.py
+Sample Spec:
+# -*- mode: python ; coding: utf-8 -*-
 
 
+block_cipher = None
+
+
+a = Analysis(['nemosis\\gui.py'],
+             pathex=['C:\\Users\\nick\\Documents\\GitHub\\Abi_NEMOSIS'],
+             binaries=[],
+             datas=[],
+             hiddenimports=[],
+             hookspath=[],
+             runtime_hooks=[],
+             excludes=[],
+             win_no_prefer_redirects=False,
+             win_private_assemblies=False,
+             cipher=block_cipher,
+             noarchive=False)
+
+a.datas += [('favicon.ico', 'C:\\Users\\nick\\Documents\\GitHub\\Abi_NEMOSIS\\nemosis\\favicon.ico',  'DATA')]
+
+pyz = PYZ(a.pure, a.zipped_data,
+             cipher=block_cipher)
+exe = EXE(pyz,
+          a.scripts,
+          a.binaries,
+          a.zipfiles,
+          a.datas,
+          [],
+          name='gui',
+          debug=False,
+          bootloader_ignore_signals=False,
+          strip=False,
+          upx=True,
+          upx_exclude=[],
+          runtime_tmpdir=None,
+          console=True,
+          icon='nemosis\\favicon.ico')

@@ -386,7 +386,7 @@ def _dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
     table_type = _defaults.table_types[table_name]
     date_gen = _processing_info_maps.date_gen[table_type](start_search,
                                                           end_time)
-    date_cols = _processing_info_maps.date_cols[table_name]
+
     for year, month, day, index in date_gen:
         filename_stub, full_filename, \
         path_and_name = _create_filename(table_name, table_type,
@@ -621,7 +621,6 @@ def _infer_column_data_types(data):
 
 # GUI wrappers and mappers below
 
-
 def _dynamic_data_wrapper_for_gui(start_time, end_time, table,
                                   raw_data_location, columns, filter_cols,
                                   filter_values):
@@ -643,26 +642,6 @@ def _static_table_wrapper_for_gui(start_time, end_time, table_name,
     return table
 
 
-def _static_table_FCAS_elements_file_wrapper_for_gui(start_time,
-                                                     end_time, table_name,
-                                                     raw_data_location,
-                                                     select_columns=None,
-                                                     filter_cols=None,
-                                                     filter_values=None):
-    table = static_table_FCAS_elements_file(table_name, raw_data_location,
-                                            select_columns, filter_cols,
-                                            filter_values)
-    return table
-
-
-def _static_table_xl_wrapper_for_gui(start_time, end_time, table_name,
-                                     raw_data_location, select_columns=None,
-                                     filter_cols=None, filter_values=None):
-    table = static_table_xl(table_name, raw_data_location, select_columns,
-                            filter_cols, filter_values)
-    return table
-
-
 _method_map = {'DISPATCHLOAD': _dynamic_data_wrapper_for_gui,
                'DISPATCHPRICE': _dynamic_data_wrapper_for_gui,
                'TRADINGLOAD': _dynamic_data_wrapper_for_gui,
@@ -678,12 +657,10 @@ _method_map = {'DISPATCHLOAD': _dynamic_data_wrapper_for_gui,
                'SPDCONNECTIONPOINTCONSTRAINT': _dynamic_data_wrapper_for_gui,
                'SPDINTERCONNECTORCONSTRAINT': _dynamic_data_wrapper_for_gui,
                'FCAS_4_SECOND': _dynamic_data_wrapper_for_gui,
-               'ELEMENTS_FCAS_4_SECOND':
-                   _static_table_FCAS_elements_file_wrapper_for_gui,
+               'ELEMENTS_FCAS_4_SECOND': _static_table_wrapper_for_gui,
                'VARIABLES_FCAS_4_SECOND': _static_table_wrapper_for_gui,
-               'Generators and Scheduled Loads':
-                   _static_table_xl_wrapper_for_gui,
-               'FCAS Providers': _static_table_xl_wrapper_for_gui,
+               'Generators and Scheduled Loads': _static_table_wrapper_for_gui,
+               'FCAS Providers': _static_table_wrapper_for_gui,
                'BIDDAYOFFER_D': _dynamic_data_wrapper_for_gui,
                'BIDPEROFFER_D': _dynamic_data_wrapper_for_gui,
                'FCAS_4s_SCADA_MAP': _custom_tables.fcas4s_scada_match,
