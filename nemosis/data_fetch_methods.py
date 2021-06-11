@@ -53,18 +53,19 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location,
     if fformat not in ["csv", "feather", "parquet"]:
         raise UserInputError("Argument fformat must be 'csv', 'feather' or 'parquet'")
 
-    if filter_cols and not set(filter_cols).issubset(set(select_columns)):
-        raise UserInputError(('Filter columns not valid. They must be a part of ' +
-                              'select_columns or the table defaults.'))
-
     if select_columns == 'all' and fformat != 'csv':
         raise UserInputError("If select_columns='all' is used fformat='csv' must be used.")
-
-    print('Compiling data for table {}.'.format(table_name))
 
     start_time, end_time, select_columns, date_filter, start_search = \
         _set_up_dynamic_compilers(table_name, start_time, end_time,
                                   select_columns)
+
+    if filter_cols and not set(filter_cols).issubset(set(select_columns)):
+        raise UserInputError(('Filter columns not valid. They must be a part of ' +
+                              'select_columns or the table defaults.'))
+
+    print('Compiling data for table {}.'.format(table_name))
+
     start_time = _datetime.strptime(start_time, '%Y/%m/%d %H:%M:%S')
     end_time = _datetime.strptime(end_time, '%Y/%m/%d %H:%M:%S')
     start_search = _datetime.strptime(start_search, '%Y/%m/%d %H:%M:%S')
