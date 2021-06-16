@@ -1,42 +1,60 @@
+import pandas as pd
+import numpy as np
+from datetime import timedelta
 from nemosis import dynamic_data_compiler
 import plotly.express as px
 
-start_time = '2021/05/01 11:00:00'
-end_time = '2021/05/01 12:00:00'
+start_time = '2021/04/27 00:00:00'
+end_time = '2021/04/28 00:00:00'
 raw_data_cache = 'C:/Users/nick/Desktop/cache'
 
-scada = dynamic_data_compiler(start_time, end_time, 'FCAS_4_SECOND', raw_data_cache,
-                              filter_cols=['ELEMENTNUMBER', 'VARIABLENUMBER'],
-                              filter_values=([330, 331], [2, 3, 4, 5]), fformat='parquet')
+scada_4s_resolution = dynamic_data_compiler(start_time, end_time, 'FCAS_4_SECOND', raw_data_cache,
+                                            filter_cols=['ELEMENTNUMBER', 'VARIABLENUMBER'],
+                                            filter_values=([330, 331], [2, 5]), fformat='parquet')
+
+scada_5min_resolution = dynamic_data_compiler(start_time, end_time, 'DISPATCHLOAD', raw_data_cache,
+                                              select_columns=['SETTLEMENTDATE', 'DUID', 'INITIALMW',
+                                                              'TOTALCLEARED'],
+                                              filter_cols=['DUID'], filter_values=(['HPRG1', 'HPRL1'],))
 
 elements = {
-    330: 'HPRG',
-    331: 'HPRL'
+    330: 'HPRG1',
+    331: 'HPRL1'
 }
 
 variables = {
     2: 'scada_value',
-    3: 'dispatch_target',
     5: 'regulation_target'
 }
 
-scada['descriptor'] = (scada['ELEMENTNUMBER'].apply(lambda x: elements[x]) + '_' +
-                       scada['VARIABLENUMBER'].apply(lambda x: variables[x]))
+scada_4s_resolution['DUID'] = scada_4s_resolution['ELEMENTNUMBER'].apply(lambda x: elements[x])
+scada_4s_resolution['variable'] = scada_4s_resolution['VARIABLENUMBER'].apply(lambda x: variables[x])
 
-scada = scada.pivot(index='TIMESTAMP', columns='descriptor', values='VALUE')
+scada_4s_resolution = scada_4s_resolution.pivot(index=['TIMESTAMP', 'DUID'], columns='variable', values='VALUE')
 
-scada['interval_end_time'] = scada.index.dt.round('5min')
+scada_4s_resolution.reset_index(inplace=True)
 
-scada['time_left_in_interval'] = scada['interval_end_time'] - scada.index
+scada = pd.merge_asof(scada_4s_resolution, scada_5min_resolution, left_on='TIMESTAMP',
+                      right_on='SETTLEMENTDATE', by='DUID', direction='forward')
 
-scada['']
+scada['fraction_ramp_complete'] = 1 - ((scada['SETTLEMENTDATE'] - scada['TIMESTAMP']) / timedelta(minutes=5))
 
-scada['target'] = (scada['HPRG_dispatch_target'] + scada['HPRG_regulation_target'] -
-                   scada['HPRL_dispatch_target'] - scada['HPRL_regulation_target'])
+scada['linear_ramp_target'] = scada['INITIALMW'] + \
+                              (scada['TOTALCLEARED'] - scada['INITIALMW']) * scada['fraction_ramp_complete']
 
-scada['scada_value'] = (scada['HPRG_scada_value'] - scada['HPRL_scada_value'])
+scada['linear_ramp_target'] = np.where(scada['DUID'] == 'HPRL1',  -1 * scada['linear_ramp_target'],
+                                       scada['linear_ramp_target'])
+scada['scada_value'] = np.where(scada['DUID'] == 'HPRL1',  -1 * scada['scada_value'],
+                                scada['scada_value'])
+scada['regulation_target'] = np.where(scada['DUID'] == 'HPRL1',  -1 * scada['regulation_target'],
+                                      scada['regulation_target'])
 
-fig = px.line(scada, x=scada.index, y=['target', 'scada_value'])
+scada = scada.groupby('TIMESTAMP', as_index=False).agg(
+    {'linear_ramp_target': 'sum', 'scada_value': 'sum', 'regulation_target': 'sum'})
+
+scada['target'] = scada['linear_ramp_target'] + scada['regulation_target']
+
+fig = px.line(scada, x='TIMESTAMP', y=['target', 'scada_value'])
 fig.show()
 
 
