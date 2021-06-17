@@ -92,7 +92,7 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location,
                 all_data = _filters.filter_on_column_value(all_data,
                                                            filter_cols,
                                                            filter_values)
-        print(f'Returning {table_name}. Check warnings for failed downloads.')
+        print(f'Returning {table_name}.')
         return all_data
     else:
         raise NoDataToReturn((f'Compiling data for table {table_name} failed. ' +

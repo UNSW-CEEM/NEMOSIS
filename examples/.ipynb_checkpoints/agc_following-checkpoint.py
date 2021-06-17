@@ -1,14 +1,31 @@
 import pandas as pd
 import numpy as np
 from datetime import timedelta
-from nemosis import dynamic_data_compiler
+from nemosis import static_table, dynamic_data_compiler
 import plotly.express as px
 
-start_time = '2021/04/27 00:00:00'
-end_time = '2021/04/28 00:00:00'
+# Specify where we will be caching the raw AEMO data.
 raw_data_cache = 'C:/Users/nick/Desktop/cache'
 
-scada_4s_resolution = dynamic_data_compiler(start_time, end_time, 'FCAS_4_SECOND', raw_data_cache,
+# Time window to pull data from.
+start_time = '2021/04/27 00:00:00'
+end_time = '2021/04/28 00:00:00'
+
+# Download the latest FCAS causer pays elements file. The update_static_file=True argument forces nemosis to
+# download the a new copy of file from AEMO even if a copy already exists in the cache.
+fcas_causer_pays_elements = static_table(table_name='ELEMENTS_FCAS_4_SECOND', raw_data_location=raw_data_cache,
+                                         update_static_file=True)
+
+# Using filtering and manual inspection find which fcas element numbers belong to Hornsdale Power Reserve.
+elements_for_honsdale_power_reserve = \
+    fcas_causer_pays_elements[fcas_causer_pays_elements['EMSNAME'].str.contains('HPR')]
+
+# Check which variable numbers we will need.
+fcas_causer_pays_elements = static_table(table_name='ELEMENTS_FCAS_4_SECOND', raw_data_location=raw_data_cache,
+                                         update_static_file=True)
+
+scada_4s_resolution = dynamic_data_compiler(start_time, end_time, table_name='FCAS_4_SECOND',
+                                            raw_data_location=raw_data_cache,
                                             filter_cols=['ELEMENTNUMBER', 'VARIABLENUMBER'],
                                             filter_values=([330, 331], [2, 5]), fformat='parquet')
 
