@@ -24,3 +24,4 @@ nemosis/build/gui/base_library.zip
 env/*
 nemosis/raw_aemo_data/*
 NEMOSIS.exe
+nemosis/smoke_tests.py

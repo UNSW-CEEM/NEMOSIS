@@ -47,6 +47,9 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location,
     Returns:
         all_data (pd.Dataframe): All data concatenated.
     """
+    if not _os.path.isdir(raw_data_location):
+        raise UserInputError("The raw_data_location provided does not exist.")
+
     if table_name not in _defaults.dynamic_tables:
         raise UserInputError("Table name provided is not a dynamic table.")
 
@@ -135,6 +138,9 @@ def cache_compiler(start_time, end_time, table_name, raw_data_location, select_c
     Returns:
         Nothing
     """
+    if not _os.path.isdir(raw_data_location):
+        raise UserInputError("The raw_data_location provided does not exist.")
+
     if table_name not in _defaults.dynamic_tables:
         raise UserInputError("Table name provided is not a dynamic table.")
 
@@ -189,6 +195,9 @@ def static_table(table_name, raw_data_location, select_columns=None,
     Returns:
         data (pd.Dataframe)
     """
+    if not _os.path.isdir(raw_data_location):
+        raise UserInputError("The raw_data_location provided does not exist.")
+
     if table_name not in _defaults.static_tables:
         raise UserInputError("Table name provided is not a static table.")
 
