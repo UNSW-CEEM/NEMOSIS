@@ -2,6 +2,8 @@
 
 ## An open-source tool for downloading historical data published by the Australian Energy Market Operator (AEMO)
 
+## v3.0.0 has now been released. Recent updates include: data type parsing by default in the API, better functionality for building data caches, and more instructive error messages.
+
 -----
 
 ## Table of Contents
