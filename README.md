@@ -1,6 +1,8 @@
 # NEMOSIS
 
-## An open-source tool to make it easier to download and analyse historical data published by the Australian Energy Market Operator (AEMO)
+## An open-source tool for downloading historical data published by the Australian Energy Market Operator (AEMO)
+
+## v3.0.0 has now been released. Recent updates include: data type parsing by default in the API, better functionality for building data caches, and more instructive error messages.
 
 -----
 
@@ -19,9 +21,7 @@
         - [Caching options](#caching-options)
       - [Cache compiler](#cache-compiler)
   - [Data from static tables](#data-from-static-tables)
-    - [static_table_xl](#static_table_xl)
     - [static_table](#static_table)
-    - [static_table_FCAS_elements_file](#static_table_fcas_elements_file)
 
 -----
 
@@ -34,7 +34,12 @@ Choose the exe from the latest [release](https://github.com/UNSW-CEEM/NEMOSIS/re
 ## Documentation
 
 - Check out the [wiki](https://github.com/UNSW-CEEM/NEMOSIS/wiki)
-- View [worked examples](https://github.com/UNSW-CEEM/NEMOSIS/wiki/Worked-Examples)
+- View worked examples:
+  - [GUI](https://github.com/UNSW-CEEM/NEMOSIS/wiki/Worked-Examples)
+  - Python interface:
+    - [Find a generator's Dispatch Unit ID (DUID) and download its SCADA data](https://github.com/UNSW-CEEM/NEMOSIS/blob/master/examples/generator_bidding_data.ipynb)
+    - [Visualise a generators bidding behavour](https://github.com/UNSW-CEEM/NEMOSIS/blob/master/examples/generator_bidding_data.ipynb)
+    - [replicate AEMO's analysis demonstrating the precision of battery dispatch](https://github.com/UNSW-CEEM/NEMOSIS/blob/master/examples/agc_target_vs_scada.ipynb)  
 - What [data is available](https://github.com/UNSW-CEEM/NEMOSIS/wiki/AEMO-Tables) and data [column definitions](https://github.com/UNSW-CEEM/NEMOSIS/wiki/Column-Summary)
 - Watch a video
   - [Download generator dispatch data](https://youtu.be/HEAOk056Bss)
