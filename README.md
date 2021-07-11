@@ -32,7 +32,12 @@ Choose the exe from the latest [release](https://github.com/UNSW-CEEM/NEMOSIS/re
 ## Documentation
 
 - Check out the [wiki](https://github.com/UNSW-CEEM/NEMOSIS/wiki)
-- View [worked examples](https://github.com/UNSW-CEEM/NEMOSIS/wiki/Worked-Examples)
+- View worked examples:
+  - [GUI](https://github.com/UNSW-CEEM/NEMOSIS/wiki/Worked-Examples)
+  - Python interface:
+    - [Find a generator's Dispatch Unit ID (DUID) and download its SCADA data](https://github.com/UNSW-CEEM/NEMOSIS/blob/master/examples/generator_bidding_data.ipynb)
+    - [Visualise a generators bidding behavour](https://github.com/UNSW-CEEM/NEMOSIS/blob/master/examples/generator_bidding_data.ipynb)
+    - [replicate AEMO's analysis demonstrating the precision of battery dispatch](https://github.com/UNSW-CEEM/NEMOSIS/blob/master/examples/agc_target_vs_scada.ipynb)  
 - What [data is available](https://github.com/UNSW-CEEM/NEMOSIS/wiki/AEMO-Tables) and data [column definitions](https://github.com/UNSW-CEEM/NEMOSIS/wiki/Column-Summary)
 - Watch a video
   - [Download generator dispatch data](https://youtu.be/HEAOk056Bss)
