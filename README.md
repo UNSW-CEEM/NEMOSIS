@@ -1,6 +1,6 @@
 # NEMOSIS
 
-## An open-source tool to make it easier to download and analyse historical data published by the Australian Energy Market Operator (AEMO)
+## An open-source tool for downloading historical data published by the Australian Energy Market Operator (AEMO)
 
 -----
 
