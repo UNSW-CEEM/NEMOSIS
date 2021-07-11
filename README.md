@@ -19,9 +19,7 @@
         - [Caching options](#caching-options)
       - [Cache compiler](#cache-compiler)
   - [Data from static tables](#data-from-static-tables)
-    - [static_table_xl](#static_table_xl)
     - [static_table](#static_table)
-    - [static_table_FCAS_elements_file](#static_table_fcas_elements_file)
 
 -----
 
