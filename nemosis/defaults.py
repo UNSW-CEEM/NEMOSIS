@@ -239,7 +239,7 @@ table_columns = {
 
     'Generators and Scheduled Loads': ['Participant', 'Station Name', 'Region', 'Dispatch Type', 'Category', 'Classification',
                                        'Fuel Source - Primary', 'Fuel Source - Descriptor', 'Technology Type - Primary',
-                                       'Technology Type - Descriptor', 'Aggregation', 'DUID'],
+                                       'Technology Type - Descriptor', 'Aggregation', 'DUID', 'Reg Cap (MW)'],
 
     'FCAS Providers': ['Participant', 'Station Name', 'Region', 'DUID', 'Bid Type', 'Max Cap (MW)',
                        'Min Enablement Level', 'Max Enablement Level', 'Max Lower Angle', 'Max Upper Angle'],
