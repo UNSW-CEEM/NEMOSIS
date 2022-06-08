@@ -55,3 +55,33 @@ def year_month_day_index_gen(start_time, end_time):
                     for minute in range(55, -1, -5):
                         index = str(hour).zfill(2) + str(minute).zfill(2)
                         yield str(year), month, str(day).zfill(2), index
+
+
+def bid_table_gen(start_time, end_time):
+
+    end_year = end_time.year
+    start_year = start_time.year
+
+    for year in range(start_year, end_year + 1):
+        if year == end_year:
+            end_month = end_time.month
+        else:
+            end_month = 12
+        if year == start_year:
+            start_month = start_time.month - 1
+        else:
+            start_month = 0
+
+        for month in defaults.months[start_month:end_month]:
+            if int(year) >= 2021 and int(month) >= 4:
+                for day in range(1, monthrange(int(year), int(month))[1] + 1):
+                    if ((day < start_time.day and int(month) == start_time.month and year == start_year)
+                            or (day > end_time.day and int(month) == end_time.month and year == end_year)):
+                        continue
+                    if year == 2021 and month == 4 and day == 1:
+                        print('Warning: Offer data for 2021/04/01 is not available explicitly skipping.')
+                    else:
+                        yield str(year), month, str(day).zfill(2), None
+
+            else:
+                yield str(year), month, None, None

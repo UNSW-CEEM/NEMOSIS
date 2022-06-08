@@ -176,10 +176,13 @@ finalise = {'DISPATCHLOAD': None,
             'MARKET_PRICE_THRESHOLDS': None}
 
 date_gen = {'MMS': date_generators.year_and_month_gen,
+            'MMS_AND_ARCHIVE': date_generators.bid_table_gen,
             'FCAS': date_generators.year_month_day_index_gen}
 
 write_filename = {'MMS': write_file_names.write_file_names,
+                  'MMS_AND_ARCHIVE': write_file_names.write_file_names_mms_and_archive,
                   'FCAS': write_file_names.write_file_names_fcas}
 
 downloader = {'MMS': downloader.run,
+              'MMS_AND_ARCHIVE': downloader.run_bid_tables,
               'FCAS': downloader.run_fcas4s}

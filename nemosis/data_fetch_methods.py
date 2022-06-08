@@ -258,7 +258,7 @@ def _strip_if_string(x):
     return x
 
 
-def _get_read_function(fformat, table_type):
+def _get_read_function(fformat, table_type, day):
     if fformat == 'feather':
         func = _pd.read_feather
     elif fformat == 'parquet':
@@ -268,6 +268,11 @@ def _get_read_function(fformat, table_type):
             func = _read_mms_csv
         elif table_type == 'FCAS':
             func = _read_fcas_causer_pays_csv
+        elif table_type == 'MMS_AND_ARCHIVE':
+            if day is None:
+                func = _read_mms_csv
+            else:
+                func = _read_constructed_csv
     return func
 
 
@@ -275,6 +280,11 @@ def _read_mms_csv(path_and_name, dtype=None, usecols=None, nrows=None, names=Non
     data = _pd.read_csv(path_and_name, skiprows=[0], dtype=dtype,
                         usecols=usecols, nrows=nrows, names=names)
     return data[:-1]
+
+
+def _read_constructed_csv(path_and_name, dtype=None, usecols=None, nrows=None, names=None):
+    data = _pd.read_csv(path_and_name, dtype=dtype, usecols=usecols, nrows=nrows, names=names)
+    return data
 
 
 def _read_fcas_causer_pays_csv(path_and_name, dtype=None, usecols=None, nrows=None, names=None):
@@ -411,7 +421,7 @@ def _dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
 
         if _glob.glob(full_filename) and fformat != 'csv' and not rebuild:
             if not caching_mode:
-                data = _get_read_function(fformat, table_type)(full_filename)
+                data = _get_read_function(fformat, table_type, day)(full_filename)
             else:
                 data = None
                 print(f'Cache for {table_name} in date range already compiled in'
@@ -431,7 +441,7 @@ def _dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
 
             csv_path_and_name = _glob.glob(path_and_name + '.[cC][sS][vV]')[0]
 
-            csv_read_function = _get_read_function(fformat='csv', table_type=table_type)
+            csv_read_function = _get_read_function(fformat='csv', table_type=table_type, day=day)
             data = _determine_columns_and_read_csv(table_name, csv_path_and_name, csv_read_function,
                                                    read_all_columns=read_all_columns, dtypes=dtypes)
 
@@ -543,12 +553,12 @@ def _determine_columns_and_read_csv(table_name, csv_file, read_csv_func,
         type = None
     else:
         type = str
-    if _defaults.table_types[table_name] == 'MMS' and not read_all_columns:
+    if _defaults.table_types[table_name] in ['MMS', 'MMS_AND_ARCHIVE'] and not read_all_columns:
         headers = read_csv_func(csv_file, nrows=1).columns.tolist()
         columns = [column for column in _defaults.table_columns[table_name]
                    if column in headers]
         data = read_csv_func(csv_file, usecols=columns, dtype=type)
-    elif _defaults.table_types[table_name] == 'MMS' and read_all_columns:
+    elif _defaults.table_types[table_name] in ['MMS', 'MMS_AND_ARCHIVE'] and read_all_columns:
         data = read_csv_func(csv_file, dtype=type)
     else:
         columns = _defaults.table_columns[table_name]

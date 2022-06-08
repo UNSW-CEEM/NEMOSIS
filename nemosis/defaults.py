@@ -43,9 +43,9 @@ table_types = {'FCAS Providers': 'STATICXL',
                'SPDREGIONCONSTRAINT': 'MMS',
                'SPDCONNECTIONPOINTCONSTRAINT': 'MMS',
                'SPDINTERCONNECTORCONSTRAINT': 'MMS',
-               'BIDPEROFFER_D': 'MMS',
+               'BIDPEROFFER_D': 'MMS_AND_ARCHIVE',
                'DISPATCHINTERCONNECTORRES': 'MMS',
-               'BIDDAYOFFER_D': 'MMS',
+               'BIDDAYOFFER_D': 'MMS_AND_ARCHIVE',
                'DISPATCHREGIONSUM': 'MMS',
                'FCAS_4_SECOND': 'FCAS',
                'ELEMENTS_FCAS_4_SECOND': 'STATIC',
@@ -66,7 +66,7 @@ table_types = {'FCAS Providers': 'STATICXL',
                'MARKET_PRICE_THRESHOLDS': 'MMS'
                }
 
-dynamic_tables = [table for table, type in table_types.items() if type in ['MMS', 'FCAS']]
+dynamic_tables = [table for table, type in table_types.items() if type in ['MMS', 'MMS_AND_ARCHIVE', 'FCAS']]
 
 return_tables = list(names.keys())
 
@@ -368,5 +368,5 @@ delete_button_internal_row = 5
 last_column = 100
 join_type = ['inner', 'left', 'right']
 
-# Testting settings
-raw_data_cache = 'raw_aemo_data'
+# Testing settings
+raw_data_cache = 'D:/nemosis_test_cache'
