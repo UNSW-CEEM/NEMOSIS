@@ -595,6 +595,9 @@ def _download_data(table_name, table_type, filename_stub,
     if day is None:
         print(f'Downloading data for table {table_name}, '
               + f'year {year}, month {month}')
+    elif index is None:
+        print(f'Downloading data for table {table_name}, '
+              + f'year {year}, month {month}, day {day}')
     else:
         print(f'Downloading data for table {table_name}, '
               + f'year {year}, month {month}, day {day},'

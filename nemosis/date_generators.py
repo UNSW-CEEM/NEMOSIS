@@ -32,6 +32,7 @@ def year_month_day_index_gen(start_time, end_time):
     start_year = start_time.year
 
     for year in range(start_year, end_year + 1):
+
         if year == end_year:
             end_month = end_time.month
         else:
@@ -59,14 +60,23 @@ def year_month_day_index_gen(start_time, end_time):
 
 def bid_table_gen(start_time, end_time):
 
+    if start_time.day == 1 and start_time.hour == 0 and start_time.minute == 0:
+        if start_time.month == 1:
+            start_time = start_time.replace(month=12)
+            start_time = start_time.replace(year=start_time.year - 1)
+        else:
+            start_time = start_time.replace(month=start_time.month - 1)
+
     end_year = end_time.year
     start_year = start_time.year
 
     for year in range(start_year, end_year + 1):
+
         if year == end_year:
             end_month = end_time.month
         else:
             end_month = 12
+
         if year == start_year:
             start_month = start_time.month - 1
         else:
@@ -78,10 +88,17 @@ def bid_table_gen(start_time, end_time):
                     if ((day < start_time.day and int(month) == start_time.month and year == start_year)
                             or (day > end_time.day and int(month) == end_time.month and year == end_year)):
                         continue
-                    if year == 2021 and month == 4 and day == 1:
-                        print('Warning: Offer data for 2021/04/01 is not available explicitly skipping.')
+                    if int(year) == 2021 and int(month) == 4 and int(day) == 1:
+                        print('Warning: Offer data for 2021/04/01 is known to be missing from the AEMO public \n'
+                              'archive, explicitly skipping. This file would also contain data for the first 4 hr of \n' +
+                              '2021/04/02 so that data will also be missing from the returned dataframe.')
                     else:
                         yield str(year), month, str(day).zfill(2), None
 
             else:
-                yield str(year), month, None, None
+                if int(year) == 2021 and int(month) == 3:
+                    print('Warning: Offer data for March 2021 is known to be missing from the  AEMO public \n'
+                          'archive, explicitly skipping. This file would also contain data for the first 4 hr of \n' +
+                          '2021/04/01 so that data will also be missing from the returned dataframe.')
+                else:
+                    yield str(year), month, None, None
