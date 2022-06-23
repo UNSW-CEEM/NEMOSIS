@@ -325,6 +325,227 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             print('Passed')
 
 
+class TestDynamicDataCompilerWithSettlementDateFiltering2021OfferData(unittest.TestCase):
+    def setUp(self):
+        self.table_names = ['BIDPEROFFER_D', 'BIDDAYOFFER_D']
+
+        self.table_types = {'BIDPEROFFER_D': 'DUID-BIDTYPE',
+                            'BIDDAYOFFER_D': 'DUID-BIDTYPE'}
+
+        self.table_filters = {'BIDPEROFFER_D': ['DUID', 'BIDTYPE'],
+                              'BIDDAYOFFER_D': ['DUID', 'BIDTYPE']}
+
+        self.filter_values = {'DUID-BIDTYPE': (['AGLHAL'], ['ENERGY'])}
+
+    def test_dispatch_tables_start_of_month(self):
+        start_time = '2021/06/01 00:00:00'
+        end_time = '2021/06/01 05:15:00'
+        for table in self.table_names:
+            print(f'Testing {table} returning values at start of month.')
+            dat_col = defaults.primary_date_columns[table]
+            table_type = self.table_types[table]
+            filter_cols = self.table_filters[table]
+            cols = [dat_col, *filter_cols]
+            expected_length = 63
+            expected_number_of_columns = 3
+            expected_first_time = (pd.to_datetime(start_time, format='%Y/%m/%d %H:%M:%S') + timedelta(minutes=5))
+            expected_last_time = pd.to_datetime(end_time, format='%Y/%m/%d %H:%M:%S')
+            if table == 'BIDDAYOFFER_D':
+                expected_length = 2
+                expected_last_time = '2021/06/01 00:00:00'
+                expected_last_time = \
+                    pd.to_datetime(expected_last_time,
+                                   format='%Y/%m/%d %H:%M:%S')
+                expected_first_time = '2021/05/31 00:00:00'
+                expected_first_time =\
+                    pd.to_datetime(expected_first_time,
+                                   format='%Y/%m/%d %H:%M:%S')
+            data = data_fetch_methods.dynamic_data_compiler(
+                    start_time, end_time, table, defaults.raw_data_cache,
+                    select_columns=cols, fformat="feather", keep_csv=False,
+                    filter_cols=filter_cols,
+                    filter_values=self.filter_values[table_type])
+            data = data.reset_index(drop=True)
+            self.assertEqual(expected_length, data.shape[0])
+            self.assertEqual(expected_number_of_columns, data.shape[1])
+            self.assertEqual(expected_first_time, data[dat_col][0])
+            self.assertEqual(expected_last_time, data[dat_col].iloc[-1])
+            print('Passed')
+
+    def test_dispatch_tables_end_of_month(self):
+        start_time = '2021/06/30 21:00:00'
+        end_time = '2021/07/01 00:00:00'
+        for table in self.table_names:
+            print('Testing {} returing values at end of month.'.format(table))
+            dat_col = defaults.primary_date_columns[table]
+            table_type = self.table_types[table]
+            filter_cols = self.table_filters[table]
+            cols = [dat_col, *filter_cols]
+            expected_length = 36
+            expected_number_of_columns = 3
+            expected_first_time =\
+                (pd.to_datetime(start_time, format='%Y/%m/%d %H:%M:%S') +
+                 timedelta(minutes=5))
+            expected_last_time =\
+                pd.to_datetime(end_time, format='%Y/%m/%d %H:%M:%S')
+            if table == 'BIDDAYOFFER_D':
+                expected_length = 1
+                expected_last_time = expected_first_time.replace(hour=0, minute=0)
+                expected_first_time = expected_first_time.replace(hour=0, minute=0)
+            data = data_fetch_methods.dynamic_data_compiler(
+                    start_time, end_time, table, defaults.raw_data_cache,
+                    select_columns=cols, fformat="feather", keep_csv=False,
+                    filter_cols=filter_cols,
+                    filter_values=self.filter_values[table_type])
+            data = data.sort_values(dat_col)
+            data = data.reset_index(drop=True)
+            self.assertEqual(expected_length, data.shape[0])
+            self.assertEqual(expected_number_of_columns, data.shape[1])
+            self.assertEqual(expected_first_time, data[dat_col][0])
+            self.assertEqual(expected_last_time, data[dat_col].iloc[-1])
+            print('Passed')
+
+    def test_dispatch_tables_straddle_2_months(self):
+        start_time = '2021/06/30 21:00:00'
+        end_time = '2021/07/01 21:00:00'
+        for table in self.table_names:
+            print(f'Testing {table} returing values from adjacent months.')
+            dat_col = defaults.primary_date_columns[table]
+            table_type = self.table_types[table]
+            filter_cols = self.table_filters[table]
+            cols = [dat_col, *filter_cols]
+            expected_length = 288
+            expected_number_of_columns = 3
+            expected_first_time =\
+                (pd.to_datetime(start_time, format='%Y/%m/%d %H:%M:%S')
+                 + timedelta(minutes=5))
+            expected_last_time = pd.to_datetime(end_time,
+                                                format='%Y/%m/%d %H:%M:%S')
+            if table == 'BIDDAYOFFER_D':
+                expected_length = 2
+                expected_last_time =\
+                    expected_last_time.replace(hour=0, minute=0)
+                expected_first_time =\
+                    expected_first_time.replace(hour=0, minute=0)
+            data = data_fetch_methods.dynamic_data_compiler(
+                    start_time, end_time, table, defaults.raw_data_cache,
+                    select_columns=cols, fformat="feather", keep_csv=False,
+                    filter_cols=filter_cols,
+                    filter_values=self.filter_values[table_type])
+            data = data.sort_values(dat_col)
+            data = data.reset_index(drop=True)
+            self.assertEqual(expected_length, data.shape[0])
+            self.assertEqual(expected_number_of_columns, data.shape[1])
+            self.assertEqual(expected_first_time, data[dat_col][0])
+            self.assertEqual(expected_last_time, data[dat_col].iloc[-1])
+            print('Passed')
+
+    def test_dispatch_tables_start_of_year(self):
+        start_time = '2021/01/01 00:00:00'
+        end_time = '2021/01/01 01:00:00'
+        for table in self.table_names:
+            print('Testing {} returing values at start of year.'.format(table))
+            dat_col = defaults.primary_date_columns[table]
+            table_type = self.table_types[table]
+            filter_cols = self.table_filters[table]
+            cols = [dat_col, *filter_cols]
+            expected_length = 12
+            expected_number_of_columns = 3
+            expected_first_time = \
+                (pd.to_datetime(start_time, format='%Y/%m/%d %H:%M:%S')
+                 + timedelta(minutes=5))
+            expected_last_time = pd.to_datetime(end_time,
+                                                format='%Y/%m/%d %H:%M:%S')
+            if table == 'BIDDAYOFFER_D':
+                expected_length = 1
+                expected_last_time =\
+                    (expected_last_time.replace(hour=0, minute=0)
+                     - timedelta(days=1))
+                expected_first_time =\
+                    (expected_first_time.replace(hour=0, minute=0)
+                     - timedelta(days=1))
+            data = data_fetch_methods.dynamic_data_compiler(
+                    start_time, end_time, table, defaults.raw_data_cache,
+                    select_columns=cols, fformat="feather", keep_csv=False,
+                    filter_cols=filter_cols,
+                    filter_values=self.filter_values[table_type])
+            data = data.sort_values(dat_col)
+            data = data.reset_index(drop=True)
+            self.assertEqual(expected_length, data.shape[0])
+            self.assertEqual(expected_number_of_columns, data.shape[1])
+            self.assertEqual(expected_first_time, data[dat_col][0])
+            self.assertEqual(expected_last_time, data[dat_col].iloc[-1])
+            print('Passed')
+
+    def test_dispatch_tables_end_of_year(self):
+        start_time = '2021/12/31 23:00:00'
+        end_time = '2022/01/01 00:00:00'
+        for table in self.table_names:
+            print('Testing {} returing values at end of year.'.format(table))
+            dat_col = defaults.primary_date_columns[table]
+            table_type = self.table_types[table]
+            filter_cols = self.table_filters[table]
+            cols = [dat_col, *filter_cols]
+            expected_length = 12
+            expected_number_of_columns = 3
+            expected_first_time = \
+                (pd.to_datetime(start_time, format='%Y/%m/%d %H:%M:%S')
+                 + timedelta(minutes=5))
+            expected_last_time =\
+                pd.to_datetime(end_time, format='%Y/%m/%d %H:%M:%S')
+            if table == 'BIDDAYOFFER_D':
+                expected_length = 1
+                expected_first_time =\
+                    expected_first_time.replace(hour=0, minute=0)
+                expected_last_time = expected_first_time
+            data = data_fetch_methods.dynamic_data_compiler(
+                    start_time, end_time, table, defaults.raw_data_cache,
+                    select_columns=cols, fformat="feather", keep_csv=False,
+                    filter_cols=filter_cols,
+                    filter_values=self.filter_values[table_type])
+            data = data.sort_values(dat_col)
+            data = data.reset_index(drop=True)
+            self.assertEqual(expected_length, data.shape[0])
+            self.assertEqual(expected_number_of_columns, data.shape[1])
+            self.assertEqual(expected_first_time, data[dat_col][0])
+            self.assertEqual(expected_last_time, data[dat_col].iloc[-1])
+            print('Passed')
+
+    def test_dispatch_tables_straddle_years(self):
+        start_time = '2021/12/31 23:00:00'
+        end_time = '2022/01/01 01:00:00'
+        for table in self.table_names:
+            print(f'Testing {table} returning values from adjacent years.')
+            dat_col = defaults.primary_date_columns[table]
+            table_type = self.table_types[table]
+            filter_cols = self.table_filters[table]
+            cols = [dat_col, *filter_cols]
+            expected_length = 24
+            expected_number_of_columns = 3
+            expected_first_time =\
+                (pd.to_datetime(start_time, format='%Y/%m/%d %H:%M:%S')
+                 + timedelta(minutes=5))
+            expected_last_time =\
+                pd.to_datetime(end_time, format='%Y/%m/%d %H:%M:%S')
+            if table == 'BIDDAYOFFER_D':
+                expected_length = 1
+                expected_first_time =\
+                    expected_first_time.replace(hour=0, minute=0)
+                expected_last_time = expected_first_time
+            data = data_fetch_methods.dynamic_data_compiler(
+                    start_time, end_time, table, defaults.raw_data_cache,
+                    select_columns=cols, fformat="feather", keep_csv=False,
+                    filter_cols=filter_cols,
+                    filter_values=self.filter_values[table_type])
+            data = data.sort_values(dat_col)
+            data = data.reset_index(drop=True)
+            self.assertEqual(expected_length, data.shape[0])
+            self.assertEqual(expected_number_of_columns, data.shape[1])
+            self.assertEqual(expected_first_time, data[dat_col][0])
+            self.assertEqual(expected_last_time, data[dat_col].iloc[-1])
+            print('Passed')
+
+
 class TestDynamicDataCompilerWithEffectiveDateFiltering(unittest.TestCase):
     def setUp(self):
         self.table_names = ['GENCONDATA', 'SPDREGIONCONSTRAINT',
@@ -578,7 +799,7 @@ class TestStaticTables(unittest.TestCase):
         cols = ['ELEMENTNUMBER', 'EMSNAME']
         filter_cols = ('ELEMENTNUMBER',)
         func = \
-            data_fetch_methods._static_table_FCAS_elements_file_wrapper_for_gui
+            data_fetch_methods._static_table_wrapper_for_gui
         data = func(start_time, end_time, table, defaults.raw_data_cache,
                     select_columns=cols, filter_cols=filter_cols,
                     filter_values=(['1'],))
