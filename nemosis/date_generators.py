@@ -71,7 +71,7 @@ def bid_table_gen(start_time, end_time):
                 start_time = start_time.replace(year=start_time.year - 1)
             else:
                 start_time = start_time.replace(month=start_time.month - 1)
-                last_day_previous_month = monthrange(start_time.year, start_time.month)[0]
+                last_day_previous_month = monthrange(start_time.year, start_time.month)[1]
                 start_time = start_time.replace(day=last_day_previous_month)
     else:
         if start_time.day == 1 and start_time.hour == 0 or start_time.minute == 0:
