@@ -2,7 +2,7 @@
 
 ## An open-source tool for downloading historical data published by the Australian Energy Market Operator (AEMO)
 
-## v3.0.0 has now been released. Recent updates include: data type parsing by default in the API, better functionality for building data caches, and more instructive error messages.
+## v3.1.0 has now been released. This fixes an issue with missing bid offer data after March 2021.
 
 -----
 
@@ -166,9 +166,9 @@ While feather might have faster read/write, parquet has excellent compression ch
 #### Accessing additional table columns
 
 By default NEMOSIS only includes a subset of an AEMO table's columns, the full set of columns are listed in the 
-[MMS Data Model Reports](https://visualisations.aemo.com.au/aemo/di-help/Content/Data_Model/MMS_Data_Model.htm
-?TocPath=_____8), or can be seen by inspecting the CSVs in the raw data cache. Users of the python interface can add
-additional columns as shown below. If you using a feather or parquet based cache the rebuild option should be set to
+[MMS Data Model Reports](https://visualisations.aemo.com.au/aemo/di-help/Content/Data_Model/MMS_Data_Model.htm), 
+or can be seen by inspecting the CSVs in the raw data cache. Users of the python interface can add additional 
+columns as shown below. If you using a feather or parquet based cache the rebuild option should be set to
 true so the additional columns are added to the cache files when they are rebuilt. This method of adding additional
 columns should also work with the `cache_compiler` function.
 
