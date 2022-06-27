@@ -20,6 +20,7 @@
         - [Filter options](#filter-options)
         - [Caching options](#caching-options)
       - [Cache compiler](#cache-compiler)
+      - [Additional columns](#accessing-additional-table-columns)
   - [Data from static tables](#data-from-static-tables)
     - [static_table](#static_table)
 
