@@ -3,11 +3,12 @@
 3. Activate venv then comlpete the next steps
 4. Install NEMOSIS to venv: pip install e .
 5. Also install pyinstaller: pip install pyinstaller
-6. run pyinstaller: PyInstaller --onefile  nemosis\gui.py
+6. run pyinstaller: pyi-makespec --onefile --icon=favicon.ico nemosis/gui.py
 7. edit gui.spec by adding the following line after the 'a' variable is defined. The file path will need to be
 adjusted.
 a.datas += [('favicon.ico', 'C:\\Users\\user\\Documents\\GitHub\\nemosis\\nemosis\\favicon.ico',  'DATA')]
-8. rerun pyinstaller but use the spec file: Pyinstaller --onefile --icon=favicon.ico --clean  gui.spec
+8. Also add "icon='nemosis\\favicon.ico'" to EXE call in spec
+8. rerun pyinstaller but use the spec file: Pyinstaller --clean gui.spec
 
 Sample Spec:
 # -*- mode: python ; coding: utf-8 -*-
@@ -29,7 +30,7 @@ a = Analysis(['nemosis\\gui.py'],
              cipher=block_cipher,
              noarchive=False)
 
-a.datas += [('favicon.ico', 'C:\\Users\\nick\\Documents\\GitHub\\Abi_NEMOSIS\\nemosis\\favicon.ico',  'DATA')]
+a.datas += [('favicon.ico', 'C:\\Users\\nick\\Documents\\GitHub\\nemosis\\nemosis\\favicon.ico',  'DATA')]
 
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)

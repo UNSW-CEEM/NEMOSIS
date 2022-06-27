@@ -384,8 +384,8 @@ class TestDynamicDataCompilerWithSettlementDateFiltering2021OfferData(unittest.T
             print('Passed')
 
     def test_dispatch_tables_start_of_month_previous_market_day_but_not_start_calendar_month(self):
-        start_time = '2021/06/01 03:00:00'
-        end_time = '2021/06/01 03:15:00'
+        start_time = '2021/06/05 03:00:00'
+        end_time = '2021/06/05 03:15:00'
         for table in self.table_names:
             print(f'Testing {table} returning values at start of month two.')
             dat_col = defaults.primary_date_columns[table]
@@ -398,11 +398,11 @@ class TestDynamicDataCompilerWithSettlementDateFiltering2021OfferData(unittest.T
             expected_last_time = pd.to_datetime(end_time, format='%Y/%m/%d %H:%M:%S')
             if table == 'BIDDAYOFFER_D':
                 expected_length = 1 * 4
-                expected_last_time = '2021/05/31 00:00:00'
+                expected_last_time = '2021/06/04 00:00:00'
                 expected_last_time = \
                     pd.to_datetime(expected_last_time,
                                    format='%Y/%m/%d %H:%M:%S')
-                expected_first_time = '2021/05/31 00:00:00'
+                expected_first_time = '2021/06/04 00:00:00'
                 expected_first_time =\
                     pd.to_datetime(expected_first_time,
                                    format='%Y/%m/%d %H:%M:%S')

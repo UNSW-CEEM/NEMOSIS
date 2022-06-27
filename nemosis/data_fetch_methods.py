@@ -14,7 +14,7 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location,
                           select_columns=None, filter_cols=None,
                           filter_values=None, fformat='feather',
                           keep_csv=True, parse_data_types=True,
-                          **kwargs):
+                          rebuild=False, **kwargs):
     """
     Downloads and compiles data for all dynamic tables. For non-CSV formats,
     will save data typed as strings/objects. To save typed data (e.g.
@@ -42,6 +42,8 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location,
                            If False, will not return any data.
         parse_data_types (bool): infers data types of columns when reading
                                  data. default True for API use.
+        rebuild (bool): If True then cache files are rebuilt
+                        even if they exist already. False by default.
         **kwargs: additional arguments passed to the pd.to_{fformat}() function
 
     Returns:
@@ -77,6 +79,7 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location,
                                            select_columns, date_filter,
                                            fformat=fformat,
                                            keep_csv=keep_csv,
+                                           rebuild=rebuild,
                                            write_kwargs=kwargs)
     if data_tables:
         all_data = _pd.concat(data_tables, sort=False)
