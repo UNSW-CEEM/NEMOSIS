@@ -8,3 +8,7 @@ class NoDataToReturn(Exception):
 
 class DataMismatchError(Exception):
     pass
+
+
+class DataFormatError(Exception):
+    pass

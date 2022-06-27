@@ -51,7 +51,7 @@ class TestDynamicDataCompilerRaisesExpectedErrors(unittest.TestCase):
         with self.assertRaises(Exception) as context:
             dynamic_data_compiler('2019/01/01 00:00:00', '2019/02/01 00:00:00', 'DISPATCHPRICE',
                                   defaults.raw_data_cache, select_columns=['NOTACOLUMN'])
-        self.assertTrue((f'None of columns [\'NOTACOLUMN\'] are in raw_aemo_data\\PUBLIC_DVD_DISPATCHPRICE_201812010000.feather. '
+        self.assertTrue((f'None of columns [\'NOTACOLUMN\'] are in D:/nemosis_test_cache\\PUBLIC_DVD_DISPATCHPRICE_201812010000.feather. '
                          "This may be caused by user input if the \'select_columns\' "
                          "argument is being used, or by changed AEMO data formats. "
                          "This error can be avoided by using the argument select_columns=\'all\'.")
@@ -149,7 +149,7 @@ class TestStaticTableRaisesExpectedErrors(unittest.TestCase):
         with self.assertRaises(Exception) as context:
             static_table('VARIABLES_FCAS_4_SECOND', defaults.raw_data_cache,
                          select_columns=['NOTACOLUMN'])
-        self.assertTrue((f'None of columns [\'NOTACOLUMN\'] are in raw_aemo_data\\Ancillary Services Market Causer Pays Variables File.csv. '
+        self.assertTrue((f'None of columns [\'NOTACOLUMN\'] are in D:/nemosis_test_cache\\Ancillary Services Market Causer Pays Variables File.csv. '
                          "This may be caused by user input if the \'select_columns\' "
                          "argument is being used, or by changed AEMO data formats. "
                          "This error can be avoided by using the argument select_columns=\'all\'.")
