@@ -2,7 +2,7 @@
 
 ## An open-source tool for downloading historical data published by the Australian Energy Market Operator (AEMO)
 
-## v3.0.0 has now been released. Recent updates include: data type parsing by default in the API, better functionality for building data caches, and more instructive error messages.
+## v3.1.0 has now been released. This fixes an issue with missing bid offer data after March 2021.
 
 -----
 
@@ -20,6 +20,7 @@
         - [Filter options](#filter-options)
         - [Caching options](#caching-options)
       - [Cache compiler](#cache-compiler)
+      - [Additional columns](#accessing-additional-table-columns)
   - [Data from static tables](#data-from-static-tables)
     - [static_table](#static_table)
 
@@ -163,12 +164,27 @@ price_data = dynamic_data_compiler(start_time, end_time, table, raw_data_cache, 
 If the option `fformat='parquet'` is provided then no feather files will be created, and a parquet file will be used instead.
 While feather might have faster read/write, parquet has excellent compression characteristics and good compatability with packages for handling large on-memory/cluster datasets (e.g. Dask). This helps with local storage (especially for Causer Pays data) and file size for version control.
 
-#### Accessing additional table columns
+##### Cache compiler
+
+This may be useful if you're using NEMOSIS to
+build a data cache, but then process the cache using other packages or applications. It is particularly useful because `cache_compiler` will infer the data types of the columns before saving to parquet or feather, thereby eliminating the need to type convert data that is obtained using `dynamic_data_compiler`.
+
+`cache_compiler` can be used to compile a cache of parquet or feather files. Parquet will likely be smaller, but feather can be read faster. `cache_compiler` will not run if it detects the appropriate files in the `raw_data_cache` directory. Otherwise, it will download CSVs, covert to the requested format and then delete the CSVs. It does not return any data, unlike `dynamic_data_compiler`.
+
+The example below downloads parquet data into the cache.
+
+```python
+from nemosis import cache_compiler
+
+cache_compiler(start_time, end_time, table, raw_data_cache, fformat='parquet')
+```
+
+##### Accessing additional table columns
 
 By default NEMOSIS only includes a subset of an AEMO table's columns, the full set of columns are listed in the 
-[MMS Data Model Reports](https://visualisations.aemo.com.au/aemo/di-help/Content/Data_Model/MMS_Data_Model.htm
-?TocPath=_____8), or can be seen by inspecting the CSVs in the raw data cache. Users of the python interface can add
-additional columns as shown below. If you using a feather or parquet based cache the rebuild option should be set to
+[MMS Data Model Reports](https://visualisations.aemo.com.au/aemo/di-help/Content/Data_Model/MMS_Data_Model.htm), 
+or can be seen by inspecting the CSVs in the raw data cache. Users of the python interface can add additional 
+columns as shown below. If you using a feather or parquet based cache the rebuild option should be set to
 true so the additional columns are added to the cache files when they are rebuilt. This method of adding additional
 columns should also work with the `cache_compiler` function.
 
@@ -183,21 +199,6 @@ table = 'BIDPEROFFER_D'
 raw_data_cache = 'C:/Users/your_data_storage'
 
 volume_bid_data = dynamic_data_compiler(start_time, end_time, table, raw_data_cache, rebuild=True)
-```
-
-##### Cache compiler
-
-This may be useful if you're using NEMOSIS to
-build a data cache, but then process the cache using other packages or applications. It is particularly useful because `cache_compiler` will infer the data types of the columns before saving to parquet or feather, thereby eliminating the need to type convert data that is obtained using `dynamic_data_compiler`.
-
-`cache_compiler` can be used to compile a cache of parquet or feather files. Parquet will likely be smaller, but feather can be read faster. `cache_compiler` will not run if it detects the appropriate files in the `raw_data_cache` directory. Otherwise, it will download CSVs, covert to the requested format and then delete the CSVs. It does not return any data, unlike `dynamic_data_compiler`.
-
-The example below downloads parquet data into the cache.
-
-```python
-from nemosis import cache_compiler
-
-cache_compiler(start_time, end_time, table, raw_data_cache, fformat='parquet')
 ```
 
 ### Data from static tables
