@@ -17,6 +17,7 @@ names = {'FCAS Providers': 'NEM Registration and Exemption List.xls',
          'ELEMENTS_FCAS_4_SECOND': 'Elements_FCAS.csv',
          'VARIABLES_FCAS_4_SECOND': 'Ancillary Services Market Causer Pays Variables File.csv',
          'Generators and Scheduled Loads': 'NEM Registration and Exemption List.xls',
+         '2022 IASR Existing Gen Data': 'Inputs assumptions and scenarios workbook.xls',
          'MNSP_INTERCONNECTOR': 'PUBLIC_DVD_MNSP_INTERCONNECTOR',
          'MNSP_PEROFFER': 'PUBLIC_DVD_MNSP_PEROFFER',
          'INTERCONNECTOR': 'PUBLIC_DVD_INTERCONNECTOR',
@@ -87,7 +88,8 @@ static_table_url = {
     'ELEMENTS_FCAS_4_SECOND': 'https://www.nemweb.com.au/Reports/Current/Causer_Pays_Elements/',
     'VARIABLES_FCAS_4_SECOND': 'https://aemo.com.au/-/media/files/electricity/nem/settlements_and_payments/settlements/auction-reports/archive/ancillary-services-market-causer-pays-variables-file.csv',
     'Generators and Scheduled Loads': 'https://www.aemo.com.au/-/media/Files/Electricity/NEM/Participant_Information/NEM-Registration-and-Exemption-List.xls',
-    '_downloader.download_xl': 'https://www.aemo.com.au/-/media/Files/Electricity/NEM/Participant_Information/NEM-Registration-and-Exemption-List.xls'}
+    '_downloader.download_xl': 'https://www.aemo.com.au/-/media/Files/Electricity/NEM/Participant_Information/NEM-Registration-and-Exemption-List.xls',
+    '2022 IASR Existing Gen Data': 'https://www.aemo.com.au/-/media/files/major-publications/isp/2022/2022-documents/inputs-assumptions-and-scenarios-workbook.xlsx?la=en'}
 
 aemo_data_url = 'http://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/MMSDM/{}/MMSDM_{}_{}/MMSDM_Historical_Data_SQLLoader/DATA/{}.zip'
 
@@ -241,6 +243,11 @@ table_columns = {
                                        'Fuel Source - Primary', 'Fuel Source - Descriptor', 'Technology Type - Primary',
                                        'Technology Type - Descriptor', 'Aggregation', 'DUID', 'Reg Cap (MW)'],
 
+    '2022 IASR Existing Gen Data': ['Generator','Generator Type','Region','ISP \nsub-region','REZ Location','Fuel/Technology type',
+                                    'Maximum Capacity (MW)','Summer Rating (MW)','Maintenance duration (%)','Maximum Capacity Factor (%)','FOM ($/kW/annum)',
+                                    'VOM ($/MWh sent-out)','Heat Rate (GJ/MWh HHV s.o.)','Fuel Cost ($/GJ)','Emissions (kg/MWh)','MLF','Auxiliary Load (%)',
+                                    'SRMC ($/MWh)','Expected Retirement Year'],
+
     'FCAS Providers': ['Participant', 'Station Name', 'Region', 'DUID', 'Bid Type', 'Max Cap (MW)',
                        'Min Enablement Level', 'Max Enablement Level', 'Max Lower Angle', 'Max Upper Angle'],
 
@@ -337,7 +344,8 @@ primary_date_columns = {'DISPATCHLOAD': 'SETTLEMENTDATE',
                         'MARKET_PRICE_THRESHOLDS': 'EFFECTIVEDATE'}
 
 reg_exemption_list_tabs = {'Generators and Scheduled Loads': 'Generators and Scheduled Loads',
-                           'FCAS Providers': 'Ancillary Services'}
+                           'FCAS Providers': 'Ancillary Services',
+                           '2022 IASR Existing Gen Data': 'Existing Gen Data Summary'}
 
 months = ['01', '02', '03', '04', '05',
           '06', '07', '08', '09', '10', '11', '12']

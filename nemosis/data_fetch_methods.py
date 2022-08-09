@@ -304,6 +304,10 @@ def _read_excel(path_and_name, table_name):
     xls = _pd.ExcelFile(path_and_name)
     return _pd.read_excel(xls, _defaults.reg_exemption_list_tabs[table_name], dtype=str)
 
+def _read_excel_iasr(path_and_name, table_name):
+	xls = _pd.ExcelFile(path_and_name)
+	df = _pd.read_excel(xls, _defaults.reg_exemption_list_tabs[table_name], header=8, usecols="B:U", dtype=str)
+	return df[~df['Generator Type'].isna()]
 
 def _finalise_excel_data(data, table_name):
     if table_name in _defaults.table_primary_keys.keys():
@@ -322,21 +326,24 @@ static_downloader_map = {
     'VARIABLES_FCAS_4_SECOND': _downloader.download_csv,
     'ELEMENTS_FCAS_4_SECOND': _downloader.download_elements_file,
     'Generators and Scheduled Loads': _downloader.download_xl,
-    '_downloader.download_xl': _downloader.download_xl
+    '_downloader.download_xl': _downloader.download_xl,
+    '2022 IASR Existing Gen Data': _downloader.download_xl,
 }
 
 static_file_reader_map = {
     'VARIABLES_FCAS_4_SECOND': _read_static_csv,
     'ELEMENTS_FCAS_4_SECOND': _read_static_csv,
     'Generators and Scheduled Loads': _read_excel,
-    'FCAS Providers': _read_excel
+    'FCAS Providers': _read_excel,
+    '2022 IASR Existing Gen Data': _read_excel_iasr,
 }
 
 static_data_finaliser_map = {
     'VARIABLES_FCAS_4_SECOND': _finalise_csv_data,
     'ELEMENTS_FCAS_4_SECOND': _finalise_csv_data,
     'Generators and Scheduled Loads': _finalise_excel_data,
-    'FCAS Providers': _finalise_excel_data
+    'FCAS Providers': _finalise_excel_data,
+    '2022 IASR Existing Gen Data': _finalise_excel_data,
 }
 
 
