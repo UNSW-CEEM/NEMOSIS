@@ -1,5 +1,5 @@
 import os
-from NEMOSIS.nemosis import query_wrappers
+from . import query_wrappers
 
 from nemosis import (
     filters,
