@@ -1,9 +1,9 @@
 import os
+from NEMOSIS.nemosis import query_wrappers
 
 from nemosis import (
     filters,
     downloader,
-    query_wrapers,
     write_file_names,
     date_generators,
 )
@@ -28,15 +28,15 @@ setup = {
     "ELEMENTS_FCAS_4_SECOND": None,
     "VARIABLES_FCAS_4_SECOND": None,
     "Generators and Scheduled Loads": None,
-    "BIDDAYOFFER_D": query_wrapers.dispatch_date_setup,
+    "BIDDAYOFFER_D": query_wrappers.dispatch_date_setup,
     "BIDPEROFFER_D": None,
     "FCAS_4s_SCADA_MAP": None,
     "DISPATCHINTERCONNECTORRES": None,
     "DISPATCHREGIONSUM": None,
     "LOSSMODEL": None,
     "LOSSFACTORMODEL": None,
-    "MNSP_DAYOFFER": query_wrapers.dispatch_date_setup,
-    "MNSP_PEROFFER": query_wrapers.dispatch_half_hour_setup,
+    "MNSP_DAYOFFER": query_wrappers.dispatch_date_setup,
+    "MNSP_PEROFFER": query_wrappers.dispatch_half_hour_setup,
     "MNSP_INTERCONNECTOR": None,
     "INTERCONNECTOR": None,
     "INTERCONNECTORCONSTRAINT": None,
@@ -154,30 +154,30 @@ finalise = {
     "DISPATCHPRICE": None,
     "DISPATCH_UNIT_SCADA": None,
     "DISPATCHCONSTRAINT": [
-        query_wrapers.convert_genconid_effectivedate_to_datetime_format
+        query_wrappers.convert_genconid_effectivedate_to_datetime_format
     ],
     "DUDETAILSUMMARY": [
-        query_wrapers.most_recent_records_before_start_time,
-        query_wrapers.drop_duplicates_by_primary_key,
+        query_wrappers.most_recent_records_before_start_time,
+        query_wrappers.drop_duplicates_by_primary_key,
     ],
     "DUDETAIL": [
-        query_wrapers.most_recent_records_before_start_time,
-        query_wrapers.drop_duplicates_by_primary_key,
+        query_wrappers.most_recent_records_before_start_time,
+        query_wrappers.drop_duplicates_by_primary_key,
     ],
     "GENCONDATA": [
-        query_wrapers.most_recent_records_before_start_time,
-        query_wrapers.drop_duplicates_by_primary_key,
+        query_wrappers.most_recent_records_before_start_time,
+        query_wrappers.drop_duplicates_by_primary_key,
     ],
-    "SPDREGIONCONSTRAINT": [query_wrapers.most_recent_records_before_start_time],
+    "SPDREGIONCONSTRAINT": [query_wrappers.most_recent_records_before_start_time],
     "SPDCONNECTIONPOINTCONSTRAINT": [
-        query_wrapers.most_recent_records_before_start_time,
-        query_wrapers.drop_duplicates_by_primary_key,
+        query_wrappers.most_recent_records_before_start_time,
+        query_wrappers.drop_duplicates_by_primary_key,
     ],
     "SPDINTERCONNECTORCONSTRAINT": [
-        query_wrapers.most_recent_records_before_start_time,
-        query_wrapers.drop_duplicates_by_primary_key,
+        query_wrappers.most_recent_records_before_start_time,
+        query_wrappers.drop_duplicates_by_primary_key,
     ],
-    "FCAS_4_SECOND": [query_wrapers.fcas4s_finalise],
+    "FCAS_4_SECOND": [query_wrappers.fcas4s_finalise],
     "ELEMENTS_FCAS_4_SECOND": None,
     "VARIABLES_FCAS_4_SECOND": None,
     "Generators and Scheduled Loads": None,
@@ -187,32 +187,32 @@ finalise = {
     "DISPATCHINTERCONNECTORRES": None,
     "DISPATCHREGIONSUM": None,
     "LOSSMODEL": [
-        query_wrapers.most_recent_records_before_start_time,
-        query_wrapers.drop_duplicates_by_primary_key,
+        query_wrappers.most_recent_records_before_start_time,
+        query_wrappers.drop_duplicates_by_primary_key,
     ],
     "LOSSFACTORMODEL": [
-        query_wrapers.most_recent_records_before_start_time,
-        query_wrapers.drop_duplicates_by_primary_key,
+        query_wrappers.most_recent_records_before_start_time,
+        query_wrappers.drop_duplicates_by_primary_key,
     ],
     "MNSP_DAYOFFER": [
-        query_wrapers.most_recent_records_before_start_time,
-        query_wrapers.drop_duplicates_by_primary_key,
+        query_wrappers.most_recent_records_before_start_time,
+        query_wrappers.drop_duplicates_by_primary_key,
     ],
     "MNSP_PEROFFER": [
-        query_wrapers.most_recent_records_before_start_time,
-        query_wrapers.drop_duplicates_by_primary_key,
+        query_wrappers.most_recent_records_before_start_time,
+        query_wrappers.drop_duplicates_by_primary_key,
     ],
     "MNSP_INTERCONNECTOR": [
-        query_wrapers.most_recent_records_before_start_time,
-        query_wrapers.drop_duplicates_by_primary_key,
+        query_wrappers.most_recent_records_before_start_time,
+        query_wrappers.drop_duplicates_by_primary_key,
     ],
     "INTERCONNECTOR": [
-        query_wrapers.most_recent_records_before_start_time,
-        query_wrapers.drop_duplicates_by_primary_key,
+        query_wrappers.most_recent_records_before_start_time,
+        query_wrappers.drop_duplicates_by_primary_key,
     ],
     "INTERCONNECTORCONSTRAINT": [
-        query_wrapers.most_recent_records_before_start_time,
-        query_wrapers.drop_duplicates_by_primary_key,
+        query_wrappers.most_recent_records_before_start_time,
+        query_wrappers.drop_duplicates_by_primary_key,
     ],
     "MARKET_PRICE_THRESHOLDS": None,
 }

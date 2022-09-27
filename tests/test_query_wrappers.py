@@ -1,6 +1,6 @@
 import unittest
 import pandas as pd
-from nemosis import query_wrapers
+from NEMOSIS.nemosis import query_wrappers
 from pandas.testing import assert_frame_equal
 from datetime import datetime
 from nemosis import defaults
@@ -12,7 +12,7 @@ class TestDispatchDateSetup(unittest.TestCase):
         self.end_time = "2019/06/03 12:15:00"
 
     def test_start_time_and_end_time(self):
-        start_time, end_time = query_wrapers.dispatch_date_setup(
+        start_time, end_time = query_wrappers.dispatch_date_setup(
             self.start_time, self.end_time
         )
         self.assertEqual(start_time, "2016/12/30 23:59:59")
@@ -39,12 +39,12 @@ class TestFCASFinalise(unittest.TestCase):
         )
 
     def test_string_cleanup_one_col(self):
-        result = query_wrapers.fcas4s_finalise(self.testDataFrame1, None, None)
+        result = query_wrappers.fcas4s_finalise(self.testDataFrame1, None, None)
         aim = pd.DataFrame({"StingsWithSpaces": ["HELLO", "foo and baa", "at front"]})
         assert_frame_equal(aim, result)
 
     def test_string_cleanup_one_col_ignore_one_col(self):
-        result = query_wrapers.fcas4s_finalise(self.testDataFrame2, None, None)
+        result = query_wrappers.fcas4s_finalise(self.testDataFrame2, None, None)
         aim = pd.DataFrame(
             {
                 "StingsWithSpaces": ["HELLO", "foo and baa", "at front"],
@@ -54,7 +54,7 @@ class TestFCASFinalise(unittest.TestCase):
         assert_frame_equal(aim, result)
 
     def test_cleanup_ignore_cleanup(self):
-        result = query_wrapers.fcas4s_finalise(self.testDataFrame3, None, None)
+        result = query_wrappers.fcas4s_finalise(self.testDataFrame3, None, None)
         aim = pd.DataFrame(
             {
                 "StingsWithSpaces": ["HELLO", "foo and baa", "at front"],
@@ -120,7 +120,7 @@ class TestMostRecent(unittest.TestCase):
         table_name = "dummy"
         defaults.primary_date_columns["dummy"] = "EFFECTIVEDATE"
         defaults.effective_date_group_col["dummy"] = ["GENCONID"]
-        result = query_wrapers.most_recent_records_before_start_time(
+        result = query_wrappers.most_recent_records_before_start_time(
             self.dummyGenConData, start_time, table_name
         ).reset_index(drop=True)
         aim = pd.DataFrame(
@@ -141,7 +141,7 @@ class TestMostRecent(unittest.TestCase):
         defaults.primary_date_columns["dummy"] = "EFFECTIVEDATE"
         defaults.effective_date_group_col["dummy"] = ["GENCONID"]
         result = (
-            query_wrapers.most_recent_records_before_start_time(
+            query_wrappers.most_recent_records_before_start_time(
                 self.dummyGenConData, start_time, table_name
             )
             .sort_values("EFFECTIVEDATE", ascending=False)
@@ -173,7 +173,7 @@ class TestMostRecent(unittest.TestCase):
         defaults.primary_date_columns["dummy"] = "EFFECTIVEDATE"
         defaults.effective_date_group_col["dummy"] = ["GENCONID"]
         result = (
-            query_wrapers.most_recent_records_before_start_time(
+            query_wrappers.most_recent_records_before_start_time(
                 self.dummyGenConData, start_time, table_name
             )
             .sort_values("EFFECTIVEDATE", ascending=False)
@@ -204,7 +204,7 @@ class TestMostRecent(unittest.TestCase):
         table_name = "dummy"
         defaults.primary_date_columns["dummy"] = "EFFECTIVEDATE"
         defaults.effective_date_group_col["dummy"] = ["GENCONID"]
-        result = query_wrapers.most_recent_records_before_start_time(
+        result = query_wrappers.most_recent_records_before_start_time(
             self.dummyGenConData2, start_time, table_name
         ).reset_index(drop=True)
         aim = pd.DataFrame(
@@ -224,7 +224,7 @@ class TestMostRecent(unittest.TestCase):
         table_name = "dummy"
         defaults.primary_date_columns["dummy"] = "EFFECTIVEDATE"
         defaults.effective_date_group_col["dummy"] = ["GENCONID"]
-        result = query_wrapers.most_recent_records_before_start_time(
+        result = query_wrappers.most_recent_records_before_start_time(
             self.dummyGenConData3, start_time, table_name
         ).reset_index(drop=True)
         aim = pd.DataFrame(

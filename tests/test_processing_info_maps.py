@@ -6,7 +6,7 @@ from nemosis import data_fetch_methods
 from nemosis import defaults
 import pandas as pd
 from datetime import datetime, timedelta
-from nemosis import query_wrapers
+from NEMOSIS.nemosis import query_wrappers
 
 
 class TestSearchTypeValidity(unittest.TestCase):
@@ -137,7 +137,7 @@ class TestSearchTypeValidity(unittest.TestCase):
                     keep_csv=False,
                 )
                 all_data = pd.concat(data_tables, sort=False)
-                all_data = query_wrapers.drop_duplicates_by_primary_key(
+                all_data = query_wrappers.drop_duplicates_by_primary_key(
                     all_data, start_time, table_name
                 )
                 contains_duplicates = all_data.duplicated().any()
