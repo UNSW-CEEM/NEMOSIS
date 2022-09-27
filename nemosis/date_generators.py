@@ -1,6 +1,8 @@
+import logging
 from nemosis import defaults
 from calendar import monthrange
 from datetime import timedelta
+
 
 def year_and_month_gen(start_time, end_time):
 
@@ -44,14 +46,28 @@ def year_month_day_index_gen(start_time, end_time):
 
         for month in defaults.months[start_month:end_month]:
             for day in range(1, monthrange(int(year), int(month))[1] + 1):
-                if ((day < start_time.day and int(month) == start_time.month and year == start_year)
-                        or (day > end_time.day and int(month) == end_time.month and year == end_year)):
+                if (
+                    day < start_time.day
+                    and int(month) == start_time.month
+                    and year == start_year
+                ) or (
+                    day > end_time.day
+                    and int(month) == end_time.month
+                    and year == end_year
+                ):
                     continue
                 for hour in range(23, -1, -1):
-                    if (hour < start_time.hour and int(month) == start_time.month and year == start_year
-                        and start_time.day == day) \
-                            or (hour > end_time.hour  and int(month) == end_time.month and year == end_year and
-                                end_time.day == day):
+                    if (
+                        hour < start_time.hour
+                        and int(month) == start_time.month
+                        and year == start_year
+                        and start_time.day == day
+                    ) or (
+                        hour > end_time.hour
+                        and int(month) == end_time.month
+                        and year == end_year
+                        and end_time.day == day
+                    ):
                         continue
                     for minute in range(55, -1, -5):
                         index = str(hour).zfill(2) + str(minute).zfill(2)
@@ -93,20 +109,31 @@ def bid_table_gen(start_time, end_time):
         for month in defaults.months[start_month:end_month]:
             if (int(year) >= 2021 and int(month) >= 4) or int(year) >= 2022:
                 for day in range(1, monthrange(int(year), int(month))[1] + 1):
-                    if ((day < start_time.day and int(month) == start_time.month and year == start_year)
-                            or (day > end_time.day and int(month) == end_time.month and year == end_year)):
+                    if (
+                        day < start_time.day
+                        and int(month) == start_time.month
+                        and year == start_year
+                    ) or (
+                        day > end_time.day
+                        and int(month) == end_time.month
+                        and year == end_year
+                    ):
                         continue
                     if int(year) == 2021 and int(month) == 4 and int(day) == 1:
-                        print('Warning: Offer data for 2021/04/01 is known to be missing from the AEMO public \n'
-                              'archive, explicitly skipping. This file would also contain data for the first 4 hr of \n' +
-                              '2021/04/02 so that data will also be missing from the returned dataframe.')
+                        logging.warning(
+                            "Offer data for 2021/04/01 is known to be missing from the AEMO public \n"
+                            "archive, explicitly skipping. This file would also contain data for the first 4 hr of \n"
+                            + "2021/04/02 so that data will also be missing from the returned dataframe."
+                        )
                     else:
                         yield str(year), month, str(day).zfill(2), None
 
             else:
                 if int(year) == 2021 and int(month) == 3:
-                    print('Warning: Offer data for March 2021 is known to be missing from the  AEMO public \n'
-                          'archive, explicitly skipping. This file would also contain data for the first 4 hr of \n' +
-                          '2021/04/01 so that data will also be missing from the returned dataframe.')
+                    logging.warning(
+                        "Offer data for March 2021 is known to be missing from the  AEMO public \n"
+                        "archive, explicitly skipping. This file would also contain data for the first 4 hr of \n"
+                        + "2021/04/01 so that data will also be missing from the returned dataframe."
+                    )
                 else:
                     yield str(year), month, None, None
