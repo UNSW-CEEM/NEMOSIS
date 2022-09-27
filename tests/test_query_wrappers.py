@@ -1,6 +1,6 @@
 import unittest
 import pandas as pd
-from NEMOSIS.nemosis import query_wrappers
+from nemosis import query_wrappers
 from pandas.testing import assert_frame_equal
 from datetime import datetime
 from nemosis import defaults

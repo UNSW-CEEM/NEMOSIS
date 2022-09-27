@@ -6,7 +6,7 @@ from nemosis import data_fetch_methods
 from nemosis import defaults
 import pandas as pd
 from datetime import datetime, timedelta
-from NEMOSIS.nemosis import query_wrappers
+from nemosis import query_wrappers
 
 
 class TestSearchTypeValidity(unittest.TestCase):
