@@ -1,5 +1,5 @@
 import logging
-from nemosis import defaults
+from . import defaults
 from calendar import monthrange
 from datetime import timedelta
 

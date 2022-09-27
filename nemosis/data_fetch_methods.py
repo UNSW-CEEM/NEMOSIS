@@ -3,12 +3,12 @@ import os as _os
 import glob as _glob
 import pandas as _pd
 from datetime import datetime as _datetime
-from nemosis import filters as _filters
-from nemosis import downloader as _downloader
-from nemosis import processing_info_maps as _processing_info_maps
-from nemosis import defaults as _defaults
-from nemosis import custom_tables as _custom_tables
-from nemosis.custom_errors import UserInputError, NoDataToReturn, DataMismatchError
+from . import filters as _filters
+from . import downloader as _downloader
+from . import processing_info_maps as _processing_info_maps
+from . import defaults as _defaults
+from . import custom_tables as _custom_tables
+from .custom_errors import UserInputError, NoDataToReturn, DataMismatchError
 
 
 def dynamic_data_compiler(

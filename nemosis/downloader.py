@@ -6,7 +6,7 @@ import zipfile
 import io
 import pandas as pd
 
-from nemosis import defaults, custom_errors
+from . import defaults, custom_errors
 
 
 # Windows Chrome for User-Agent request headers
