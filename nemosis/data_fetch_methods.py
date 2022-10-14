@@ -10,6 +10,7 @@ from . import defaults as _defaults
 from . import custom_tables as _custom_tables
 from .custom_errors import UserInputError, NoDataToReturn, DataMismatchError
 
+logger = logging.getLogger(__name__)
 
 def dynamic_data_compiler(
     start_time,
@@ -89,7 +90,7 @@ def dynamic_data_compiler(
             )
         )
 
-    logging.info(f"Compiling data for table {table_name}")
+    logger.info(f"Compiling data for table {table_name}")
 
     start_time = _datetime.strptime(start_time, "%Y/%m/%d %H:%M:%S")
     end_time = _datetime.strptime(end_time, "%Y/%m/%d %H:%M:%S")
@@ -126,7 +127,7 @@ def dynamic_data_compiler(
                 all_data = _filters.filter_on_column_value(
                     all_data, filter_cols, filter_values
                 )
-        logging.info(f"Returning {table_name}.")
+        logger.info(f"Returning {table_name}.")
         return all_data
     else:
         raise NoDataToReturn(
@@ -199,7 +200,7 @@ def cache_compiler(
             )
         )
 
-    logging.info(f"Caching data for table {table_name}")
+    logger.info(f"Caching data for table {table_name}")
 
     (
         start_time,
@@ -273,10 +274,10 @@ def static_table(
             )
         )
 
-    logging.info(f"Retrieving static table {table_name}")
+    logger.info(f"Retrieving static table {table_name}")
     path_and_name = _os.path.join(raw_data_location, _defaults.names[table_name])
     if not _os.path.isfile(path_and_name) or update_static_file:
-        logging.info(f"Downloading data for table {table_name}")
+        logger.info(f"Downloading data for table {table_name}")
         try:
             static_downloader_map[table_name](
                 _defaults.static_table_url[table_name], path_and_name
@@ -548,7 +549,7 @@ def _dynamic_data_fetch_loop(
                 data = _get_read_function(fformat, table_type, day)(full_filename)
             else:
                 data = None
-                logging.info(
+                logger.info(
                     f"Cache for {table_name} in date range already compiled in"
                     + f" {raw_data_location}."
                 )
@@ -599,7 +600,7 @@ def _dynamic_data_fetch_loop(
 
             data_tables.append(data)
         elif not caching_mode:
-            logging.warning(f"Loading data from {full_filename} failed.")
+            logger.warning(f"Loading data from {full_filename} failed.")
 
     return data_tables
 
@@ -653,7 +654,7 @@ def _validate_select_columns(data, select_columns, full_filename):
         return []
     else:
         if rejected_cols:
-            logging.warning(
+            logger.warning(
                 f"{rejected_cols} not in {full_filename}. "
                 + f"Loading {available_cols}"
             )
@@ -667,7 +668,7 @@ def _log_file_creation_message(fformat, table_name, year, month, day, index):
     else:
         output = logstr + f" {day}, {index}"
 
-    logging.info(output)
+    logger.info(output)
 
 
 def _determine_columns_and_read_csv(
@@ -739,16 +740,16 @@ def _download_data(
     Returns: nothing
     """
     if day is None:
-        logging.info(
+        logger.info(
             f"Downloading data for table {table_name}, " + f"year {year}, month {month}"
         )
     elif index is None:
-        logging.info(
+        logger.info(
             f"Downloading data for table {table_name}, "
             + f"year {year}, month {month}, day {day}"
         )
     else:
-        logging.info(
+        logger.info(
             f"Downloading data for table {table_name}, "
             + f"year {year}, month {month}, day {day},"
             + f"time {index}."

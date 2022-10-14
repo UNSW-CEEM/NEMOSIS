@@ -3,6 +3,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 import numpy as np
 
+logger = logging.getLogger(__name__)
 
 def filter_on_start_and_end_date(data, start_time, end_time):
     data["START_DATE"] = pd.to_datetime(data["START_DATE"], format="%Y/%m/%d %H:%M:%S")
@@ -40,7 +41,7 @@ def filter_on_timestamp(data, start_time, end_time):
             data["TIMESTAMP"], format="%Y/%m/%d %H:%M:%S"
         )
     except Exception as e:
-        logging.error(e)
+        logger.error(e)
         # if date format is wrong, str may be too short
         med_str_len = np.median(data["TIMESTAMP"].str.len())
         not_data = data.loc[data["TIMESTAMP"].str.len() < med_str_len, :]
@@ -48,8 +49,8 @@ def filter_on_timestamp(data, start_time, end_time):
         data["TIMESTAMP"] = pd.to_datetime(
             data["TIMESTAMP"], format="%Y/%m/%d %H:%M:%S"
         )
-        logging.warning("Rows with incorrect data formats omitted")
-        logging.warning(not_data)
+        logger.warning("Rows with incorrect data formats omitted")
+        logger.warning(not_data)
     finally:
         data = data[(data["TIMESTAMP"] > start_time) & (data["TIMESTAMP"] <= end_time)]
     return data

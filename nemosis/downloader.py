@@ -8,6 +8,7 @@ import pandas as pd
 
 from . import defaults, custom_errors
 
+logger = logging.getLogger(__name__)
 
 # Windows Chrome for User-Agent request headers
 USR_AGENT_HEADER = {
@@ -30,7 +31,7 @@ def run(year, month, day, index, filename_stub, down_load_to):
     try:
         download_unzip_csv(url_formatted, down_load_to)
     except Exception:
-        logging.warning(f"{filename_stub} not downloaded")
+        logger.warning(f"{filename_stub} not downloaded")
 
 
 def run_bid_tables(year, month, day, index, filename_stub, down_load_to):
@@ -119,7 +120,7 @@ def run_fcas4s(year, month, day, index, filename_stub, down_load_to):
             # Check if the csv exists before warning
             file_check = os.path.join(down_load_to, filename_stub + ".csv")
             if not os.path.isfile(file_check):
-                logging.warning(f"{filename_stub} not downloaded")
+                logger.warning(f"{filename_stub} not downloaded")
 
 
 def download_unzip_csv(url, down_load_to):

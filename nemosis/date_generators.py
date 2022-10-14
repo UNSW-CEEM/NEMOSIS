@@ -3,6 +3,7 @@ from . import defaults
 from calendar import monthrange
 from datetime import timedelta
 
+logger = logging.getLogger(__name__)
 
 def year_and_month_gen(start_time, end_time):
 
@@ -120,7 +121,7 @@ def bid_table_gen(start_time, end_time):
                     ):
                         continue
                     if int(year) == 2021 and int(month) == 4 and int(day) == 1:
-                        logging.warning(
+                        logger.warning(
                             "Offer data for 2021/04/01 is known to be missing from the AEMO public \n"
                             "archive, explicitly skipping. This file would also contain data for the first 4 hr of \n"
                             + "2021/04/02 so that data will also be missing from the returned dataframe."
@@ -130,7 +131,7 @@ def bid_table_gen(start_time, end_time):
 
             else:
                 if int(year) == 2021 and int(month) == 3:
-                    logging.warning(
+                    logger.warning(
                         "Offer data for March 2021 is known to be missing from the  AEMO public \n"
                         "archive, explicitly skipping. This file would also contain data for the first 4 hr of \n"
                         + "2021/04/01 so that data will also be missing from the returned dataframe."
