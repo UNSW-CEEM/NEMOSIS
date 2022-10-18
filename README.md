@@ -23,6 +23,7 @@
       - [Additional columns](#accessing-additional-table-columns)
   - [Data from static tables](#data-from-static-tables)
     - [static_table](#static_table)
+  - [Disable logging](#disable-logging)
 
 -----
 
@@ -224,4 +225,18 @@ The `static_table` function can be used to access these tables
 from nemosis import static_table
 
 fcas_variables = static_table('VARIABLES_FCAS_4_SECOND', raw_data_cache)
+```
+### Disable logging
+
+NEMOSIS uses the python logging module to print messages to the console. If desired, this can be disabled after 
+imports, as shown below. This will disable log messages unless they are at least warnings.
+
+```python
+
+import logging
+
+from nemosis import dynamic_data_compiler
+
+logging.getLogger("nemosis").setLevel(logging.WARNING)
+
 ```

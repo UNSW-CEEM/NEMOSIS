@@ -1,20 +1,31 @@
+import logging
 import os as _os
 import glob as _glob
 import pandas as _pd
 from datetime import datetime as _datetime
-from nemosis import filters as _filters
-from nemosis import downloader as _downloader
-from nemosis import processing_info_maps as _processing_info_maps
-from nemosis import defaults as _defaults
-from nemosis import custom_tables as _custom_tables
-from nemosis.custom_errors import UserInputError, NoDataToReturn, DataMismatchError
+from . import filters as _filters
+from . import downloader as _downloader
+from . import processing_info_maps as _processing_info_maps
+from . import defaults as _defaults
+from . import custom_tables as _custom_tables
+from .custom_errors import UserInputError, NoDataToReturn, DataMismatchError
 
+logger = logging.getLogger(__name__)
 
-def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location,
-                          select_columns=None, filter_cols=None,
-                          filter_values=None, fformat='feather',
-                          keep_csv=True, parse_data_types=True,
-                          rebuild=False, **kwargs):
+def dynamic_data_compiler(
+    start_time,
+    end_time,
+    table_name,
+    raw_data_location,
+    select_columns=None,
+    filter_cols=None,
+    filter_values=None,
+    fformat="feather",
+    keep_csv=True,
+    parse_data_types=True,
+    rebuild=False,
+    **kwargs,
+):
     """
     Downloads and compiles data for all dynamic tables. For non-CSV formats,
     will save data typed as strings/objects. To save typed data (e.g.
@@ -58,29 +69,45 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location,
     if fformat not in ["csv", "feather", "parquet"]:
         raise UserInputError("Argument fformat must be 'csv', 'feather' or 'parquet'")
 
-    if select_columns == 'all' and fformat != 'csv':
-        raise UserInputError("If select_columns='all' is used fformat='csv' must be used.")
+    if select_columns == "all" and fformat != "csv":
+        raise UserInputError(
+            "If select_columns='all' is used fformat='csv' must be used."
+        )
 
-    start_time, end_time, select_columns, date_filter, start_search = \
-        _set_up_dynamic_compilers(table_name, start_time, end_time,
-                                  select_columns)
+    (
+        start_time,
+        end_time,
+        select_columns,
+        date_filter,
+        start_search,
+    ) = _set_up_dynamic_compilers(table_name, start_time, end_time, select_columns)
 
     if filter_cols and not set(filter_cols).issubset(set(select_columns)):
-        raise UserInputError(('Filter columns not valid. They must be a part of ' +
-                              'select_columns or the table defaults.'))
+        raise UserInputError(
+            (
+                "Filter columns not valid. They must be a part of "
+                + "select_columns or the table defaults."
+            )
+        )
 
-    print('Compiling data for table {}.'.format(table_name))
+    logger.info(f"Compiling data for table {table_name}")
 
-    start_time = _datetime.strptime(start_time, '%Y/%m/%d %H:%M:%S')
-    end_time = _datetime.strptime(end_time, '%Y/%m/%d %H:%M:%S')
-    start_search = _datetime.strptime(start_search, '%Y/%m/%d %H:%M:%S')
-    data_tables = _dynamic_data_fetch_loop(start_search, start_time, end_time,
-                                           table_name, raw_data_location,
-                                           select_columns, date_filter,
-                                           fformat=fformat,
-                                           keep_csv=keep_csv,
-                                           rebuild=rebuild,
-                                           write_kwargs=kwargs)
+    start_time = _datetime.strptime(start_time, "%Y/%m/%d %H:%M:%S")
+    end_time = _datetime.strptime(end_time, "%Y/%m/%d %H:%M:%S")
+    start_search = _datetime.strptime(start_search, "%Y/%m/%d %H:%M:%S")
+    data_tables = _dynamic_data_fetch_loop(
+        start_search,
+        start_time,
+        end_time,
+        table_name,
+        raw_data_location,
+        select_columns,
+        date_filter,
+        fformat=fformat,
+        keep_csv=keep_csv,
+        rebuild=rebuild,
+        write_kwargs=kwargs,
+    )
     if data_tables:
         all_data = _pd.concat(data_tables, sort=False)
         finalise_data = _processing_info_maps.finalise[table_name]
@@ -92,24 +119,39 @@ def dynamic_data_compiler(start_time, end_time, table_name, raw_data_location,
             all_data = _infer_column_data_types(all_data)
         if filter_cols is not None:
             if not set(filter_cols).issubset(set(all_data.columns)):
-                missing_columns = [col for col in filter_cols if col not in all_data.columns]
-                UserInputError(f'Filter columns {missing_columns} not in data.')
+                missing_columns = [
+                    col for col in filter_cols if col not in all_data.columns
+                ]
+                UserInputError(f"Filter columns {missing_columns} not in data.")
             else:
-                all_data = _filters.filter_on_column_value(all_data,
-                                                           filter_cols,
-                                                           filter_values)
-        print(f'Returning {table_name}.')
+                all_data = _filters.filter_on_column_value(
+                    all_data, filter_cols, filter_values
+                )
+        logger.info(f"Returning {table_name}.")
         return all_data
     else:
-        raise NoDataToReturn((f'Compiling data for table {table_name} failed. ' +
-                              'This probably because none of the requested data ' +
-                              'could be download from AEMO. Check your internet ' +
-                              'connection and that the requested data is archived on: ' +
-                              'https://nemweb.com.au see nemosis.defaults for table specific urls.'))
+        raise NoDataToReturn(
+            (
+                f"Compiling data for table {table_name} failed. "
+                + "This probably because none of the requested data "
+                + "could be download from AEMO. Check your internet "
+                + "connection and that the requested data is archived on: "
+                + "https://nemweb.com.au see nemosis.defaults for table specific urls."
+            )
+        )
 
 
-def cache_compiler(start_time, end_time, table_name, raw_data_location, select_columns=None,
-                   fformat='feather', rebuild=False, keep_csv=False, **kwargs):
+def cache_compiler(
+    start_time,
+    end_time,
+    table_name,
+    raw_data_location,
+    select_columns=None,
+    fformat="feather",
+    rebuild=False,
+    keep_csv=False,
+    **kwargs,
+):
     """
     Downloads and compiles typed data for all dynamic tables as either parquet
     or feather format (i.e. will save data with columns as appropriate data
@@ -151,31 +193,51 @@ def cache_compiler(start_time, end_time, table_name, raw_data_location, select_c
         raise UserInputError("Argument fformat must be 'feather' or 'parquet'")
 
     if select_columns is not None and not rebuild:
-        raise UserInputError(("The select_columns argument must be used with rebuild=True " +
-                              "to ensure the cache is built with the correct columns."))
+        raise UserInputError(
+            (
+                "The select_columns argument must be used with rebuild=True "
+                + "to ensure the cache is built with the correct columns."
+            )
+        )
 
-    print(f'Caching data for table {table_name}')
+    logger.info(f"Caching data for table {table_name}")
 
-    start_time, end_time, select_columns, _, start_search, = \
-        _set_up_dynamic_compilers(table_name, start_time, end_time,
-                                  select_columns)
-    start_time = _datetime.strptime(start_time, '%Y/%m/%d %H:%M:%S')
-    end_time = _datetime.strptime(end_time, '%Y/%m/%d %H:%M:%S')
-    start_search = _datetime.strptime(start_search, '%Y/%m/%d %H:%M:%S')
+    (
+        start_time,
+        end_time,
+        select_columns,
+        _,
+        start_search,
+    ) = _set_up_dynamic_compilers(table_name, start_time, end_time, select_columns)
+    start_time = _datetime.strptime(start_time, "%Y/%m/%d %H:%M:%S")
+    end_time = _datetime.strptime(end_time, "%Y/%m/%d %H:%M:%S")
+    start_search = _datetime.strptime(start_search, "%Y/%m/%d %H:%M:%S")
 
-    _dynamic_data_fetch_loop(start_search, start_time, end_time,
-                             table_name, raw_data_location,
-                             select_columns, date_filter=None,
-                             fformat=fformat,
-                             keep_csv=keep_csv,
-                             caching_mode=True,
-                             rebuild=rebuild,
-                             write_kwargs=kwargs)
+    _dynamic_data_fetch_loop(
+        start_search,
+        start_time,
+        end_time,
+        table_name,
+        raw_data_location,
+        select_columns,
+        date_filter=None,
+        fformat=fformat,
+        keep_csv=keep_csv,
+        caching_mode=True,
+        rebuild=rebuild,
+        write_kwargs=kwargs,
+    )
     return
 
 
-def static_table(table_name, raw_data_location, select_columns=None,
-                 filter_cols=None, filter_values=None, update_static_file=False):
+def static_table(
+    table_name,
+    raw_data_location,
+    select_columns=None,
+    filter_cols=None,
+    filter_values=None,
+    update_static_file=False,
+):
     """
     Downloads and compiles data for all static tables.
     Args:
@@ -205,25 +267,35 @@ def static_table(table_name, raw_data_location, select_columns=None,
         raise UserInputError("Table name provided is not a static table.")
 
     if filter_cols and not set(filter_cols).issubset(set(select_columns)):
-        raise UserInputError(('Filter columns not valid. They must be a part of ' +
-                              'select_columns or the table defaults.'))
+        raise UserInputError(
+            (
+                "Filter columns not valid. They must be a part of "
+                + "select_columns or the table defaults."
+            )
+        )
 
-    print('Retrieving static table {}.'.format(table_name))
+    logger.info(f"Retrieving static table {table_name}")
     path_and_name = _os.path.join(raw_data_location, _defaults.names[table_name])
     if not _os.path.isfile(path_and_name) or update_static_file:
-        print('Downloading data for table {}.'.format(table_name))
+        logger.info(f"Downloading data for table {table_name}")
         try:
-            static_downloader_map[table_name](_defaults.static_table_url[table_name], path_and_name)
+            static_downloader_map[table_name](
+                _defaults.static_table_url[table_name], path_and_name
+            )
         except:
-            raise NoDataToReturn((f'Compiling data for table {table_name} failed. ' +
-                                  'This probably because none of the requested data ' +
-                                  'could be download from AEMO. Check your internet ' +
-                                  'connection and that the requested data is archived on: ' +
-                                  'https://nemweb.com.au see nemosis.defaults for table specific urls.'))
+            raise NoDataToReturn(
+                (
+                    f"Compiling data for table {table_name} failed. "
+                    + "This probably because none of the requested data "
+                    + "could be download from AEMO. Check your internet "
+                    + "connection and that the requested data is archived on: "
+                    + "https://nemweb.com.au see nemosis.defaults for table specific urls."
+                )
+            )
 
     table = static_file_reader_map[table_name](path_and_name, table_name)
 
-    if select_columns != 'all':
+    if select_columns != "all":
 
         if select_columns is None:
             select_columns = _defaults.table_columns[table_name]
@@ -231,24 +303,26 @@ def static_table(table_name, raw_data_location, select_columns=None,
         read_cols = _validate_select_columns(table, select_columns, path_and_name)
 
         if not read_cols:
-            raise DataMismatchError((f'None of columns {select_columns} are in {path_and_name}. '
-                                     "This may be caused by user input if the 'select_columns' "
-                                     "argument is being used, or by changed AEMO data formats. "
-                                     "This error can be avoided by using the argument select_columns='all'."))
+            raise DataMismatchError(
+                (
+                    f"None of columns {select_columns} are in {path_and_name}. "
+                    "This may be caused by user input if the 'select_columns' "
+                    "argument is being used, or by changed AEMO data formats. "
+                    "This error can be avoided by using the argument select_columns='all'."
+                )
+            )
 
         table = table.loc[:, read_cols]
 
-    for column in table.select_dtypes(['object']).columns:
+    for column in table.select_dtypes(["object"]).columns:
         table[column] = table[column].map(lambda x: _strip_if_string(x))
 
     if filter_cols is not None:
         if not set(filter_cols).issubset(set(table.columns)):
             missing_columns = [col for col in filter_cols if col not in table.columns]
-            UserInputError(f'Filter columns {missing_columns} not in data.')
+            UserInputError(f"Filter columns {missing_columns} not in data.")
         else:
-            table = _filters.filter_on_column_value(table,
-                                                    filter_cols,
-                                                    filter_values)
+            table = _filters.filter_on_column_value(table, filter_cols, filter_values)
 
     table = static_data_finaliser_map[table_name](table, table_name)
 
@@ -262,16 +336,16 @@ def _strip_if_string(x):
 
 
 def _get_read_function(fformat, table_type, day):
-    if fformat == 'feather':
+    if fformat == "feather":
         func = _pd.read_feather
-    elif fformat == 'parquet':
+    elif fformat == "parquet":
         func = _pd.read_parquet
-    elif fformat == 'csv':
-        if table_type == 'MMS':
+    elif fformat == "csv":
+        if table_type == "MMS":
             func = _read_mms_csv
-        elif table_type == 'FCAS':
+        elif table_type == "FCAS":
             func = _read_fcas_causer_pays_csv
-        elif table_type == 'MMS_AND_ARCHIVE':
+        elif table_type == "MMS_AND_ARCHIVE":
             if day is None:
                 func = _read_mms_csv
             else:
@@ -280,24 +354,39 @@ def _get_read_function(fformat, table_type, day):
 
 
 def _read_mms_csv(path_and_name, dtype=None, usecols=None, nrows=None, names=None):
-    data = _pd.read_csv(path_and_name, skiprows=[0], dtype=dtype,
-                        usecols=usecols, nrows=nrows, names=names)
+    data = _pd.read_csv(
+        path_and_name,
+        skiprows=[0],
+        dtype=dtype,
+        usecols=usecols,
+        nrows=nrows,
+        names=names,
+    )
     return data[:-1]
 
 
-def _read_constructed_csv(path_and_name, dtype=None, usecols=None, nrows=None, names=None):
-    data = _pd.read_csv(path_and_name, dtype=dtype, usecols=usecols, nrows=nrows, names=names)
+def _read_constructed_csv(
+    path_and_name, dtype=None, usecols=None, nrows=None, names=None
+):
+    data = _pd.read_csv(
+        path_and_name, dtype=dtype, usecols=usecols, nrows=nrows, names=names
+    )
     return data
 
 
-def _read_fcas_causer_pays_csv(path_and_name, dtype=None, usecols=None, nrows=None, names=None):
-    data = _pd.read_csv(path_and_name, dtype=dtype, usecols=usecols, nrows=nrows, names=names)
+def _read_fcas_causer_pays_csv(
+    path_and_name, dtype=None, usecols=None, nrows=None, names=None
+):
+    data = _pd.read_csv(
+        path_and_name, dtype=dtype, usecols=usecols, nrows=nrows, names=names
+    )
     return data
 
 
 def _read_static_csv(path_and_name, table_name):
-    return _pd.read_csv(path_and_name, dtype=str,
-                        names=_defaults.table_columns[table_name])
+    return _pd.read_csv(
+        path_and_name, dtype=str, names=_defaults.table_columns[table_name]
+    )
 
 
 def _read_excel(path_and_name, table_name):
@@ -309,8 +398,8 @@ def _finalise_excel_data(data, table_name):
     if table_name in _defaults.table_primary_keys.keys():
         primary_keys = _defaults.table_primary_keys[table_name]
         data = data.drop_duplicates(primary_keys)
-    data = data.dropna(axis=0, how='all')
-    data = data.dropna(axis=1, how='all')
+    data = data.dropna(axis=0, how="all")
+    data = data.dropna(axis=1, how="all")
     return data
 
 
@@ -319,53 +408,72 @@ def _finalise_csv_data(data, table_name):
 
 
 static_downloader_map = {
-    'VARIABLES_FCAS_4_SECOND': _downloader.download_csv,
-    'ELEMENTS_FCAS_4_SECOND': _downloader.download_elements_file,
-    'Generators and Scheduled Loads': _downloader.download_xl,
-    '_downloader.download_xl': _downloader.download_xl
+    "VARIABLES_FCAS_4_SECOND": _downloader.download_csv,
+    "ELEMENTS_FCAS_4_SECOND": _downloader.download_elements_file,
+    "Generators and Scheduled Loads": _downloader.download_xl,
+    "_downloader.download_xl": _downloader.download_xl,
 }
 
 static_file_reader_map = {
-    'VARIABLES_FCAS_4_SECOND': _read_static_csv,
-    'ELEMENTS_FCAS_4_SECOND': _read_static_csv,
-    'Generators and Scheduled Loads': _read_excel,
-    'FCAS Providers': _read_excel
+    "VARIABLES_FCAS_4_SECOND": _read_static_csv,
+    "ELEMENTS_FCAS_4_SECOND": _read_static_csv,
+    "Generators and Scheduled Loads": _read_excel,
+    "FCAS Providers": _read_excel,
 }
 
 static_data_finaliser_map = {
-    'VARIABLES_FCAS_4_SECOND': _finalise_csv_data,
-    'ELEMENTS_FCAS_4_SECOND': _finalise_csv_data,
-    'Generators and Scheduled Loads': _finalise_excel_data,
-    'FCAS Providers': _finalise_excel_data
+    "VARIABLES_FCAS_4_SECOND": _finalise_csv_data,
+    "ELEMENTS_FCAS_4_SECOND": _finalise_csv_data,
+    "Generators and Scheduled Loads": _finalise_excel_data,
+    "FCAS Providers": _finalise_excel_data,
 }
 
 
-def static_table_FCAS_elements_file(table_name, raw_data_location,
-                                    select_columns=None, filter_cols=None,
-                                    filter_values=None, update_static_file=False):
-    table = static_table(table_name, raw_data_location,
-                         select_columns, filter_cols,
-                         filter_values, update_static_file)
+def static_table_FCAS_elements_file(
+    table_name,
+    raw_data_location,
+    select_columns=None,
+    filter_cols=None,
+    filter_values=None,
+    update_static_file=False,
+):
+    table = static_table(
+        table_name,
+        raw_data_location,
+        select_columns,
+        filter_cols,
+        filter_values,
+        update_static_file,
+    )
     return table
 
 
-def static_table_xl(table_name, raw_data_location,
-                    select_columns=None, filter_cols=None,
-                    filter_values=None, update_static_file=False):
-    table = static_table(table_name, raw_data_location,
-                         select_columns, filter_cols,
-                         filter_values, update_static_file)
+def static_table_xl(
+    table_name,
+    raw_data_location,
+    select_columns=None,
+    filter_cols=None,
+    filter_values=None,
+    update_static_file=False,
+):
+    table = static_table(
+        table_name,
+        raw_data_location,
+        select_columns,
+        filter_cols,
+        filter_values,
+        update_static_file,
+    )
     return table
 
 
-def _set_up_dynamic_compilers(table_name, start_time, end_time,
-                              select_columns):
-    '''
+def _set_up_dynamic_compilers(table_name, start_time, end_time, select_columns):
+    """
     Set up function for compilers that deal with dynamic data.
 
     Returns: start_time, end_time, select_columns, defaults_columns,
              date_filter, start_search, search_type.
-    '''
+    """
     # Generic setup common to all tables.
     default_cols = _defaults.table_columns[table_name]
     if select_columns is None:
@@ -379,22 +487,30 @@ def _set_up_dynamic_compilers(table_name, start_time, end_time,
 
     search_type = _processing_info_maps.search_type[table_name]
 
-    if search_type == 'all':
+    if search_type == "all":
         start_search = _defaults.nem_data_model_start_time
-    elif search_type == 'start_to_end':
+    elif search_type == "start_to_end":
         start_search = start_time
-    elif search_type == 'end':
+    elif search_type == "end":
         start_search = end_time
     return start_time, end_time, select_columns, date_filter, start_search
 
 
-def _dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
-                             raw_data_location, select_columns,
-                             date_filter, fformat='feather',
-                             keep_csv=True, caching_mode=False,
-                             rebuild=False,
-                             write_kwargs={}):
-    '''
+def _dynamic_data_fetch_loop(
+    start_search,
+    start_time,
+    end_time,
+    table_name,
+    raw_data_location,
+    select_columns,
+    date_filter,
+    fformat="feather",
+    keep_csv=True,
+    caching_mode=False,
+    rebuild=False,
+    write_kwargs={},
+):
+    """
     Loops through generated dates and checks if the appropriate file exists.
 
     If it does, reads in the data from the file and performs filtering.
@@ -403,60 +519,75 @@ def _dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
     1. If it does, read the data in and write any required files
        (parquet or feather).
     2. If it does not, download data then do the same as 1.
-    '''
+    """
     data_tables = []
 
     table_type = _defaults.table_types[table_name]
-    date_gen = _processing_info_maps.date_gen[table_type](start_search,
-                                                          end_time)
+    date_gen = _processing_info_maps.date_gen[table_type](start_search, end_time)
 
     for year, month, day, index in date_gen:
-        filename_stub, full_filename, \
-        path_and_name = _create_filename(table_name, table_type,
-                                         raw_data_location,
-                                         fformat, day, month,
-                                         year, index)
+        filename_stub, full_filename, path_and_name = _create_filename(
+            table_name, table_type, raw_data_location, fformat, day, month, year, index
+        )
 
-        if (not (_glob.glob(full_filename) or _glob.glob(path_and_name + '.[cC][sS][vV]')) or
-                (not _glob.glob(path_and_name + '.[cC][sS][vV]') and rebuild)):
-            _download_data(table_name, table_type, filename_stub, day, month,
-                           year, index, raw_data_location)
+        if not (
+            _glob.glob(full_filename) or _glob.glob(path_and_name + ".[cC][sS][vV]")
+        ) or (not _glob.glob(path_and_name + ".[cC][sS][vV]") and rebuild):
+            _download_data(
+                table_name,
+                table_type,
+                filename_stub,
+                day,
+                month,
+                year,
+                index,
+                raw_data_location,
+            )
 
-        if _glob.glob(full_filename) and fformat != 'csv' and not rebuild:
+        if _glob.glob(full_filename) and fformat != "csv" and not rebuild:
             if not caching_mode:
                 data = _get_read_function(fformat, table_type, day)(full_filename)
             else:
                 data = None
-                print(f'Cache for {table_name} in date range already compiled in'
-                      + f' {raw_data_location}.')
+                logger.info(
+                    f"Cache for {table_name} in date range already compiled in"
+                    + f" {raw_data_location}."
+                )
 
-        elif _glob.glob(path_and_name + '.[cC][sS][vV]'):
+        elif _glob.glob(path_and_name + ".[cC][sS][vV]"):
 
-            if select_columns != 'all':
+            if select_columns != "all":
                 read_all_columns = False
             else:
                 read_all_columns = True
 
             if not caching_mode:
-                dtypes = 'str'
+                dtypes = "str"
             else:
-                dtypes = 'all'
+                dtypes = "all"
 
-            csv_path_and_name = _glob.glob(path_and_name + '.[cC][sS][vV]')[0]
+            csv_path_and_name = _glob.glob(path_and_name + ".[cC][sS][vV]")[0]
 
-            csv_read_function = _get_read_function(fformat='csv', table_type=table_type, day=day)
-            data = _determine_columns_and_read_csv(table_name, csv_path_and_name, csv_read_function,
-                                                   read_all_columns=read_all_columns, dtypes=dtypes)
+            csv_read_function = _get_read_function(
+                fformat="csv", table_type=table_type, day=day
+            )
+            data = _determine_columns_and_read_csv(
+                table_name,
+                csv_path_and_name,
+                csv_read_function,
+                read_all_columns=read_all_columns,
+                dtypes=dtypes,
+            )
 
             if caching_mode:
                 data = _perform_column_selection(data, select_columns, full_filename)
 
-            if data is not None and fformat != 'csv':
-                _print_file_creation_message(fformat, table_name, year, month, day, index)
+            if data is not None and fformat != "csv":
+                _log_file_creation_message(fformat, table_name, year, month, day, index)
                 _write_to_format(data, fformat, full_filename, write_kwargs)
 
             if not keep_csv:
-                _os.remove(_glob.glob(path_and_name + '.[cC][sS][vV]')[0])
+                _os.remove(_glob.glob(path_and_name + ".[cC][sS][vV]")[0])
         else:
             data = None
 
@@ -469,50 +600,53 @@ def _dynamic_data_fetch_loop(start_search, start_time, end_time, table_name,
 
             data_tables.append(data)
         elif not caching_mode:
-            print(f'Warning: Loading data from {full_filename} failed.')
+            logger.warning(f"Loading data from {full_filename} failed.")
 
     return data_tables
 
 
 def _perform_column_selection(data, select_columns, full_filename):
-    if select_columns != 'all':
-        keep_cols = _validate_select_columns(data, select_columns,
-                                             full_filename)
+    if select_columns != "all":
+        keep_cols = _validate_select_columns(data, select_columns, full_filename)
         if keep_cols:
             data = data.loc[:, keep_cols]
         else:
-            raise DataMismatchError((f'None of columns {select_columns} are in {full_filename}. '
-                                     "This may be caused by user input if the 'select_columns' "
-                                     "argument is being used, or by changed AEMO data formats. "
-                                     "This error can be avoided by using the argument select_columns='all'."))
+            raise DataMismatchError(
+                (
+                    f"None of columns {select_columns} are in {full_filename}. "
+                    "This may be caused by user input if the 'select_columns' "
+                    "argument is being used, or by changed AEMO data formats. "
+                    "This error can be avoided by using the argument select_columns='all'."
+                )
+            )
     return data
 
 
-def _create_filename(table_name, table_type, raw_data_location, fformat,
-                     day, month, year, index):
-    '''
+def _create_filename(
+    table_name, table_type, raw_data_location, fformat, day, month, year, index
+):
+    """
     Gather:
     - the file name, based on file naming rules
     - potential file path (if data exists in cache)
 
     Returns: filename_stub, full_filename and path_and_name
-    '''
-    filename_stub, path_and_name = \
-        _processing_info_maps.write_filename[table_type](table_name, month,
-                                                         year, day, index,
-                                                         raw_data_location)
-    full_filename = path_and_name + f'.{fformat}'
+    """
+    filename_stub, path_and_name = _processing_info_maps.write_filename[table_type](
+        table_name, month, year, day, index, raw_data_location
+    )
+    full_filename = path_and_name + f".{fformat}"
     return filename_stub, full_filename, path_and_name
 
 
 def _validate_select_columns(data, select_columns, full_filename):
-    '''
+    """
     Checks whether select_columns are in the file. If at least one is,
     then it will return any of select_columns that are available as well as
     the date col (for date filtering).  If not, it will return an empty list.
 
     Returns: List
-    '''
+    """
     file_cols = data.columns
     available_cols = file_cols[file_cols.isin(select_columns)].tolist()
     rejected_cols = set(select_columns) - set(available_cols)
@@ -520,25 +654,27 @@ def _validate_select_columns(data, select_columns, full_filename):
         return []
     else:
         if rejected_cols:
-            print(f'{rejected_cols} not in {full_filename}. '
-                  + f'Loading {available_cols}')
+            logger.warning(
+                f"{rejected_cols} not in {full_filename}. "
+                + f"Loading {available_cols}"
+            )
         return available_cols
 
 
-def _print_file_creation_message(fformat, table_name, year, month, day, index):
-    printstr = (f'Creating {fformat} file for '
-                + f'{table_name}, {year}, {month}')
+def _log_file_creation_message(fformat, table_name, year, month, day, index):
+    logstr = f"Creating {fformat} file for " + f"{table_name}, {year}, {month}"
     if day is None:
-        output = (printstr)
+        output = logstr
     else:
-        output = (printstr + f' {day}, {index}')
+        output = logstr + f" {day}, {index}"
 
-    print(output)
+    logger.info(output)
 
 
-def _determine_columns_and_read_csv(table_name, csv_file, read_csv_func,
-                                    dtypes, read_all_columns=False):
-    '''
+def _determine_columns_and_read_csv(
+    table_name, csv_file, read_csv_func, dtypes, read_all_columns=False
+):
+    """
     Used by read_data_and_create_file
     Determining columns:
     - If the table is an MMS table, check header of CSV for actual columns.
@@ -551,17 +687,26 @@ def _determine_columns_and_read_csv(table_name, csv_file, read_csv_func,
       thus any existing data caches, read in all columns as strings.
 
     Returns: data, columns
-    '''
+    """
     if dtypes == "all":
         type = None
     else:
         type = str
-    if _defaults.table_types[table_name] in ['MMS', 'MMS_AND_ARCHIVE'] and not read_all_columns:
+    if (
+        _defaults.table_types[table_name] in ["MMS", "MMS_AND_ARCHIVE"]
+        and not read_all_columns
+    ):
         headers = read_csv_func(csv_file, nrows=1).columns.tolist()
-        columns = [column for column in _defaults.table_columns[table_name]
-                   if column in headers]
+        columns = [
+            column
+            for column in _defaults.table_columns[table_name]
+            if column in headers
+        ]
         data = read_csv_func(csv_file, usecols=columns, dtype=type)
-    elif _defaults.table_types[table_name] in ['MMS', 'MMS_AND_ARCHIVE'] and read_all_columns:
+    elif (
+        _defaults.table_types[table_name] in ["MMS", "MMS_AND_ARCHIVE"]
+        and read_all_columns
+    ):
         data = read_csv_func(csv_file, dtype=type)
     else:
         columns = _defaults.table_columns[table_name]
@@ -570,45 +715,49 @@ def _determine_columns_and_read_csv(table_name, csv_file, read_csv_func,
 
 
 def _write_to_format(data, fformat, full_filename, write_kwargs):
-    '''
+    """
     Used by read_data_and_create_file
     Writes the DataFrame to a non-CSV format is a non_CSV format is specified.
-    '''
-    write_function = {'feather': data.to_feather,
-                      'parquet': data.to_parquet}
+    """
+    write_function = {"feather": data.to_feather, "parquet": data.to_parquet}
     # Remove files of the same name - deals with case of corrupted files.
-    if _os.path.isfile(full_filename) and fformat != 'csv':
+    if _os.path.isfile(full_filename) and fformat != "csv":
         _os.unlink(full_filename)
     # Write to required format
-    if fformat == 'feather':
+    if fformat == "feather":
         write_function[fformat](full_filename, **write_kwargs)
-    elif fformat == 'parquet':
-        write_function[fformat](full_filename, index=False,
-                                **write_kwargs)
+    elif fformat == "parquet":
+        write_function[fformat](full_filename, index=False, **write_kwargs)
     return
 
 
-def _download_data(table_name, table_type, filename_stub,
-                   day, month, year, index, raw_data_location):
-    '''
+def _download_data(
+    table_name, table_type, filename_stub, day, month, year, index, raw_data_location
+):
+    """
     Dispatch table to downloader to be downloaded.
 
     Returns: nothing
-    '''
+    """
     if day is None:
-        print(f'Downloading data for table {table_name}, '
-              + f'year {year}, month {month}')
+        logger.info(
+            f"Downloading data for table {table_name}, " + f"year {year}, month {month}"
+        )
     elif index is None:
-        print(f'Downloading data for table {table_name}, '
-              + f'year {year}, month {month}, day {day}')
+        logger.info(
+            f"Downloading data for table {table_name}, "
+            + f"year {year}, month {month}, day {day}"
+        )
     else:
-        print(f'Downloading data for table {table_name}, '
-              + f'year {year}, month {month}, day {day},'
-              + f'time {index}.')
+        logger.info(
+            f"Downloading data for table {table_name}, "
+            + f"year {year}, month {month}, day {day},"
+            + f"time {index}."
+        )
 
-    _processing_info_maps.downloader[table_type](year, month, day,
-                                                 index, filename_stub,
-                                                 raw_data_location)
+    _processing_info_maps.downloader[table_type](
+        year, month, day, index, filename_stub, raw_data_location
+    )
     return
 
 
@@ -647,57 +796,70 @@ def _infer_column_data_types(data):
 
 # GUI wrappers and mappers below
 
-def _dynamic_data_wrapper_for_gui(start_time, end_time, table,
-                                  raw_data_location, columns, filter_cols,
-                                  filter_values):
-    data = dynamic_data_compiler(start_time=start_time, end_time=end_time,
-                                 table_name=table,
-                                 raw_data_location=raw_data_location,
-                                 select_columns=columns,
-                                 filter_cols=filter_cols,
-                                 filter_values=filter_values,
-                                 parse_data_types=False)
+
+def _dynamic_data_wrapper_for_gui(
+    start_time, end_time, table, raw_data_location, columns, filter_cols, filter_values
+):
+    data = dynamic_data_compiler(
+        start_time=start_time,
+        end_time=end_time,
+        table_name=table,
+        raw_data_location=raw_data_location,
+        select_columns=columns,
+        filter_cols=filter_cols,
+        filter_values=filter_values,
+        parse_data_types=False,
+    )
     return data
 
 
-def _static_table_wrapper_for_gui(start_time, end_time, table_name,
-                                  raw_data_location, select_columns=None,
-                                  filter_cols=None, filter_values=None):
-    table = static_table(table_name, raw_data_location, select_columns,
-                         filter_cols, filter_values)
+def _static_table_wrapper_for_gui(
+    start_time,
+    end_time,
+    table_name,
+    raw_data_location,
+    select_columns=None,
+    filter_cols=None,
+    filter_values=None,
+):
+    table = static_table(
+        table_name, raw_data_location, select_columns, filter_cols, filter_values
+    )
     return table
 
 
-_method_map = {'DISPATCHLOAD': _dynamic_data_wrapper_for_gui,
-               'DISPATCHPRICE': _dynamic_data_wrapper_for_gui,
-               'TRADINGLOAD': _dynamic_data_wrapper_for_gui,
-               'TRADINGPRICE': _dynamic_data_wrapper_for_gui,
-               'TRADINGREGIONSUM': _dynamic_data_wrapper_for_gui,
-               'TRADINGINTERCONNECT': _dynamic_data_wrapper_for_gui,
-               'DISPATCH_UNIT_SCADA': _dynamic_data_wrapper_for_gui,
-               'DISPATCHCONSTRAINT': _dynamic_data_wrapper_for_gui,
-               'DUDETAILSUMMARY': _dynamic_data_wrapper_for_gui,
-               'DUDETAIL': _dynamic_data_wrapper_for_gui,
-               'GENCONDATA': _dynamic_data_wrapper_for_gui,
-               'SPDREGIONCONSTRAINT': _dynamic_data_wrapper_for_gui,
-               'SPDCONNECTIONPOINTCONSTRAINT': _dynamic_data_wrapper_for_gui,
-               'SPDINTERCONNECTORCONSTRAINT': _dynamic_data_wrapper_for_gui,
-               'FCAS_4_SECOND': _dynamic_data_wrapper_for_gui,
-               'ELEMENTS_FCAS_4_SECOND': _static_table_wrapper_for_gui,
-               'VARIABLES_FCAS_4_SECOND': _static_table_wrapper_for_gui,
-               'Generators and Scheduled Loads': _static_table_wrapper_for_gui,
-               'FCAS Providers': _static_table_wrapper_for_gui,
-               'BIDDAYOFFER_D': _dynamic_data_wrapper_for_gui,
-               'BIDPEROFFER_D': _dynamic_data_wrapper_for_gui,
-               'FCAS_4s_SCADA_MAP': _custom_tables.fcas4s_scada_match,
-               'PLANTSTATS': _custom_tables.plant_stats,
-               'DISPATCHINTERCONNECTORRES': _dynamic_data_wrapper_for_gui,
-               'DISPATCHREGIONSUM': _dynamic_data_wrapper_for_gui,
-               'LOSSMODEL': _dynamic_data_wrapper_for_gui,
-               'LOSSFACTORMODEL': _dynamic_data_wrapper_for_gui,
-               'MNSP_DAYOFFER': _dynamic_data_wrapper_for_gui,
-               'MNSP_PEROFFER': _dynamic_data_wrapper_for_gui,
-               'MNSP_INTERCONNECTOR': _dynamic_data_wrapper_for_gui,
-               'INTERCONNECTOR': _dynamic_data_wrapper_for_gui,
-               'INTERCONNECTORCONSTRAINT': _dynamic_data_wrapper_for_gui,
-               'MARKET_PRICE_THRESHOLDS': _dynamic_data_wrapper_for_gui}
+_method_map = {
+    "DISPATCHLOAD": _dynamic_data_wrapper_for_gui,
+    "DISPATCHPRICE": _dynamic_data_wrapper_for_gui,
+    "TRADINGLOAD": _dynamic_data_wrapper_for_gui,
+    "TRADINGPRICE": _dynamic_data_wrapper_for_gui,
+    "TRADINGREGIONSUM": _dynamic_data_wrapper_for_gui,
+    "TRADINGINTERCONNECT": _dynamic_data_wrapper_for_gui,
+    "DISPATCH_UNIT_SCADA": _dynamic_data_wrapper_for_gui,
+    "DISPATCHCONSTRAINT": _dynamic_data_wrapper_for_gui,
+    "DUDETAILSUMMARY": _dynamic_data_wrapper_for_gui,
+    "DUDETAIL": _dynamic_data_wrapper_for_gui,
+    "GENCONDATA": _dynamic_data_wrapper_for_gui,
+    "SPDREGIONCONSTRAINT": _dynamic_data_wrapper_for_gui,
+    "SPDCONNECTIONPOINTCONSTRAINT": _dynamic_data_wrapper_for_gui,
+    "SPDINTERCONNECTORCONSTRAINT": _dynamic_data_wrapper_for_gui,
+    "FCAS_4_SECOND": _dynamic_data_wrapper_for_gui,
+    "ELEMENTS_FCAS_4_SECOND": _static_table_wrapper_for_gui,
+    "VARIABLES_FCAS_4_SECOND": _static_table_wrapper_for_gui,
+    "Generators and Scheduled Loads": _static_table_wrapper_for_gui,
+    "FCAS Providers": _static_table_wrapper_for_gui,
+    "BIDDAYOFFER_D": _dynamic_data_wrapper_for_gui,
+    "BIDPEROFFER_D": _dynamic_data_wrapper_for_gui,
+    "FCAS_4s_SCADA_MAP": _custom_tables.fcas4s_scada_match,
+    "PLANTSTATS": _custom_tables.plant_stats,
+    "DISPATCHINTERCONNECTORRES": _dynamic_data_wrapper_for_gui,
+    "DISPATCHREGIONSUM": _dynamic_data_wrapper_for_gui,
+    "LOSSMODEL": _dynamic_data_wrapper_for_gui,
+    "LOSSFACTORMODEL": _dynamic_data_wrapper_for_gui,
+    "MNSP_DAYOFFER": _dynamic_data_wrapper_for_gui,
+    "MNSP_PEROFFER": _dynamic_data_wrapper_for_gui,
+    "MNSP_INTERCONNECTOR": _dynamic_data_wrapper_for_gui,
+    "INTERCONNECTOR": _dynamic_data_wrapper_for_gui,
+    "INTERCONNECTORCONSTRAINT": _dynamic_data_wrapper_for_gui,
+    "MARKET_PRICE_THRESHOLDS": _dynamic_data_wrapper_for_gui,
+}
