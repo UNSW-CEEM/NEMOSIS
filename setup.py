@@ -21,6 +21,7 @@ setuptools.setup(
         "pandas",
         "xlrd",
         "beautifulsoup4",
+        "openpyxl"
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
