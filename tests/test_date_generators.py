@@ -185,7 +185,6 @@ class TestBidTableGen(unittest.TestCase):
         end_time = datetime.strptime("2021/04/03 00:00:00", "%Y/%m/%d %H:%M:%S")
         gen = date_generators.bid_table_gen(start_time, end_time)
         times = [(year, month, day, index) for year, month, day, index in gen]
-        # Note we expect the 1st of april to be skipped
         self.assertEqual(times[0][0], "2021")
         self.assertEqual(times[0][1], "01")
         self.assertEqual(times[0][2], None)
@@ -194,49 +193,23 @@ class TestBidTableGen(unittest.TestCase):
         self.assertEqual(times[1][1], "02")
         self.assertEqual(times[1][2], None)
         self.assertEqual(times[1][3], None)
-        # Data for march and the first of april is missing from the AEMO website so we don't generate the dates
-        # for these times.
         self.assertEqual(times[2][0], "2021")
-        self.assertEqual(times[2][1], "04")
-        self.assertEqual(times[2][2], "02")
+        self.assertEqual(times[2][1], "03")
+        self.assertEqual(times[2][2], None)
         self.assertEqual(times[2][3], None)
         self.assertEqual(times[3][0], "2021")
         self.assertEqual(times[3][1], "04")
-        self.assertEqual(times[3][2], "03")
+        self.assertEqual(times[3][2], "01")
         self.assertEqual(times[3][3], None)
-        self.assertEqual(len(times), 4)
-
-    def test_day_given_in_april_2021(self):
-        start_time = datetime.strptime("2021/04/01 00:00:00", "%Y/%m/%d %H:%M:%S")
-        end_time = datetime.strptime("2021/04/03 00:00:00", "%Y/%m/%d %H:%M:%S")
-        gen = date_generators.bid_table_gen(start_time, end_time)
-        times = [(year, month, day, index) for year, month, day, index in gen]
-        # Note we expect the 1st of april to be skipped
-        self.assertEqual(times[0][0], "2021")
-        self.assertEqual(times[0][1], "04")
-        self.assertEqual(times[0][2], "02")
-        self.assertEqual(times[0][3], None)
-        self.assertEqual(times[1][0], "2021")
-        self.assertEqual(times[1][1], "04")
-        self.assertEqual(times[1][2], "03")
-        self.assertEqual(times[1][3], None)
-        self.assertEqual(len(times), 2)
-
-    def test_include_previous_market_day(self):
-        start_time = datetime.strptime("2021/05/10 01:00:00", "%Y/%m/%d %H:%M:%S")
-        end_time = datetime.strptime("2021/05/10 05:00:00", "%Y/%m/%d %H:%M:%S")
-        gen = date_generators.bid_table_gen(start_time, end_time)
-        times = [(year, month, day, index) for year, month, day, index in gen]
-        # Note we expect the 1st of april to be skipped
-        self.assertEqual(times[0][0], "2021")
-        self.assertEqual(times[0][1], "05")
-        self.assertEqual(times[0][2], "09")
-        self.assertEqual(times[0][3], None)
-        self.assertEqual(times[1][0], "2021")
-        self.assertEqual(times[1][1], "05")
-        self.assertEqual(times[1][2], "10")
-        self.assertEqual(times[1][3], None)
-        self.assertEqual(len(times), 2)
+        self.assertEqual(times[4][0], "2021")
+        self.assertEqual(times[4][1], "04")
+        self.assertEqual(times[4][2], "02")
+        self.assertEqual(times[4][3], None)
+        self.assertEqual(times[5][0], "2021")
+        self.assertEqual(times[5][1], "04")
+        self.assertEqual(times[5][2], "03")
+        self.assertEqual(times[5][3], None)
+        self.assertEqual(len(times), 6)
 
     def test_include_previous_month_if_1st_market_day_of_month(self):
         start_time = datetime.strptime("2021/05/01 05:00:00", "%Y/%m/%d %H:%M:%S")

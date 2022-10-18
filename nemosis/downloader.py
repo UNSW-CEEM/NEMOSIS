@@ -38,10 +38,15 @@ def run_bid_tables(year, month, day, index, filename_stub, down_load_to):
     if day is None:
         run(year, month, day, index, filename_stub, down_load_to)
     else:
-        _download_and_unpack_bid_move_complete_files(
-            year, month, day, index, filename_stub, down_load_to
-        )
-
+        try:
+            _download_and_unpack_bid_move_complete_files(
+                year, month, day, index, filename_stub, down_load_to
+            )
+        except Exception:
+            logger.warning(f"{filename_stub} not downloaded. This is likely because this file is not being hosted \n" +
+                           "online by AEMO. You can check this url to confirm: \n" +
+                           "https://www.nemweb.com.au/REPORTS/Archive/Bidmove_Complete/. If the file is available but \n"
+                           "this warning persists please contact the NEMOSIS maintainers.")
 
 def _download_and_unpack_bid_move_complete_files(
     year, month, day, index, filename_stub, down_load_to

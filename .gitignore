@@ -27,3 +27,4 @@ NEMOSIS.exe
 nemosis/smoke_tests.py
 nemosis/check_new_bid_table_functionality.py
 *.pyc
+smoke.py

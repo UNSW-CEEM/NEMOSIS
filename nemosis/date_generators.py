@@ -120,21 +120,6 @@ def bid_table_gen(start_time, end_time):
                         and year == end_year
                     ):
                         continue
-                    if int(year) == 2021 and int(month) == 4 and int(day) == 1:
-                        logger.warning(
-                            "Offer data for 2021/04/01 is known to be missing from the AEMO public \n"
-                            "archive, explicitly skipping. This file would also contain data for the first 4 hr of \n"
-                            + "2021/04/02 so that data will also be missing from the returned dataframe."
-                        )
-                    else:
-                        yield str(year), month, str(day).zfill(2), None
-
+                    yield str(year), month, str(day).zfill(2), None
             else:
-                if int(year) == 2021 and int(month) == 3:
-                    logger.warning(
-                        "Offer data for March 2021 is known to be missing from the  AEMO public \n"
-                        "archive, explicitly skipping. This file would also contain data for the first 4 hr of \n"
-                        + "2021/04/01 so that data will also be missing from the returned dataframe."
-                    )
-                else:
-                    yield str(year), month, None, None
+                yield str(year), month, None, None
