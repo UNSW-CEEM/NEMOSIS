@@ -211,7 +211,7 @@ class TestBidTableGen(unittest.TestCase):
         self.assertEqual(times[5][3], None)
         self.assertEqual(len(times), 6)
 
-    def test_include_previous_month_if_1st_market_day_of_month(self):
+    def test_include_previous_day_if_1st_market_day_of_month(self):
         start_time = datetime.strptime("2021/05/01 05:00:00", "%Y/%m/%d %H:%M:%S")
         end_time = datetime.strptime("2021/05/03 05:00:00", "%Y/%m/%d %H:%M:%S")
         gen = date_generators.bid_table_gen(start_time, end_time)
@@ -234,12 +234,59 @@ class TestBidTableGen(unittest.TestCase):
         self.assertEqual(times[3][3], None)
         self.assertEqual(len(times), 4)
 
-    def test_include_previous_month_if_1st_market_day_of_month_but_2nd_calendar_day(
+    def test_include_previous_day_if_not_1st_market_day_of_month(
         self,
     ):
-        start_time = datetime.strptime("2021/05/02 04:00:00", "%Y/%m/%d %H:%M:%S")
+        start_time = datetime.strptime("2021/05/02 05:00:00", "%Y/%m/%d %H:%M:%S")
         end_time = datetime.strptime("2021/05/03 05:00:00", "%Y/%m/%d %H:%M:%S")
         gen = date_generators.bid_table_gen(start_time, end_time)
+        times = [(year, month, day, index) for year, month, day, index in gen]
+        self.assertEqual(times[0][0], "2021")
+        self.assertEqual(times[0][1], "05")
+        self.assertEqual(times[0][2], "01")
+        self.assertEqual(times[0][3], None)
+        self.assertEqual(times[1][0], "2021")
+        self.assertEqual(times[1][1], "05")
+        self.assertEqual(times[1][2], "02")
+        self.assertEqual(times[1][3], None)
+        self.assertEqual(times[2][0], "2021")
+        self.assertEqual(times[2][1], "05")
+        self.assertEqual(times[2][2], "03")
+        self.assertEqual(times[2][3], None)
+        self.assertEqual(len(times), 3)
+
+
+class TestCurrentTableGen(unittest.TestCase):
+    def setUp(self):
+        pass
+
+    def test_include_previous_day_if_1st_market_day_of_year(self):
+        start_time = datetime.strptime("2021/01/01 05:00:00", "%Y/%m/%d %H:%M:%S")
+        end_time = datetime.strptime("2021/01/03 05:00:00", "%Y/%m/%d %H:%M:%S")
+        gen = date_generators.current_gen(start_time, end_time)
+        times = [(year, month, day, index) for year, month, day, index in gen]
+        self.assertEqual(times[0][0], "2020")
+        self.assertEqual(times[0][1], "12")
+        self.assertEqual(times[0][2], "31")
+        self.assertEqual(times[0][3], None)
+        self.assertEqual(times[1][0], "2021")
+        self.assertEqual(times[1][1], "01")
+        self.assertEqual(times[1][2], "01")
+        self.assertEqual(times[1][3], None)
+        self.assertEqual(times[2][0], "2021")
+        self.assertEqual(times[2][1], "01")
+        self.assertEqual(times[2][2], "02")
+        self.assertEqual(times[2][3], None)
+        self.assertEqual(times[3][0], "2021")
+        self.assertEqual(times[3][1], "01")
+        self.assertEqual(times[3][2], "03")
+        self.assertEqual(times[3][3], None)
+        self.assertEqual(len(times), 4)
+
+    def test_include_previous_day_if_1st_market_day_of_month(self):
+        start_time = datetime.strptime("2021/05/01 05:00:00", "%Y/%m/%d %H:%M:%S")
+        end_time = datetime.strptime("2021/05/03 05:00:00", "%Y/%m/%d %H:%M:%S")
+        gen = date_generators.current_gen(start_time, end_time)
         times = [(year, month, day, index) for year, month, day, index in gen]
         self.assertEqual(times[0][0], "2021")
         self.assertEqual(times[0][1], "04")
@@ -258,6 +305,44 @@ class TestBidTableGen(unittest.TestCase):
         self.assertEqual(times[3][2], "03")
         self.assertEqual(times[3][3], None)
         self.assertEqual(len(times), 4)
+
+    def test_include_previous_day_if_not_1st_market_day_of_month(
+        self,
+    ):
+        start_time = datetime.strptime("2021/05/02 05:00:00", "%Y/%m/%d %H:%M:%S")
+        end_time = datetime.strptime("2021/05/03 05:00:00", "%Y/%m/%d %H:%M:%S")
+        gen = date_generators.current_gen(start_time, end_time)
+        times = [(year, month, day, index) for year, month, day, index in gen]
+        self.assertEqual(times[0][0], "2021")
+        self.assertEqual(times[0][1], "05")
+        self.assertEqual(times[0][2], "01")
+        self.assertEqual(times[0][3], None)
+        self.assertEqual(times[1][0], "2021")
+        self.assertEqual(times[1][1], "05")
+        self.assertEqual(times[1][2], "02")
+        self.assertEqual(times[1][3], None)
+        self.assertEqual(times[2][0], "2021")
+        self.assertEqual(times[2][1], "05")
+        self.assertEqual(times[2][2], "03")
+        self.assertEqual(times[2][3], None)
+        self.assertEqual(len(times), 3)
+
+    def test_include_previous_day_if_before_4am(
+        self,
+    ):
+        start_time = datetime.strptime("2022/11/01 00:00:00", "%Y/%m/%d %H:%M:%S")
+        end_time = datetime.strptime("2022/11/01 05:15:00", "%Y/%m/%d %H:%M:%S")
+        gen = date_generators.current_gen(start_time, end_time)
+        times = [(year, month, day, index) for year, month, day, index in gen]
+        self.assertEqual(times[0][0], "2022")
+        self.assertEqual(times[0][1], "10")
+        self.assertEqual(times[0][2], "31")
+        self.assertEqual(times[0][3], None)
+        self.assertEqual(times[1][0], "2022")
+        self.assertEqual(times[1][1], "11")
+        self.assertEqual(times[1][2], "01")
+        self.assertEqual(times[1][3], None)
+        self.assertEqual(len(times), 2)
 
 
 class TestYearMonthDayIndexGen(unittest.TestCase):

@@ -23,7 +23,7 @@ USR_AGENT_HEADER = {
 def run(year, month, day, index, filename_stub, down_load_to):
     """This function"""
 
-    url = defaults.aemo_data_url
+    url = defaults.aemo_mms_url
     # Add the year and month information to the generic AEMO data url
     url_formatted = format_aemo_url(url, year, month, filename_stub)
 
@@ -34,62 +34,123 @@ def run(year, month, day, index, filename_stub, down_load_to):
         logger.warning(f"{filename_stub} not downloaded")
 
 
+def run_bidding_tables_by_day(year, month, day, index, filename_stub, down_load_to):
+    """This function"""
+
+    bid_move_complete_url = "https://nemweb.com.au/Reports/Current/Bidmove_Complete/PUBLIC_BIDMOVE_COMPLETE_{year}{month}{day}"
+    bid_move_complete_url = bid_move_complete_url.format(year=year, month=month, day=day)
+    bid_move_complete_url = _get_matching_link(url="https://nemweb.com.au/Reports/Current/Bidmove_Complete/",
+                                               stub_link=bid_move_complete_url)
+
+    # Perform the download, unzipping saving of the file
+    try:
+        download_unzip_csv(bid_move_complete_url, down_load_to)
+    except Exception:
+        logger.warning(f"{filename_stub} not downloaded")
+
+
 def run_bid_tables(year, month, day, index, filename_stub, down_load_to):
     if day is None:
         run(year, month, day, index, filename_stub, down_load_to)
     else:
         try:
+            filename_stub = "BIDMOVE_COMPLETE_{year}{month}{day}".format(year=year, month=month, day=day)
+            download_url = _get_current_url(
+                filename_stub,
+                defaults.current_data_page_urls["BIDDING"])
             _download_and_unpack_bid_move_complete_files(
-                year, month, day, index, filename_stub, down_load_to
+                download_url, down_load_to
             )
         except Exception:
-            logger.warning(f"{filename_stub} not downloaded. This is likely because this file is not being hosted \n" +
-                           "online by AEMO. You can check this url to confirm: \n" +
-                           "https://www.nemweb.com.au/REPORTS/Archive/Bidmove_Complete/. If the file is available but \n"
-                           "this warning persists please contact the NEMOSIS maintainers.")
+            logger.warning(f"{filename_stub} not downloaded")
+
+
+def run_next_day_region_tables(year, month, day, index, filename_stub, down_load_to):
+    try:
+        filename_stub = "PUBLIC_DAILY_{year}{month}{day}".format(year=year, month=month, day=day)
+        download_url = _get_current_url(
+            filename_stub,
+            defaults.current_data_page_urls["DAILY_REGION_SUMMARY"])
+        _download_and_unpack_next_region_tables(
+            download_url, down_load_to
+        )
+    except Exception:
+        logger.warning(f"{filename_stub} not downloaded")
+
+
+def _get_current_url(filename_stub, current_page_url):
+    sub_url = _get_matching_link(
+        url=defaults.nem_web_domain_url + current_page_url,
+        stub_link=filename_stub)
+    return defaults.nem_web_domain_url + sub_url
+
 
 def _download_and_unpack_bid_move_complete_files(
-    year, month, day, index, filename_stub, down_load_to
+    download_url, down_load_to
 ):
-    bid_move_complete_url = "https://www.nemweb.com.au/REPORTS/Archive/Bidmove_Complete/PUBLIC_BIDMOVE_COMPLETE_{year}{month}02.zip"
-    bid_move_complete_url = bid_move_complete_url.format(year=year, month=month)
-    r = requests.get(bid_move_complete_url, headers=USR_AGENT_HEADER)
-    main_zipfile = zipfile.ZipFile(io.BytesIO(r.content))
-    sub_folder_names = main_zipfile.namelist()
-    for name in sub_folder_names:
-        sub_folder_zipfile_bytes = main_zipfile.read(name)
-        sub_folder_zipfile = zipfile.ZipFile(io.BytesIO(sub_folder_zipfile_bytes))
-        file_name = sub_folder_zipfile.namelist()[
-            0
-        ]  # Just one file so we can pull it out of the list using 0
-        start_row_second_table = _find_start_row_second_table(
-            sub_folder_zipfile, file_name
-        )
-        csv_file = sub_folder_zipfile.open(file_name)
-        BIDDAYOFFER_D = pd.read_csv(
-            csv_file, header=1, nrows=start_row_second_table - 3, dtype=str
-        )
-        BIDDAYOFFER_D.to_csv(
-            os.path.join(
-                down_load_to,
-                "PUBLIC_DVD_BIDDAYOFFER_D_" + file_name[24:32] + "0000" + ".csv",
-            ),
-            index=False,
-        )
-        csv_file = sub_folder_zipfile.open(file_name)
-        BIDPEROFFER_D = pd.read_csv(
-            csv_file, header=start_row_second_table - 1, dtype=str
-        )[:-1]
-        BIDPEROFFER_D.to_csv(
-            os.path.join(
-                down_load_to,
-                "PUBLIC_DVD_BIDPEROFFER_D_" + file_name[24:32] + "0000" + ".csv",
-            ),
-            index=False,
-        )
+    r = requests.get(download_url, headers=USR_AGENT_HEADER)
+    zipped_file = zipfile.ZipFile(io.BytesIO(r.content))
+
+    file_name = zipped_file.namelist()[
+        0
+    ]  # Just one file so we can pull it out of the list using 0
+    start_row_second_table = _find_start_row_nth_table(
+        zipped_file, file_name, 2
+    )
+    csv_file = zipped_file.open(file_name)
+    BIDDAYOFFER_D = pd.read_csv(
+        csv_file, header=1, nrows=start_row_second_table - 3, dtype=str
+    )
+    BIDDAYOFFER_D.to_csv(
+        os.path.join(
+            down_load_to,
+            "PUBLIC_DVD_BIDDAYOFFER_D_" + file_name[24:32] + ".csv",
+        ),
+        index=False,
+    )
+    csv_file = zipped_file.open(file_name)
+    BIDPEROFFER_D = pd.read_csv(
+        csv_file, header=start_row_second_table - 1, dtype=str
+    )[:-1]
+    BIDPEROFFER_D.to_csv(
+        os.path.join(
+            down_load_to,
+            "PUBLIC_DVD_BIDPEROFFER_D_" + file_name[24:32] + ".csv",
+        ),
+        index=False,
+    )
 
 
-def _find_start_row_second_table(sub_folder_zipfile, file_name):
+def _download_and_unpack_next_region_tables(
+    download_url, down_load_to
+):
+    r = requests.get(download_url, headers=USR_AGENT_HEADER)
+    zipped_file = zipfile.ZipFile(io.BytesIO(r.content))
+
+    file_name = zipped_file.namelist()[
+        0
+    ]  # Just one file so we can pull it out of the list using 0
+    start_row_second_table = _find_start_row_nth_table(
+        zipped_file, file_name, 2
+    )
+    start_row_third_table = _find_start_row_nth_table(
+        zipped_file, file_name, 3
+    )
+    csv_file = zipped_file.open(file_name)
+    DAILY_REGION_SUMMARY = pd.read_csv(
+        csv_file, header=start_row_second_table - 1,
+        nrows=start_row_third_table - start_row_second_table - 1, dtype=str
+    )
+    DAILY_REGION_SUMMARY.to_csv(
+        os.path.join(
+            down_load_to,
+            "PUBLIC_DAILY_REGION_SUMMARY_" + file_name[13:21] + ".csv",
+        ),
+        index=False,
+    )
+
+
+def _find_start_row_nth_table(sub_folder_zipfile, file_name, n):
     row = 0
     table_start_rows_found = 0
     with sub_folder_zipfile.open(file_name) as f:
@@ -98,12 +159,13 @@ def _find_start_row_second_table(sub_folder_zipfile, file_name):
             if str(line)[2] == "I":
                 table_start_rows_found += 1
                 table_start_row = row
-    if table_start_rows_found != 2:
-        raise custom_errors.DataFormatError(
-            "The data in table BIDMOVE_COMPLETE was not in the expected format. \n"
-            + "Please contact the NEMOSIS package maintainers."
-        )
-    return table_start_row
+                if table_start_rows_found == n:
+                    return table_start_row
+    raise custom_errors.DataFormatError(
+        "The data in table BIDMOVE_COMPLETE was not in the expected format. \n"
+        + "Please contact the NEMOSIS package maintainers."
+    )
+
 
 
 def run_fcas4s(year, month, day, index, filename_stub, down_load_to):
@@ -183,3 +245,13 @@ def format_aemo_url(url, year, month, filename_stub):
 def status_code_return(url):
     r = requests.get(url, headers=USR_AGENT_HEADER)
     return r.status_code
+
+
+def _get_matching_link(url, stub_link):
+    r = requests.get(url, headers=USR_AGENT_HEADER)
+    soup = BeautifulSoup(r.content, "html.parser")
+    links = [link.get("href") for link in soup.find_all("a")]
+    for link in links:
+        if stub_link in link:
+            return link
+    logger.warning(f"{stub_link} not downloaded")

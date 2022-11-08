@@ -32,6 +32,7 @@ names = {
     "TRADINGREGIONSUM": "PUBLIC_DVD_TRADINGREGIONSUM",
     "TRADINGINTERCONNECT": "PUBLIC_DVD_TRADINGINTERCONNECT",
     "MARKET_PRICE_THRESHOLDS": "PUBLIC_DVD_MARKET_PRICE_THRESHOLDS",
+    "DAILY_REGION_SUMMARY": "PUBLIC_DAILY_REGION_SUMMARY"
 }
 
 table_types = {
@@ -46,9 +47,9 @@ table_types = {
     "SPDREGIONCONSTRAINT": "MMS",
     "SPDCONNECTIONPOINTCONSTRAINT": "MMS",
     "SPDINTERCONNECTORCONSTRAINT": "MMS",
-    "BIDPEROFFER_D": "MMS_AND_ARCHIVE",
+    "BIDPEROFFER_D": "BIDDING",
     "DISPATCHINTERCONNECTORRES": "MMS",
-    "BIDDAYOFFER_D": "MMS_AND_ARCHIVE",
+    "BIDDAYOFFER_D": "BIDDING",
     "DISPATCHREGIONSUM": "MMS",
     "FCAS_4_SECOND": "FCAS",
     "ELEMENTS_FCAS_4_SECOND": "STATIC",
@@ -67,12 +68,13 @@ table_types = {
     "TRADINGREGIONSUM": "MMS",
     "TRADINGINTERCONNECT": "MMS",
     "MARKET_PRICE_THRESHOLDS": "MMS",
+    "DAILY_REGION_SUMMARY": "DAILY_REGION_SUMMARY"
 }
 
 dynamic_tables = [
     table
     for table, type in table_types.items()
-    if type in ["MMS", "MMS_AND_ARCHIVE", "FCAS"]
+    if type in ["MMS", "BIDDING", "DAILY_REGION_SUMMARY", "FCAS"]
 ]
 
 return_tables = list(names.keys())
@@ -112,6 +114,8 @@ static_tables = [
     "FCAS Providers",
 ]
 
+nem_web_domain_url = "https://nemweb.com.au/"
+
 static_table_url = {
     "ELEMENTS_FCAS_4_SECOND": "https://www.nemweb.com.au/Reports/Current/Causer_Pays_Elements/",
     "VARIABLES_FCAS_4_SECOND": "https://aemo.com.au/-/media/files/electricity/nem/settlements_and_payments/settlements/auction-reports/archive/ancillary-services-market-causer-pays-variables-file.csv",
@@ -119,7 +123,12 @@ static_table_url = {
     "_downloader.download_xl": "https://www.aemo.com.au/-/media/Files/Electricity/NEM/Participant_Information/NEM-Registration-and-Exemption-List.xls",
 }
 
-aemo_data_url = "http://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/MMSDM/{}/MMSDM_{}_{}/MMSDM_Historical_Data_SQLLoader/DATA/{}.zip"
+aemo_mms_url = "http://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/MMSDM/{}/MMSDM_{}_{}/MMSDM_Historical_Data_SQLLoader/DATA/{}.zip"
+
+current_data_page_urls = {
+    "BIDDING": "Reports/Current/Bidmove_Complete/",
+    "DAILY_REGION_SUMMARY": "/Reports/Current/Daily_Reports/"
+}
 
 fcas_4_url = "http://www.nemweb.com.au/Reports/Current/Causer_Pays/FCAS_{}{}{}{}.zip"
 
@@ -604,6 +613,22 @@ table_columns = {
         "VOLL",
         "MARKETPRICEFLOOR",
     ],
+    "DAILY_REGION_SUMMARY": [
+        "SETTLEMENTDATE",
+        "RUNNO",
+        "REGIONID",
+        "INTERVENTION",
+        "RRP",
+        "EEP",
+        "ROP",
+        "APCFLAG",
+        "MARKETSUSPENDEDFLAG",
+        "TOTALDEMAND",
+        "DEMANDFORECAST",
+        "DISPATCHABLEGENERATION",
+        "DISPATCHABLELOAD",
+        "NETINTERCHANGE"
+    ],
 }
 
 table_primary_keys = {
@@ -693,6 +718,11 @@ table_primary_keys = {
     "TRADINGINTERCONNECT": ["SETTLEMENTDATE", "INTERCONNECTORID"],
     "PLANTSTATS": ["Month", "DUID"],
     "MARKET_PRICE_THRESHOLDS": ["EFFECTIVEDATE", "VERSIONNO"],
+    "DAILY_REGION_SUMMARY": [
+        "SETTLEMENTDATE",
+        "INTERVENTION",
+        "REGIONID",
+    ],
 }
 
 effective_date_group_col = {
@@ -745,6 +775,7 @@ primary_date_columns = {
     "LOSSFACTORMODEL": "EFFECTIVEDATE",
     "FCAS_4s_SCADA_MAP": None,
     "MARKET_PRICE_THRESHOLDS": "EFFECTIVEDATE",
+    "DAILY_REGION_SUMMARY": "SETTLEMENTDATE",
 }
 
 reg_exemption_list_tabs = {

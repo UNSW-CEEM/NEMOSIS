@@ -11,7 +11,7 @@ from nemosis import query_wrappers
 
 class TestSearchTypeValidity(unittest.TestCase):
     def setUp(self):
-        self.start_day = (datetime.now() - timedelta(30)).replace(
+        self.time_yesterday = (datetime.now() - timedelta(days=1)).replace(
             hour=0, minute=0, second=0, microsecond=0
         )
         pass
@@ -24,10 +24,12 @@ class TestSearchTypeValidity(unittest.TestCase):
                     "2018/01/01 00:00:00", "%Y/%m/%d %H:%M:%S"
                 )
                 end_time = datetime.strptime("2018/03/01 00:00:00", "%Y/%m/%d %H:%M:%S")
-                if table_name == "FCAS_4_SECOND":
-                    start_test_window = self.start_day
-                    start_time = self.start_day
-                    end_time = self.start_day + timedelta(days=1)
+                if table_name in ["DAILY_REGION_SUMMARY"]:
+                    end_time = self.time_yesterday
+                    start_time = self.time_yesterday - timedelta(days=8)
+                if table_name in ["FCAS_4_SECOND"]:
+                    end_time = self.time_yesterday
+                    start_time = self.time_yesterday - timedelta(hours=2)
                 data_tables = data_fetch_methods._dynamic_data_fetch_loop(
                     start_search=start_time,
                     start_time=start_time,

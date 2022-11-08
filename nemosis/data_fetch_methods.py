@@ -345,11 +345,13 @@ def _get_read_function(fformat, table_type, day):
             func = _read_mms_csv
         elif table_type == "FCAS":
             func = _read_fcas_causer_pays_csv
-        elif table_type == "MMS_AND_ARCHIVE":
+        elif table_type == "BIDDING":
             if day is None:
                 func = _read_mms_csv
             else:
                 func = _read_constructed_csv
+        elif table_type == 'DAILY_REGION_SUMMARY':
+            func = _read_constructed_csv
     return func
 
 
@@ -693,7 +695,7 @@ def _determine_columns_and_read_csv(
     else:
         type = str
     if (
-        _defaults.table_types[table_name] in ["MMS", "MMS_AND_ARCHIVE"]
+        _defaults.table_types[table_name] in ["MMS", "BIDDING", "DAILY_REGION_SUMMARY"]
         and not read_all_columns
     ):
         headers = read_csv_func(csv_file, nrows=1).columns.tolist()
@@ -704,7 +706,7 @@ def _determine_columns_and_read_csv(
         ]
         data = read_csv_func(csv_file, usecols=columns, dtype=type)
     elif (
-        _defaults.table_types[table_name] in ["MMS", "MMS_AND_ARCHIVE"]
+        _defaults.table_types[table_name] in ["MMS", "BIDDING", "DAILY_REGION_SUMMARY"]
         and read_all_columns
     ):
         data = read_csv_func(csv_file, dtype=type)
@@ -862,4 +864,5 @@ _method_map = {
     "INTERCONNECTOR": _dynamic_data_wrapper_for_gui,
     "INTERCONNECTORCONSTRAINT": _dynamic_data_wrapper_for_gui,
     "MARKET_PRICE_THRESHOLDS": _dynamic_data_wrapper_for_gui,
+    "DAILY_REGION_SUMMARY": _dynamic_data_wrapper_for_gui
 }

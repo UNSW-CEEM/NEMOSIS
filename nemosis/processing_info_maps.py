@@ -41,6 +41,7 @@ setup = {
     "INTERCONNECTOR": None,
     "INTERCONNECTORCONSTRAINT": None,
     "MARKET_PRICE_THRESHOLDS": None,
+    "DAILY_REGION_SUMMARY": None,
 }
 
 search_type = {
@@ -75,6 +76,7 @@ search_type = {
     "INTERCONNECTOR": "all",
     "INTERCONNECTORCONSTRAINT": "all",
     "MARKET_PRICE_THRESHOLDS": "all",
+    "DAILY_REGION_SUMMARY": 'start_to_end',
 }
 
 date_cols = {
@@ -109,6 +111,7 @@ date_cols = {
     "INTERCONNECTOR": ["LASTCHANGED"],
     "INTERCONNECTORCONSTRAINT": ["EFFECTIVEDATE"],
     "MARKET_PRICE_THRESHOLDS": ["EFFECTIVEDATE"],
+    "DAILY_REGION_SUMMARY": ['SETTLEMENTDATE'],
 }
 
 filter = {
@@ -143,6 +146,7 @@ filter = {
     "INTERCONNECTOR": filters.filter_on_last_changed,
     "INTERCONNECTORCONSTRAINT": filters.filter_on_effective_date,
     "MARKET_PRICE_THRESHOLDS": filters.filter_on_effective_date,
+    "DAILY_REGION_SUMMARY": filters.filter_on_settlementdate,
 }
 
 finalise = {
@@ -215,22 +219,26 @@ finalise = {
         query_wrappers.drop_duplicates_by_primary_key,
     ],
     "MARKET_PRICE_THRESHOLDS": None,
+    "DAILY_REGION_SUMMARY": None,
 }
 
 date_gen = {
     "MMS": date_generators.year_and_month_gen,
-    "MMS_AND_ARCHIVE": date_generators.bid_table_gen,
+    "BIDDING": date_generators.bid_table_gen,
+    "DAILY_REGION_SUMMARY": date_generators.current_gen,
     "FCAS": date_generators.year_month_day_index_gen,
 }
 
 write_filename = {
     "MMS": write_file_names.write_file_names,
-    "MMS_AND_ARCHIVE": write_file_names.write_file_names_mms_and_archive,
+    "BIDDING": write_file_names.write_file_names_mms_and_current,
+    "DAILY_REGION_SUMMARY": write_file_names.write_file_names_mms_and_current,
     "FCAS": write_file_names.write_file_names_fcas,
 }
 
 downloader = {
     "MMS": downloader.run,
-    "MMS_AND_ARCHIVE": downloader.run_bid_tables,
+    "BIDDING": downloader.run_bid_tables,
+    "DAILY_REGION_SUMMARY": downloader.run_next_day_region_tables,
     "FCAS": downloader.run_fcas4s,
 }
