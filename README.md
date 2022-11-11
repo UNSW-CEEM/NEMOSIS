@@ -2,8 +2,6 @@
 
 ## A Python package for downloading historical data published by the Australian Energy Market Operator (AEMO)
 
-## v3.2.0 has now been released. This fixes an issue with missing bid data causing errors, now warnings are issued. Also the messages printed by NEMOSIS now use the python logging module so they can turned off if desired see [Disable logging](#disable-logging).
-
 -----
 
 ## Table of Contents
