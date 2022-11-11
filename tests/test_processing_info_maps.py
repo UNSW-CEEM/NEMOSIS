@@ -24,7 +24,7 @@ class TestSearchTypeValidity(unittest.TestCase):
                     "2018/01/01 00:00:00", "%Y/%m/%d %H:%M:%S"
                 )
                 end_time = datetime.strptime("2018/03/01 00:00:00", "%Y/%m/%d %H:%M:%S")
-                if table_name in ["DAILY_REGION_SUMMARY"]:
+                if table_name in ["DAILY_REGION_SUMMARY", "NEXT_DAY_DISPATCHLOAD"]:
                     end_time = self.time_yesterday
                     start_time = self.time_yesterday - timedelta(days=8)
                 if table_name in ["FCAS_4_SECOND"]:

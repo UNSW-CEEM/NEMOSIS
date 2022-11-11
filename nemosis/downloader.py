@@ -34,21 +34,6 @@ def run(year, month, day, index, filename_stub, down_load_to):
         logger.warning(f"{filename_stub} not downloaded")
 
 
-def run_bidding_tables_by_day(year, month, day, index, filename_stub, down_load_to):
-    """This function"""
-
-    bid_move_complete_url = "https://nemweb.com.au/Reports/Current/Bidmove_Complete/PUBLIC_BIDMOVE_COMPLETE_{year}{month}{day}"
-    bid_move_complete_url = bid_move_complete_url.format(year=year, month=month, day=day)
-    bid_move_complete_url = _get_matching_link(url="https://nemweb.com.au/Reports/Current/Bidmove_Complete/",
-                                               stub_link=bid_move_complete_url)
-
-    # Perform the download, unzipping saving of the file
-    try:
-        download_unzip_csv(bid_move_complete_url, down_load_to)
-    except Exception:
-        logger.warning(f"{filename_stub} not downloaded")
-
-
 def run_bid_tables(year, month, day, index, filename_stub, down_load_to):
     if day is None:
         run(year, month, day, index, filename_stub, down_load_to)
@@ -74,6 +59,17 @@ def run_next_day_region_tables(year, month, day, index, filename_stub, down_load
         _download_and_unpack_next_region_tables(
             download_url, down_load_to
         )
+    except Exception:
+        logger.warning(f"{filename_stub} not downloaded")
+
+
+def run_next_dispatch_tables(year, month, day, index, filename_stub, down_load_to):
+    try:
+        filename_stub = "PUBLIC_NEXT_DAY_DISPATCH_{year}{month}{day}".format(year=year, month=month, day=day)
+        download_url = _get_current_url(
+            filename_stub,
+            defaults.current_data_page_urls["NEXT_DAY_DISPATCHLOAD"])
+        _download_and_unpack_next_dispatch_load_files_complete_files(download_url, down_load_to)
     except Exception:
         logger.warning(f"{filename_stub} not downloaded")
 
@@ -145,6 +141,31 @@ def _download_and_unpack_next_region_tables(
         os.path.join(
             down_load_to,
             "PUBLIC_DAILY_REGION_SUMMARY_" + file_name[13:21] + ".csv",
+        ),
+        index=False,
+    )
+    
+
+def _download_and_unpack_next_dispatch_load_files_complete_files(
+    download_url, down_load_to
+):
+    r = requests.get(download_url, headers=USR_AGENT_HEADER)
+    zipped_file = zipfile.ZipFile(io.BytesIO(r.content))
+
+    file_name = zipped_file.namelist()[
+        0
+    ]  # Just one file so we can pull it out of the list using 0
+    start_row_second_table = _find_start_row_nth_table(
+        zipped_file, file_name, 2
+    )
+    csv_file = zipped_file.open(file_name)
+    NEXT_DAY_DISPATCHLOAD = pd.read_csv(
+        csv_file, header=1, nrows=start_row_second_table - 3, dtype=str
+    )
+    NEXT_DAY_DISPATCHLOAD.to_csv(
+        os.path.join(
+            down_load_to,
+            "PUBLIC_NEXT_DAY_DISPATCHLOAD_" + file_name[25:33] + ".csv",
         ),
         index=False,
     )

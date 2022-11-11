@@ -5,6 +5,7 @@ from nemosis import data_fetch_methods
 from nemosis import defaults
 import pandas as pd
 from nemosis import custom_tables
+import pytz
 
 
 class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
@@ -802,17 +803,36 @@ class TestDynamicDataCompilerWithSettlementDateFiltering2021OfferData(
             print("Passed")
 
 
-class TestDynamicDataCompilerWithSettlementDateFilteringDailyRegionSsummary(
+class TestDynamicDataCompilerWithSettlementDateFilteringNextDayTables(
     unittest.TestCase
 ):
+
+    def setUp(self):
+        self.table_names = ["DAILY_REGION_SUMMARY", "NEXT_DAY_DISPATCHLOAD"]
+
+        self.table_filters = {
+            "DAILY_REGION_SUMMARY": ["REGIONID"],
+            "NEXT_DAY_DISPATCHLOAD": ["DUID"],
+        }
+
+        # Filter for bids at the start of the 2021-06-01 file and the end of the 2021-05-31, to make sure that we aren't
+        # skipping any of the data file rows.
+        self.filter_values = {
+            "DAILY_REGION_SUMMARY": (
+                ["NSW1"],
+            ),
+            "NEXT_DAY_DISPATCHLOAD": (
+                ['AGLHAL'],
+            )
+        }
 
     def test_dispatch_tables_start_of_month(self):
         start_time = "2022/11/01 00:00:00"
         end_time = "2022/11/01 05:15:00"
-        for table in ["DAILY_REGION_SUMMARY"]:
+        for table in self.table_names:
             print(f"Testing {table} returning values at start of month one.")
             dat_col = defaults.primary_date_columns[table]
-            expected_length = 63 * 5
+            expected_length = 63 * 1
             expected_number_of_columns = len(defaults.table_columns[table])
             expected_first_time = pd.to_datetime(
                 start_time, format="%Y/%m/%d %H:%M:%S"
@@ -825,6 +845,8 @@ class TestDynamicDataCompilerWithSettlementDateFilteringDailyRegionSsummary(
                 defaults.raw_data_cache,
                 fformat="feather",
                 keep_csv=True,
+                filter_cols=self.table_filters[table],
+                filter_values=self.filter_values[table]
             )
             data = data.reset_index(drop=True)
             self.assertEqual(expected_length, data.shape[0])
@@ -836,10 +858,10 @@ class TestDynamicDataCompilerWithSettlementDateFilteringDailyRegionSsummary(
     def test_dispatch_tables_middle_of_month_and_day(self):
         start_time = "2022/11/05 12:00:00"
         end_time = "2022/11/05 17:15:00"
-        for table in ["DAILY_REGION_SUMMARY"]:
+        for table in self.table_names:
             print(f"Testing {table} returning values at start of month one.")
             dat_col = defaults.primary_date_columns[table]
-            expected_length = 63 * 5
+            expected_length = 63 * 1
             expected_number_of_columns = len(defaults.table_columns[table])
             expected_first_time = pd.to_datetime(
                 start_time, format="%Y/%m/%d %H:%M:%S"
@@ -852,6 +874,66 @@ class TestDynamicDataCompilerWithSettlementDateFilteringDailyRegionSsummary(
                 defaults.raw_data_cache,
                 fformat="feather",
                 keep_csv=True,
+                filter_cols=self.table_filters[table],
+                filter_values=self.filter_values[table]
+            )
+            data = data.reset_index(drop=True)
+            self.assertEqual(expected_length, data.shape[0])
+            self.assertEqual(expected_number_of_columns, data.shape[1])
+            self.assertEqual(expected_first_time, data[dat_col][0])
+            self.assertEqual(expected_last_time, data[dat_col].iloc[-1])
+            print("Passed")
+
+    def test_dispatch_tables_start_market_day(self):
+        start_time = "2022/11/05 04:00:00"
+        end_time = "2022/11/05 04:05:00"
+        for table in self.table_names:
+            print(f"Testing {table} returning values at start of month one.")
+            dat_col = defaults.primary_date_columns[table]
+            expected_length = 1
+            expected_number_of_columns = len(defaults.table_columns[table])
+            expected_first_time = pd.to_datetime(
+                start_time, format="%Y/%m/%d %H:%M:%S"
+            ) + timedelta(minutes=5)
+            expected_last_time = pd.to_datetime(end_time, format="%Y/%m/%d %H:%M:%S")
+            data = data_fetch_methods.dynamic_data_compiler(
+                start_time,
+                end_time,
+                table,
+                defaults.raw_data_cache,
+                fformat="feather",
+                keep_csv=True,
+                filter_cols=self.table_filters[table],
+                filter_values=self.filter_values[table]
+            )
+            data = data.reset_index(drop=True)
+            self.assertEqual(expected_length, data.shape[0])
+            self.assertEqual(expected_number_of_columns, data.shape[1])
+            self.assertEqual(expected_first_time, data[dat_col][0])
+            self.assertEqual(expected_last_time, data[dat_col].iloc[-1])
+            print("Passed")
+
+    def test_dispatch_tables_end_market_day(self):
+        start_time = "2022/11/05 03:55:00"
+        end_time = "2022/11/05 04:00:00"
+        for table in self.table_names:
+            print(f"Testing {table} returning values at start of month one.")
+            dat_col = defaults.primary_date_columns[table]
+            expected_length = 1
+            expected_number_of_columns = len(defaults.table_columns[table])
+            expected_first_time = pd.to_datetime(
+                start_time, format="%Y/%m/%d %H:%M:%S"
+            ) + timedelta(minutes=5)
+            expected_last_time = pd.to_datetime(end_time, format="%Y/%m/%d %H:%M:%S")
+            data = data_fetch_methods.dynamic_data_compiler(
+                start_time,
+                end_time,
+                table,
+                defaults.raw_data_cache,
+                fformat="feather",
+                keep_csv=True,
+                filter_cols=self.table_filters[table],
+                filter_values=self.filter_values[table]
             )
             data = data.reset_index(drop=True)
             self.assertEqual(expected_length, data.shape[0])

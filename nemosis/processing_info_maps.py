@@ -11,6 +11,7 @@ from nemosis import (
 
 setup = {
     "DISPATCHLOAD": None,
+    "NEXT_DAY_DISPATCHLOAD": None,
     "TRADINGLOAD": None,
     "TRADINGPRICE": None,
     "TRADINGREGIONSUM": None,
@@ -46,6 +47,7 @@ setup = {
 
 search_type = {
     "DISPATCHLOAD": "start_to_end",
+    "NEXT_DAY_DISPATCHLOAD": "start_to_end",
     "TRADINGLOAD": "start_to_end",
     "TRADINGPRICE": "start_to_end",
     "TRADINGREGIONSUM": "start_to_end",
@@ -81,6 +83,7 @@ search_type = {
 
 date_cols = {
     "DISPATCHLOAD": ["SETTLEMENTDATE"],
+    "NEXT_DAY_DISPATCHLOAD": ["SETTLEMENTDATE"],
     "TRADINGLOAD": ["SETTLEMENTDATE"],
     "TRADINGPRICE": ["SETTLEMENTDATE"],
     "TRADINGREGIONSUM": ["SETTLEMENTDATE"],
@@ -116,6 +119,7 @@ date_cols = {
 
 filter = {
     "DISPATCHLOAD": filters.filter_on_settlementdate,
+    "NEXT_DAY_DISPATCHLOAD": filters.filter_on_settlementdate,
     "TRADINGLOAD": filters.filter_on_settlementdate,
     "TRADINGPRICE": filters.filter_on_settlementdate,
     "TRADINGREGIONSUM": filters.filter_on_settlementdate,
@@ -151,6 +155,7 @@ filter = {
 
 finalise = {
     "DISPATCHLOAD": None,
+    "NEXT_DAY_DISPATCHLOAD": None,
     "TRADINGLOAD": None,
     "TRADINGPRICE": None,
     "TRADINGREGIONSUM": None,
@@ -224,6 +229,7 @@ finalise = {
 
 date_gen = {
     "MMS": date_generators.year_and_month_gen,
+    "NEXT_DAY_DISPATCHLOAD": date_generators.current_gen,
     "BIDDING": date_generators.bid_table_gen,
     "DAILY_REGION_SUMMARY": date_generators.current_gen,
     "FCAS": date_generators.year_month_day_index_gen,
@@ -231,6 +237,7 @@ date_gen = {
 
 write_filename = {
     "MMS": write_file_names.write_file_names,
+    "NEXT_DAY_DISPATCHLOAD": write_file_names.write_file_names_current,
     "BIDDING": write_file_names.write_file_names_mms_and_current,
     "DAILY_REGION_SUMMARY": write_file_names.write_file_names_mms_and_current,
     "FCAS": write_file_names.write_file_names_fcas,
@@ -238,6 +245,7 @@ write_filename = {
 
 downloader = {
     "MMS": downloader.run,
+    "NEXT_DAY_DISPATCHLOAD": downloader.run_next_dispatch_tables,
     "BIDDING": downloader.run_bid_tables,
     "DAILY_REGION_SUMMARY": downloader.run_next_day_region_tables,
     "FCAS": downloader.run_fcas4s,

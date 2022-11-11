@@ -1,6 +1,7 @@
 names = {
     "FCAS Providers": "NEM Registration and Exemption List.xls",
     "DISPATCHLOAD": "PUBLIC_DVD_DISPATCHLOAD",
+    "NEXT_DAY_DISPATCHLOAD": "PUBLIC_NEXT_DAY_DISPATCHLOAD",
     "DUDETAILSUMMARY": "PUBLIC_DVD_DUDETAILSUMMARY",
     "DUDETAIL": "PUBLIC_DVD_DUDETAIL",
     "DISPATCHCONSTRAINT": "PUBLIC_DVD_DISPATCHCONSTRAINT",
@@ -38,6 +39,7 @@ names = {
 table_types = {
     "FCAS Providers": "STATICXL",
     "DISPATCHLOAD": "MMS",
+    "NEXT_DAY_DISPATCHLOAD": "NEXT_DAY_DISPATCHLOAD",
     "DUDETAILSUMMARY": "MMS",
     "DUDETAIL": "MMS",
     "DISPATCHCONSTRAINT": "MMS",
@@ -74,7 +76,7 @@ table_types = {
 dynamic_tables = [
     table
     for table, type in table_types.items()
-    if type in ["MMS", "BIDDING", "DAILY_REGION_SUMMARY", "FCAS"]
+    if type in ["MMS", "BIDDING", "DAILY_REGION_SUMMARY", "NEXT_DAY_DISPATCHLOAD", "FCAS"]
 ]
 
 return_tables = list(names.keys())
@@ -82,6 +84,7 @@ return_tables = list(names.keys())
 display_as_AMEO = [
     "FCAS Providers",
     "DISPATCHLOAD",
+    "NEXT_DAY_DISPATCHLOAD",
     "DUDETAILSUMMARY",
     "DUDETAIL",
     "DISPATCHCONSTRAINT",
@@ -127,7 +130,8 @@ aemo_mms_url = "http://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/MMSD
 
 current_data_page_urls = {
     "BIDDING": "Reports/Current/Bidmove_Complete/",
-    "DAILY_REGION_SUMMARY": "/Reports/Current/Daily_Reports/"
+    "DAILY_REGION_SUMMARY": "/Reports/Current/Daily_Reports/",
+    "NEXT_DAY_DISPATCHLOAD": "/Reports/Current/NEXT_DAY_DISPATCH/"
 }
 
 fcas_4_url = "http://www.nemweb.com.au/Reports/Current/Causer_Pays/FCAS_{}{}{}{}.zip"
@@ -210,6 +214,31 @@ filterable_cols = [
 
 table_columns = {
     "DISPATCHLOAD": [
+        "SETTLEMENTDATE",
+        "DUID",
+        "INTERVENTION",
+        "DISPATCHMODE",
+        "AGCSTATUS",
+        "INITIALMW",
+        "TOTALCLEARED",
+        "RAMPDOWNRATE",
+        "RAMPUPRATE",
+        "LOWER5MIN",
+        "LOWER60SEC",
+        "LOWER6SEC",
+        "RAISE5MIN",
+        "RAISE60SEC",
+        "RAISE6SEC",
+        "LOWERREG",
+        "RAISEREG",
+        "SEMIDISPATCHCAP",
+        "AVAILABILITY",
+        "RAISEREGENABLEMENTMAX",
+        "RAISEREGENABLEMENTMIN",
+        "LOWERREGENABLEMENTMAX",
+        "LOWERREGENABLEMENTMIN",
+    ],
+    "NEXT_DAY_DISPATCHLOAD": [
         "SETTLEMENTDATE",
         "DUID",
         "INTERVENTION",
@@ -705,6 +734,7 @@ table_primary_keys = {
         "SETTLEMENTDATE",
     ],
     "DISPATCHLOAD": ["SETTLEMENTDATE", "INTERVENTION", "DUID"],
+    "NEXT_DAY_DISPATCHLOAD": ["SETTLEMENTDATE", "INTERVENTION", "DUID"],
     "DISPATCH_UNIT_SCADA": ["SETTLEMENTDATE", "DUID"],
     "FCAS_4_SECOND": ["TIMESTAMP", "ELEMENTNUMBER", "VARIABLENUMBER"],
     "ELEMENTS_FCAS_4_SECOND": ["ELEMENTNUMBER"],
@@ -744,6 +774,7 @@ effective_date_group_col = {
 
 primary_date_columns = {
     "DISPATCHLOAD": "SETTLEMENTDATE",
+    "NEXT_DAY_DISPATCHLOAD": "SETTLEMENTDATE",
     "TRADINGLOAD": "SETTLEMENTDATE",
     "TRADINGPRICE": "SETTLEMENTDATE",
     "TRADINGREGIONSUM": "SETTLEMENTDATE",
