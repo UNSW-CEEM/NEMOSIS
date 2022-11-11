@@ -1,6 +1,6 @@
 # NEMOSIS
 
-## A Python package for downloading historical data published by the Australian Energy Market Operator (AEMO)
+A Python package for downloading historical data published by the Australian Energy Market Operator (AEMO)
 
 -----
 
