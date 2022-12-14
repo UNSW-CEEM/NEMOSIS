@@ -494,6 +494,10 @@ table_columns = {
         "UIGF",
         "SEMISCHEDULE_CLEAREDMW",
         "SEMISCHEDULE_COMPLIANCEMW",
+        "SS_SOLAR_UIGF",
+        "SS_WIND_UIGF",
+        "SS_SOLAR_CLEAREDMW",
+        "SS_WIND_CLEAREDMW"
     ],
     "MNSP_PEROFFER": [
         "SETTLEMENTDATE",
