@@ -4,9 +4,9 @@ from datetime import datetime, timedelta
 from nemosis import data_fetch_methods
 from nemosis import defaults
 import pandas as pd
-from nemosis import custom_tables
+from nemosis import custom_tables, filters
+from pandas._testing import assert_frame_equal
 import pytz
-
 
 class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
     def setUp(self):
@@ -1122,6 +1122,66 @@ class TestDynamicDataCompilerWithStartDateFiltering(unittest.TestCase):
             not_empty = data.shape[0] > 0
             self.assertEqual(True, not_empty)
             print("Passed")
+
+
+class TestDynamicDataCompilerWithLastChangedFiltering(unittest.TestCase):
+    def test_that_a_narrow_time_range_returns_one_entry_per_participantid(self):
+        table = "PARTICIPANT"
+        cols = ["PARTICIPANTID", "NAME", "LASTCHANGED"]
+        data = data_fetch_methods.dynamic_data_compiler(
+            "2022/01/01 00:00:00",
+            "2022/01/01 00:05:00",
+            table,
+            defaults.raw_data_cache,
+            select_columns=cols,
+        )
+        data = data.groupby(['PARTICIPANTID'], as_index=False).count()
+        assert (data['NAME'] == 1).all()
+        print("Passed")
+
+    def test_that_a_wide_time_range_returns_more_than_one_entry_for_at_least_some_participantids(self):
+        table = "PARTICIPANT"
+        data = data_fetch_methods.dynamic_data_compiler(
+            "2013/01/01 00:00:00",
+            "2023/01/01 00:00:00",
+            table,
+            defaults.raw_data_cache,
+        )
+        data = data.groupby(['PARTICIPANTID'], as_index=False).count()
+        assert (data['NAME'] > 1).any()
+        print("Passed")
+
+    def test_filter_of_raw_data(self):
+        table = "PARTICIPANT"
+        start_time_str = defaults.nem_data_model_start_time
+        end_time_str = "2023/01/01 00:00:00"
+        start_search = defaults.nem_data_model_start_time
+        start_time = datetime.strptime(start_time_str, "%Y/%m/%d %H:%M:%S")
+        end_time = datetime.strptime(end_time_str, "%Y/%m/%d %H:%M:%S")
+        start_search = datetime.strptime(start_search, "%Y/%m/%d %H:%M:%S")
+        data = data_fetch_methods.dynamic_data_compiler(
+            start_time_str,
+            end_time_str,
+            table,
+            defaults.raw_data_cache,
+        )
+        raw_data = data_fetch_methods._dynamic_data_fetch_loop(
+            start_search,
+            start_time,
+            end_time,
+            table,
+            defaults.raw_data_cache,
+            select_columns=['PARTICIPANTID', 'NAME', 'PARTICIPANTCLASSID', 'LASTCHANGED'],
+            date_filter=filters.filter_on_last_changed,
+            fformat='feather',
+            keep_csv=True,
+            rebuild=False)
+        raw_data = pd.concat(raw_data)
+        raw_data = raw_data.groupby(['PARTICIPANTID', 'LASTCHANGED'], as_index=False).count().\
+            groupby(['PARTICIPANTID'], as_index=False).count().sort_values('PARTICIPANTID').reset_index(drop=True)
+        data = data.groupby(['PARTICIPANTID', 'LASTCHANGED'], as_index=False).count().\
+            groupby(['PARTICIPANTID'], as_index=False).count().sort_values('PARTICIPANTID').reset_index(drop=True)
+        assert_frame_equal(raw_data, data)
 
 
 class TestFCAS4SecondData(unittest.TestCase):

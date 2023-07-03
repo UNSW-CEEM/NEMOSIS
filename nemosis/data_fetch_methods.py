@@ -840,6 +840,7 @@ _method_map = {
     "DISPATCH_UNIT_SCADA": _dynamic_data_wrapper_for_gui,
     "DISPATCHCONSTRAINT": _dynamic_data_wrapper_for_gui,
     "DUDETAILSUMMARY": _dynamic_data_wrapper_for_gui,
+    "PARTICIPANT": _dynamic_data_wrapper_for_gui,
     "DUDETAIL": _dynamic_data_wrapper_for_gui,
     "GENCONDATA": _dynamic_data_wrapper_for_gui,
     "SPDREGIONCONSTRAINT": _dynamic_data_wrapper_for_gui,

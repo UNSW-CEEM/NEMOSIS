@@ -3,6 +3,7 @@ names = {
     "DISPATCHLOAD": "PUBLIC_DVD_DISPATCHLOAD",
     "NEXT_DAY_DISPATCHLOAD": "PUBLIC_NEXT_DAY_DISPATCHLOAD",
     "DUDETAILSUMMARY": "PUBLIC_DVD_DUDETAILSUMMARY",
+    "PARTICIPANT": "PUBLIC_DVD_PARTICIPANT",
     "DUDETAIL": "PUBLIC_DVD_DUDETAIL",
     "DISPATCHCONSTRAINT": "PUBLIC_DVD_DISPATCHCONSTRAINT",
     "GENCONDATA": "PUBLIC_DVD_GENCONDATA",
@@ -41,6 +42,7 @@ table_types = {
     "DISPATCHLOAD": "MMS",
     "NEXT_DAY_DISPATCHLOAD": "NEXT_DAY_DISPATCHLOAD",
     "DUDETAILSUMMARY": "MMS",
+    "PARTICIPANT": "MMS",
     "DUDETAIL": "MMS",
     "DISPATCHCONSTRAINT": "MMS",
     "GENCONDATA": "MMS",
@@ -86,6 +88,7 @@ display_as_AMEO = [
     "DISPATCHLOAD",
     "NEXT_DAY_DISPATCHLOAD",
     "DUDETAILSUMMARY",
+    "PARTICIPANT",
     "DUDETAIL",
     "DISPATCHCONSTRAINT",
     "GENCONDATA",
@@ -141,6 +144,7 @@ fcas_4_url_hist = "http://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/F
 data_url = {
     "DISPATCHLOAD": "aemo_data_url",
     "DUDETAILSUMMARY": "aemo_data_url",
+    "PARTICIPANT": "aemo_data_url",
     "DUDETAIL": "aemo_data_url",
     "DISPATCHCONSTRAINT": "aemo_data_url",
     "GENCONDATA": "aemo_data_url",
@@ -344,6 +348,12 @@ table_columns = {
         "MAX_RAMP_RATE_UP",
         "MAX_RAMP_RATE_DOWN",
     ],
+    "PARTICIPANT": [
+        "PARTICIPANTID",
+        "PARTICIPANTCLASSID",
+        "NAME",
+        "LASTCHANGED"
+    ],
     "DISPATCHCONSTRAINT": [
         "SETTLEMENTDATE",
         "RUNNO",
@@ -374,7 +384,10 @@ table_columns = {
         "LIMITTYPE",
         "REASON",
     ],
-    "DISPATCH_UNIT_SCADA": ["SETTLEMENTDATE", "DUID", "SCADAVALUE"],
+    "DISPATCH_UNIT_SCADA": [
+        "SETTLEMENTDATE",
+        "DUID",
+        "SCADAVALUE"],
     "DUDETAIL": [
         "EFFECTIVEDATE",
         "DUID",
@@ -669,6 +682,7 @@ table_primary_keys = {
         "INTERVENTION",
     ],
     "DUDETAILSUMMARY": ["DUID", "START_DATE", "END_DATE"],
+    "PARTICIPANT": ["PARTICIPANTID", "LASTCHANGED"],
     "STATION": ["STATIONID"],
     "DUDETAIL": ["EFFECTIVEDATE", "DUID", "VERSIONNO"],
     "SPDREGIONCONSTRAINT": [
@@ -766,6 +780,7 @@ effective_date_group_col = {
     "LOSSMODEL": ["INTERCONNECTORID"],
     "LOSSFACTORMODEL": ["INTERCONNECTORID"],
     "DUDETAILSUMMARY": ["DUID"],
+    "PARTICIPANT": ["PARTICIPANTID"],
     "MNSP_PEROFFER": ["LINKID"],
     "MNSP_DAYOFFER": ["LINKID"],
     "DUDETAIL": ["DUID"],
@@ -780,6 +795,7 @@ primary_date_columns = {
     "TRADINGREGIONSUM": "SETTLEMENTDATE",
     "TRADINGINTERCONNECT": "SETTLEMENTDATE",
     "DUDETAILSUMMARY": "START_DATE",
+    "PARTICIPANT": "LASTCHANGED",
     "DUDETAIL": "EFFECTIVEDATE",
     "DISPATCHCONSTRAINT": "SETTLEMENTDATE",
     "GENCONDATA": "EFFECTIVEDATE",

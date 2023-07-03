@@ -20,6 +20,7 @@ setup = {
     "DISPATCH_UNIT_SCADA": None,
     "DISPATCHCONSTRAINT": None,
     "DUDETAILSUMMARY": None,
+    "PARTICIPANT": None,
     "DUDETAIL": None,
     "GENCONDATA": None,
     "SPDREGIONCONSTRAINT": None,
@@ -56,6 +57,7 @@ search_type = {
     "DISPATCH_UNIT_SCADA": "start_to_end",
     "DISPATCHCONSTRAINT": "start_to_end",
     "DUDETAILSUMMARY": "end",
+    "PARTICIPANT": "all",
     "DUDETAIL": "all",
     "GENCONDATA": "all",
     "SPDREGIONCONSTRAINT": "all",
@@ -92,6 +94,7 @@ date_cols = {
     "DISPATCH_UNIT_SCADA": ["SETTLEMENTDATE"],
     "DISPATCHCONSTRAINT": ["SETTLEMENTDATE"],
     "DUDETAILSUMMARY": ["START_DATE", "END_DATE"],
+    "PARTICIPANT": ["LASTCHANGED"],
     "DUDETAIL": ["EFFECTIVEDATE"],
     "GENCONDATA": ["EFFECTIVEDATE"],
     "SPDREGIONCONSTRAINT": ["EFFECTIVEDATE"],
@@ -128,6 +131,7 @@ filter = {
     "DISPATCH_UNIT_SCADA": filters.filter_on_settlementdate,
     "DISPATCHCONSTRAINT": filters.filter_on_settlementdate,
     "DUDETAILSUMMARY": filters.filter_on_start_and_end_date,
+    "PARTICIPANT": filters.filter_on_last_changed,
     "DUDETAIL": filters.filter_on_effective_date,
     "GENCONDATA": filters.filter_on_effective_date,
     "SPDREGIONCONSTRAINT": filters.filter_on_effective_date,
@@ -166,6 +170,10 @@ finalise = {
         query_wrappers.convert_genconid_effectivedate_to_datetime_format
     ],
     "DUDETAILSUMMARY": [
+        query_wrappers.most_recent_records_before_start_time,
+        query_wrappers.drop_duplicates_by_primary_key,
+    ],
+    "PARTICIPANT": [
         query_wrappers.most_recent_records_before_start_time,
         query_wrappers.drop_duplicates_by_primary_key,
     ],
