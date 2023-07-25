@@ -2,6 +2,7 @@ names = {
     "FCAS Providers": "NEM Registration and Exemption List.xls",
     "DISPATCHLOAD": "PUBLIC_DVD_DISPATCHLOAD",
     "NEXT_DAY_DISPATCHLOAD": "PUBLIC_NEXT_DAY_DISPATCHLOAD",
+    "DUALLOC": "PUBLIC_DVD_DUALLOC",
     "DUDETAILSUMMARY": "PUBLIC_DVD_DUDETAILSUMMARY",
     "PARTICIPANT": "PUBLIC_DVD_PARTICIPANT",
     "DUDETAIL": "PUBLIC_DVD_DUDETAIL",
@@ -41,6 +42,7 @@ table_types = {
     "FCAS Providers": "STATICXL",
     "DISPATCHLOAD": "MMS",
     "NEXT_DAY_DISPATCHLOAD": "NEXT_DAY_DISPATCHLOAD",
+    "DUALLOC": "MMS",
     "DUDETAILSUMMARY": "MMS",
     "PARTICIPANT": "MMS",
     "DUDETAIL": "MMS",
@@ -87,6 +89,7 @@ display_as_AMEO = [
     "FCAS Providers",
     "DISPATCHLOAD",
     "NEXT_DAY_DISPATCHLOAD",
+    "DUALLOC",
     "DUDETAILSUMMARY",
     "PARTICIPANT",
     "DUDETAIL",
@@ -143,6 +146,7 @@ fcas_4_url_hist = "http://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/F
 
 data_url = {
     "DISPATCHLOAD": "aemo_data_url",
+    "DUALLOC": "aemo_data_url",
     "DUDETAILSUMMARY": "aemo_data_url",
     "PARTICIPANT": "aemo_data_url",
     "DUDETAIL": "aemo_data_url",
@@ -217,6 +221,13 @@ filterable_cols = [
 ]
 
 table_columns = {
+    "DUALLOC": [
+        "EFFECTIVEDATE",
+        "VERSIONNO",
+        "DUID",
+        "GENSETID",
+        "LASTCHANGED",
+    ],
     "DISPATCHLOAD": [
         "SETTLEMENTDATE",
         "DUID",
@@ -674,6 +685,12 @@ table_columns = {
 }
 
 table_primary_keys = {
+    "DUALLOC": [
+        "DUID",
+        "EFFECTIVEDATE",
+        "GENSETID",
+        "VERSIONNO",
+    ],
     "DISPATCHCONSTRAINT": [
         "CONSTRAINTID",
         "GENCONID_EFFECTIVEDATE",
@@ -770,6 +787,7 @@ table_primary_keys = {
 }
 
 effective_date_group_col = {
+    "DUALLOC": ['DUID'],
     "SPDREGIONCONSTRAINT": ["GENCONID"],
     "SPDCONNECTIONPOINTCONSTRAINT": ["GENCONID"],
     "SPDINTERCONNECTORCONSTRAINT": ["GENCONID"],
@@ -788,6 +806,7 @@ effective_date_group_col = {
 }
 
 primary_date_columns = {
+    "DUALLOC": "EFFECTIVEDATE",
     "DISPATCHLOAD": "SETTLEMENTDATE",
     "NEXT_DAY_DISPATCHLOAD": "SETTLEMENTDATE",
     "TRADINGLOAD": "SETTLEMENTDATE",

@@ -831,6 +831,7 @@ def _static_table_wrapper_for_gui(
 
 
 _method_map = {
+    "DUALLOC": _dynamic_data_wrapper_for_gui,
     "DISPATCHLOAD": _dynamic_data_wrapper_for_gui,
     "DISPATCHPRICE": _dynamic_data_wrapper_for_gui,
     "TRADINGLOAD": _dynamic_data_wrapper_for_gui,

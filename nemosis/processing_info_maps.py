@@ -10,6 +10,7 @@ from nemosis import (
 
 
 setup = {
+    "DUALLOC": None,
     "DISPATCHLOAD": None,
     "NEXT_DAY_DISPATCHLOAD": None,
     "TRADINGLOAD": None,
@@ -47,6 +48,7 @@ setup = {
 }
 
 search_type = {
+    "DUALLOC": "end",
     "DISPATCHLOAD": "start_to_end",
     "NEXT_DAY_DISPATCHLOAD": "start_to_end",
     "TRADINGLOAD": "start_to_end",
@@ -84,6 +86,7 @@ search_type = {
 }
 
 date_cols = {
+    "DUALLOC": ["EFFECTIVEDATE"],
     "DISPATCHLOAD": ["SETTLEMENTDATE"],
     "NEXT_DAY_DISPATCHLOAD": ["SETTLEMENTDATE"],
     "TRADINGLOAD": ["SETTLEMENTDATE"],
@@ -121,6 +124,7 @@ date_cols = {
 }
 
 filter = {
+    "DUALLOC": filters.filter_on_effective_date,
     "DISPATCHLOAD": filters.filter_on_settlementdate,
     "NEXT_DAY_DISPATCHLOAD": filters.filter_on_settlementdate,
     "TRADINGLOAD": filters.filter_on_settlementdate,
@@ -158,6 +162,7 @@ filter = {
 }
 
 finalise = {
+    "DUALLOC": None,
     "DISPATCHLOAD": None,
     "NEXT_DAY_DISPATCHLOAD": None,
     "TRADINGLOAD": None,
