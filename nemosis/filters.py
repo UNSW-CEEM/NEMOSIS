@@ -40,7 +40,7 @@ def filter_on_timestamp(data, start_time, end_time):
         data["TIMESTAMP"] = pd.to_datetime(
             data["TIMESTAMP"], format="%Y/%m/%d %H:%M:%S"
         )
-    except Exception as e:
+    except ValueError as e:
         logger.error(e)
         # if date format is wrong, str may be too short
         med_str_len = np.median(data["TIMESTAMP"].str.len())

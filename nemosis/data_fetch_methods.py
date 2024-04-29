@@ -778,14 +778,17 @@ def _infer_column_data_types(data):
     def _get_series_type(series):
         if series.dtype == "object":
             try:
-                col_new = _pd.to_datetime(series)
+                col_new = _pd.to_datetime(series, format="%Y/%m/%d %H:%M:%S.%f")
                 return col_new
-            except Exception as e:
+            except ValueError:
                 try:
-                    col_new = _pd.to_numeric(series)
-                    return col_new
-                except Exception as e:
-                    return series
+                    col_new = _pd.to_datetime(series, format="%Y/%m/%d %H:%M:%S")
+                except ValueError:
+                    try:
+                        col_new = _pd.to_numeric(series)
+                        return col_new
+                    except ValueError as e:
+                        return series
         else:
             return series
 

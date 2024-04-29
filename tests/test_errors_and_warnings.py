@@ -1,6 +1,9 @@
 import unittest
 from nemosis import dynamic_data_compiler, cache_compiler, static_table, defaults
 import os
+import sys
+from unittest.mock import patch
+from io import StringIO
 
 
 class TestDynamicDataCompilerRaisesExpectedErrors(unittest.TestCase):
@@ -96,14 +99,14 @@ class TestDynamicDataCompilerRaisesExpectedErrors(unittest.TestCase):
                 defaults.raw_data_cache,
                 select_columns=["NOTACOLUMN"],
             )
-        self.assertTrue(
+        self.assertIn(
             (
                 f"None of columns ['NOTACOLUMN'] are in D:/nemosis_test_cache\\PUBLIC_DVD_DISPATCHPRICE_201812010000.feather. "
                 "This may be caused by user input if the 'select_columns' "
                 "argument is being used, or by changed AEMO data formats. "
                 "This error can be avoided by using the argument select_columns='all'."
-            )
-            in str(context.exception)
+            ),
+            str(context.exception)
         )
 
     def test_using_select_columns_all_does_not_raise_error(self):
@@ -177,6 +180,20 @@ class TestDynamicDataCompilerRaisesExpectedErrors(unittest.TestCase):
         ]
         self.assertSequenceEqual(list(price_data.columns), expected_columns)
 
+class TestWarnings(unittest.TestCase):
+    def test_no_parse_warning(self):
+        with patch('sys.stderr', new=StringIO()) as fakeOutput:
+            print('hello world')
+                
+            dynamic_data_compiler(
+                start_time='2017/01/01 00:00:00', 
+                end_time='2017/01/01 00:05:00', 
+                table_name='DISPATCHPRICE', 
+                raw_data_location=defaults.raw_data_cache
+            )
+
+            stderr = fakeOutput.getvalue().strip()
+        self.assertNotIn("UserWarning: Could not infer format", stderr)
 
 class TestCacheCompilerRaisesExpectedErrors(unittest.TestCase):
     def test_raise_error_for_incorrect_table_name(self):
@@ -221,6 +238,7 @@ class TestCacheCompilerRaisesExpectedErrors(unittest.TestCase):
             )
             in str(context.exception)
         )
+
 
 
 class TestStaticTableRaisesExpectedErrors(unittest.TestCase):
@@ -294,14 +312,14 @@ class TestStaticTableRaisesExpectedErrors(unittest.TestCase):
                 defaults.raw_data_cache,
                 select_columns=["NOTACOLUMN"],
             )
-        self.assertTrue(
+        self.assertIn(
             (
                 f"None of columns ['NOTACOLUMN'] are in D:/nemosis_test_cache\\Ancillary Services Market Causer Pays Variables File.csv. "
                 "This may be caused by user input if the 'select_columns' "
                 "argument is being used, or by changed AEMO data formats. "
                 "This error can be avoided by using the argument select_columns='all'."
-            )
-            in str(context.exception)
+            ),
+            str(context.exception)
         )
 
     def test_using_select_columns_all_does_not_raise_error(self):
