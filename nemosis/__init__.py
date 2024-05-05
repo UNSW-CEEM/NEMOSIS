@@ -1,6 +1,6 @@
 import logging
 import sys
-from . import data_fetch_methods
+from .value_parser import _parse_datetime, _parse_column, _infer_column_data_types
 from .data_fetch_methods import *
 
 name = "osdan"

@@ -8,6 +8,7 @@ from . import downloader as _downloader
 from . import processing_info_maps as _processing_info_maps
 from . import defaults as _defaults
 from . import custom_tables as _custom_tables
+from . import _infer_column_data_types
 from .custom_errors import UserInputError, NoDataToReturn, DataMismatchError
 
 logger = logging.getLogger(__name__)
@@ -255,7 +256,6 @@ def static_table(
         update_static_file (bool): If True download latest version of file
                                    even if a version already exists.
                                    Default is False.
-        **kwargs: additional arguments passed to the pd.to_{fformat}() function
 
     Returns:
         data (pd.Dataframe)
@@ -761,42 +761,6 @@ def _download_data(
         year, month, day, index, filename_stub, raw_data_location
     )
     return
-
-
-def _infer_column_data_types(data):
-    """
-    Infer datatype of DataFrame assuming inference need only be carried out
-    for any columns with dtype "object". Adapted from StackOverflow.
-
-    If the column is an object type, attempt conversions to (in order of):
-    1. datetime
-    2. numeric
-
-    Returns: Data with inferred types.
-    """
-
-    def _get_series_type(series):
-        if series.dtype == "object":
-            try:
-                col_new = _pd.to_datetime(series, format="%Y/%m/%d %H:%M:%S.%f")
-                return col_new
-            except ValueError:
-                try:
-                    col_new = _pd.to_datetime(series, format="%Y/%m/%d %H:%M:%S")
-                except ValueError:
-                    try:
-                        col_new = _pd.to_numeric(series)
-                        return col_new
-                    except ValueError as e:
-                        return series
-        else:
-            return series
-
-    for col in data:
-        series = data[col]
-        typed = _get_series_type(series)
-        data[col] = typed
-    return data
 
 
 # GUI wrappers and mappers below
