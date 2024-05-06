@@ -832,6 +832,12 @@ reg_exemption_list_tabs = {
 
 months = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
 
+date_formats = [
+    "%Y/%m/%d %H:%M:%S",
+    '%Y/%m/%d %H:%M:%S.%f',
+    '%Y-%m-%d %H:%M:%S'
+]
+
 nem_data_model_start_time = "2009/07/01 00:00:00"
 
 

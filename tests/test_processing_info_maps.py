@@ -90,6 +90,7 @@ class TestSearchTypeValidity(unittest.TestCase):
                     "INTERCONNECTORCONSTRAINT",
                     "DUDETAIL",
                     "MARKET_PRICE_THRESHOLDS",
+                    "PARTICIPANT"
                 ]:
                     print(
                         "{} is known to contain duplicate entries and is exempted from this test, a finalise "

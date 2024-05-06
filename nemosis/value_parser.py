@@ -1,5 +1,8 @@
 import pandas as pd
 
+from . import defaults as _defaults
+
+
 def _parse_datetime(series):
     """
     Attempts to parse a column into a datetime
@@ -10,18 +13,19 @@ def _parse_datetime(series):
     Returns:
         series (np.Array)
     """
-    
+
     try:
         # this first format is the most common
-        return pd.to_datetime(series, format="%Y/%m/%d %H:%M:%S")
+        return pd.to_datetime(series, format=_defaults.date_formats[0])
     except ValueError as e:
         try:
             # this format with milliseconds is used in some bidding columns
-            return pd.to_datetime(series, format=date_formats[1])
+            return pd.to_datetime(series, format=_defaults.date_formats[1])
         except ValueError as e:
             # this format is used in some 4-second FCAS data
-            return pd.to_datetime(series, format=date_formats[2])
-                
+            return pd.to_datetime(series, format=_defaults.date_formats[2])
+
+
 def _parse_column(series):
     """
     Attempts to parse a column into a datetime or numeric.
@@ -43,7 +47,7 @@ def _parse_column(series):
             return series
 
 
-def _infer_column_data_types(series):
+def _infer_column_data_types(data):
     """
     Infer datatype of DataFrame assuming inference need only be carried out
     for any columns with dtype "object". Adapted from StackOverflow.
@@ -56,6 +60,6 @@ def _infer_column_data_types(series):
     """
 
     for col in data:
-        data[col] = _parse_column(series)
+        data[col] = _parse_column(data[col])
 
     return data
