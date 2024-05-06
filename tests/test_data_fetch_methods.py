@@ -827,7 +827,6 @@ class TestDynamicDataCompilerWithSettlementDateFilteringNextDayTables(
         }
 
     def test_dispatch_tables_start_of_month(self):
-        start_time = "2022/11/01 00:00:00"
         start_time = "2024/04/01 00:00:00"
         end_time = "2024/04/01 05:15:00"
         for table in self.table_names:
