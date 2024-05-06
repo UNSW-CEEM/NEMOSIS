@@ -34,7 +34,8 @@ names = {
     "TRADINGREGIONSUM": "PUBLIC_DVD_TRADINGREGIONSUM",
     "TRADINGINTERCONNECT": "PUBLIC_DVD_TRADINGINTERCONNECT",
     "MARKET_PRICE_THRESHOLDS": "PUBLIC_DVD_MARKET_PRICE_THRESHOLDS",
-    "DAILY_REGION_SUMMARY": "PUBLIC_DAILY_REGION_SUMMARY"
+    "DAILY_REGION_SUMMARY": "PUBLIC_DAILY_REGION_SUMMARY",
+    "ROOFTOP_PV_ACTUAL": "PUBLIC_DVD_ROOFTOP_PV_ACTUAL",
 }
 
 table_types = {
@@ -72,7 +73,8 @@ table_types = {
     "TRADINGREGIONSUM": "MMS",
     "TRADINGINTERCONNECT": "MMS",
     "MARKET_PRICE_THRESHOLDS": "MMS",
-    "DAILY_REGION_SUMMARY": "DAILY_REGION_SUMMARY"
+    "DAILY_REGION_SUMMARY": "DAILY_REGION_SUMMARY",
+    "ROOFTOP_PV_ACTUAL": "MMS",
 }
 
 dynamic_tables = [
@@ -109,6 +111,7 @@ display_as_AMEO = [
     "TRADINGPRICE",
     "TRADINGREGIONSUM",
     "TRADINGINTERCONNECT",
+    "ROOFTOP_PV_ACTUAL",
 ]
 
 display_as_Custom = ["FCAS_4s_SCADA_MAP", "PLANTSTATS"]
@@ -171,6 +174,7 @@ data_url = {
     "TRADINGREGIONSUM": "aemo_data_url",
     "TRADINGINTERCONNECT": "aemo_data_url",
     "MARKET_PRICE_THRESHOLDS": "aemo_data_url",
+    "ROOFTOP_PV_ACTUAL": "aemo_data_url",
 }
 
 filterable_cols = [
@@ -214,6 +218,7 @@ filterable_cols = [
     "Max Lower Angle",
     "Max Upper Angle",
     "Bid Type",
+    "TYPE",
 ]
 
 table_columns = {
@@ -671,6 +676,14 @@ table_columns = {
         "DISPATCHABLELOAD",
         "NETINTERCHANGE"
     ],
+    "ROOFTOP_PV_ACTUAL": [
+        "INTERVAL_DATETIME",
+        "REGIONID",
+        "POWER",
+        "QI",
+        "TYPE",
+        "LASTCHANGED"
+    ],
 }
 
 table_primary_keys = {
@@ -767,6 +780,11 @@ table_primary_keys = {
         "INTERVENTION",
         "REGIONID",
     ],
+    "ROOFTOP_PV_ACTUAL": [
+        "INTERVAL_DATETIME",
+        "REGIONID",
+        "TYPE",
+    ],
 }
 
 effective_date_group_col = {
@@ -823,6 +841,7 @@ primary_date_columns = {
     "FCAS_4s_SCADA_MAP": None,
     "MARKET_PRICE_THRESHOLDS": "EFFECTIVEDATE",
     "DAILY_REGION_SUMMARY": "SETTLEMENTDATE",
+    "ROOFTOP_PV_ACTUAL": "INTERVAL_DATETIME",
 }
 
 reg_exemption_list_tabs = {

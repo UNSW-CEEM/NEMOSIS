@@ -8,6 +8,7 @@ from nemosis import custom_tables, filters
 from pandas._testing import assert_frame_equal
 import pytz
 
+
 class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
     def setUp(self):
         self.table_names = [
@@ -23,6 +24,7 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             "TRADINGPRICE",
             "TRADINGREGIONSUM",
             "TRADINGINTERCONNECT",
+            "ROOFTOP_PV_ACTUAL",
         ]
 
         self.table_types = {
@@ -38,6 +40,7 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             "TRADINGPRICE": "REGIONIDONLY",
             "TRADINGREGIONSUM": "REGIONIDONLY",
             "TRADINGINTERCONNECT": "INTERCONNECTORIDONLY",
+            "ROOFTOP_PV_ACTUAL": "REGIONID-TYPE",
         }
 
         self.table_filters = {
@@ -53,6 +56,7 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             "TRADINGPRICE": ["REGIONID"],
             "TRADINGREGIONSUM": ["REGIONID"],
             "TRADINGINTERCONNECT": ["INTERCONNECTORID"],
+            "ROOFTOP_PV_ACTUAL": ["REGIONID", "TYPE"],
         }
 
         self.filter_values = {
@@ -64,6 +68,7 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             "INTERCONNECTORIDONLY": (["VIC1-NSW1"],),
             "CONSTRAINTID": (["DATASNAP_DFS_Q_CLST"], [0]),
             "DUID-BIDTYPE": (["AGLHAL"], ["ENERGY"]),
+            "REGIONID-TYPE": (['NSW1'], ['DAILY']),
         }
 
     def test_dispatch_tables_start_of_month(self):
@@ -86,6 +91,7 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 "TRADINGPRICE",
                 "TRADINGREGIONSUM",
                 "TRADINGINTERCONNECT",
+                "ROOFTOP_PV_ACTUAL"
             ]:
                 expected_length = 10
                 expected_first_time = "2018/02/01 00:30:00"
@@ -146,6 +152,7 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 "TRADINGPRICE",
                 "TRADINGREGIONSUM",
                 "TRADINGINTERCONNECT",
+                "ROOFTOP_PV_ACTUAL"
             ]:
                 expected_length = 6
                 expected_first_time = "2018/01/31 21:30:00"
@@ -197,6 +204,7 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 "TRADINGPRICE",
                 "TRADINGREGIONSUM",
                 "TRADINGINTERCONNECT",
+                "ROOFTOP_PV_ACTUAL"
             ]:
                 expected_length = 48
                 expected_first_time = "2018/02/28 21:30:00"
@@ -248,6 +256,7 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 "TRADINGPRICE",
                 "TRADINGREGIONSUM",
                 "TRADINGINTERCONNECT",
+                "ROOFTOP_PV_ACTUAL"
             ]:
                 expected_length = 2
                 expected_first_time = "2018/01/01 00:30:00"
@@ -303,6 +312,7 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 "TRADINGPRICE",
                 "TRADINGREGIONSUM",
                 "TRADINGINTERCONNECT",
+                "ROOFTOP_PV_ACTUAL"
             ]:
                 expected_length = 2
                 expected_first_time = "2017/12/31 23:30:00"
@@ -354,6 +364,7 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 "TRADINGPRICE",
                 "TRADINGREGIONSUM",
                 "TRADINGINTERCONNECT",
+                "ROOFTOP_PV_ACTUAL"
             ]:
                 expected_length = 4
                 expected_first_time = "2017/12/31 23:30:00"
@@ -827,8 +838,8 @@ class TestDynamicDataCompilerWithSettlementDateFilteringNextDayTables(
         }
 
     def test_dispatch_tables_start_of_month(self):
-        start_time = "2022/11/01 00:00:00"
-        end_time = "2022/11/01 05:15:00"
+        start_time = "2024/04/01 00:00:00"
+        end_time = "2024/04/01 05:15:00"
         for table in self.table_names:
             print(f"Testing {table} returning values at start of month one.")
             dat_col = defaults.primary_date_columns[table]
@@ -856,8 +867,8 @@ class TestDynamicDataCompilerWithSettlementDateFilteringNextDayTables(
             print("Passed")
 
     def test_dispatch_tables_middle_of_month_and_day(self):
-        start_time = "2022/11/05 12:00:00"
-        end_time = "2022/11/05 17:15:00"
+        start_time = "2024/04/05 12:00:00"
+        end_time = "2024/04/05 17:15:00"
         for table in self.table_names:
             print(f"Testing {table} returning values at start of month one.")
             dat_col = defaults.primary_date_columns[table]
@@ -885,8 +896,8 @@ class TestDynamicDataCompilerWithSettlementDateFilteringNextDayTables(
             print("Passed")
 
     def test_dispatch_tables_start_market_day(self):
-        start_time = "2022/11/05 04:00:00"
-        end_time = "2022/11/05 04:05:00"
+        start_time = "2024/04/05 04:00:00"
+        end_time = "2024/04/05 04:05:00"
         for table in self.table_names:
             print(f"Testing {table} returning values at start of month one.")
             dat_col = defaults.primary_date_columns[table]
@@ -914,8 +925,8 @@ class TestDynamicDataCompilerWithSettlementDateFilteringNextDayTables(
             print("Passed")
 
     def test_dispatch_tables_end_market_day(self):
-        start_time = "2022/11/05 03:55:00"
-        end_time = "2022/11/05 04:00:00"
+        start_time = "2024/04/05 03:55:00"
+        end_time = "2024/04/05 04:00:00"
         for table in self.table_names:
             print(f"Testing {table} returning values at start of month one.")
             dat_col = defaults.primary_date_columns[table]

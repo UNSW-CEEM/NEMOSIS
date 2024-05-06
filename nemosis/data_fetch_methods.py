@@ -2,6 +2,7 @@ import logging
 import os as _os
 import glob as _glob
 import pandas as _pd
+import warnings
 from datetime import datetime as _datetime
 from . import filters as _filters
 from . import downloader as _downloader
@@ -11,6 +12,7 @@ from . import custom_tables as _custom_tables
 from .custom_errors import UserInputError, NoDataToReturn, DataMismatchError
 
 logger = logging.getLogger(__name__)
+
 
 def dynamic_data_compiler(
     start_time,
@@ -778,7 +780,9 @@ def _infer_column_data_types(data):
     def _get_series_type(series):
         if series.dtype == "object":
             try:
-                col_new = _pd.to_datetime(series)
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    col_new = _pd.to_datetime(series)
                 return col_new
             except Exception as e:
                 try:
@@ -866,5 +870,6 @@ _method_map = {
     "INTERCONNECTORCONSTRAINT": _dynamic_data_wrapper_for_gui,
     "MARKET_PRICE_THRESHOLDS": _dynamic_data_wrapper_for_gui,
     "DAILY_REGION_SUMMARY": _dynamic_data_wrapper_for_gui,
-    "NEXT_DAY_DISPATCHLOAD": _dynamic_data_wrapper_for_gui
+    "NEXT_DAY_DISPATCHLOAD": _dynamic_data_wrapper_for_gui,
+    "ROOFTOP_PV_ACTUAL": _dynamic_data_wrapper_for_gui
 }

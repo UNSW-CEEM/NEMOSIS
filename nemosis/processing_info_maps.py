@@ -44,6 +44,7 @@ setup = {
     "INTERCONNECTORCONSTRAINT": None,
     "MARKET_PRICE_THRESHOLDS": None,
     "DAILY_REGION_SUMMARY": None,
+    "ROOFTOP_PV_ACTUAL": None,
 }
 
 search_type = {
@@ -81,6 +82,7 @@ search_type = {
     "INTERCONNECTORCONSTRAINT": "all",
     "MARKET_PRICE_THRESHOLDS": "all",
     "DAILY_REGION_SUMMARY": 'start_to_end',
+    "ROOFTOP_PV_ACTUAL": "start_to_end",
 }
 
 date_cols = {
@@ -118,6 +120,7 @@ date_cols = {
     "INTERCONNECTORCONSTRAINT": ["EFFECTIVEDATE"],
     "MARKET_PRICE_THRESHOLDS": ["EFFECTIVEDATE"],
     "DAILY_REGION_SUMMARY": ['SETTLEMENTDATE'],
+    "ROOFTOP_PV_ACTUAL": ["INTERVAL_DATETIME"],
 }
 
 filter = {
@@ -155,6 +158,7 @@ filter = {
     "INTERCONNECTORCONSTRAINT": filters.filter_on_effective_date,
     "MARKET_PRICE_THRESHOLDS": filters.filter_on_effective_date,
     "DAILY_REGION_SUMMARY": filters.filter_on_settlementdate,
+    "ROOFTOP_PV_ACTUAL": filters.filter_on_interval_datetime,
 }
 
 finalise = {
@@ -233,6 +237,7 @@ finalise = {
     ],
     "MARKET_PRICE_THRESHOLDS": None,
     "DAILY_REGION_SUMMARY": None,
+    "ROOFTOP_PV_ACTUAL": None,
 }
 
 date_gen = {
