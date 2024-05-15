@@ -29,3 +29,8 @@ nemosis/check_new_bid_table_functionality.py
 *.pyc
 smoke.py
 gui.exe
+nemosis_test_cache/
+line-profiler.py
+profiler.py
+test.ipynb
+.vscode/settings.json
