@@ -2,6 +2,7 @@ import logging
 import os as _os
 import glob as _glob
 import pandas as _pd
+import warnings
 from datetime import datetime as _datetime
 from . import filters as _filters
 from . import downloader as _downloader
@@ -12,6 +13,7 @@ from . import _infer_column_data_types
 from .custom_errors import UserInputError, NoDataToReturn, DataMismatchError
 
 logger = logging.getLogger(__name__)
+
 
 def dynamic_data_compiler(
     start_time,
@@ -762,7 +764,7 @@ def _download_data(
     )
     return
 
-
+  
 # GUI wrappers and mappers below
 
 
@@ -833,5 +835,6 @@ _method_map = {
     "INTERCONNECTORCONSTRAINT": _dynamic_data_wrapper_for_gui,
     "MARKET_PRICE_THRESHOLDS": _dynamic_data_wrapper_for_gui,
     "DAILY_REGION_SUMMARY": _dynamic_data_wrapper_for_gui,
-    "NEXT_DAY_DISPATCHLOAD": _dynamic_data_wrapper_for_gui
+    "NEXT_DAY_DISPATCHLOAD": _dynamic_data_wrapper_for_gui,
+    "ROOFTOP_PV_ACTUAL": _dynamic_data_wrapper_for_gui
 }

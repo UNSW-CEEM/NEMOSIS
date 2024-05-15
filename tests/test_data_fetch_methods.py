@@ -8,6 +8,7 @@ from nemosis import custom_tables, filters
 from pandas._testing import assert_frame_equal
 import pytz
 
+
 class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
     def setUp(self):
         self.table_names = [
@@ -23,6 +24,7 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             "TRADINGPRICE",
             "TRADINGREGIONSUM",
             "TRADINGINTERCONNECT",
+            "ROOFTOP_PV_ACTUAL",
         ]
 
         self.table_types = {
@@ -38,6 +40,7 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             "TRADINGPRICE": "REGIONIDONLY",
             "TRADINGREGIONSUM": "REGIONIDONLY",
             "TRADINGINTERCONNECT": "INTERCONNECTORIDONLY",
+            "ROOFTOP_PV_ACTUAL": "REGIONID-TYPE",
         }
 
         self.table_filters = {
@@ -53,6 +56,7 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             "TRADINGPRICE": ["REGIONID"],
             "TRADINGREGIONSUM": ["REGIONID"],
             "TRADINGINTERCONNECT": ["INTERCONNECTORID"],
+            "ROOFTOP_PV_ACTUAL": ["REGIONID", "TYPE"],
         }
 
         self.filter_values = {
@@ -64,6 +68,7 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             "INTERCONNECTORIDONLY": (["VIC1-NSW1"],),
             "CONSTRAINTID": (["DATASNAP_DFS_Q_CLST"], [0]),
             "DUID-BIDTYPE": (["AGLHAL"], ["ENERGY"]),
+            "REGIONID-TYPE": (['NSW1'], ['DAILY']),
         }
 
     def test_dispatch_tables_start_of_month(self):
@@ -86,6 +91,7 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 "TRADINGPRICE",
                 "TRADINGREGIONSUM",
                 "TRADINGINTERCONNECT",
+                "ROOFTOP_PV_ACTUAL"
             ]:
                 expected_length = 10
                 expected_first_time = "2018/02/01 00:30:00"
@@ -146,6 +152,7 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 "TRADINGPRICE",
                 "TRADINGREGIONSUM",
                 "TRADINGINTERCONNECT",
+                "ROOFTOP_PV_ACTUAL"
             ]:
                 expected_length = 6
                 expected_first_time = "2018/01/31 21:30:00"
@@ -197,6 +204,7 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 "TRADINGPRICE",
                 "TRADINGREGIONSUM",
                 "TRADINGINTERCONNECT",
+                "ROOFTOP_PV_ACTUAL"
             ]:
                 expected_length = 48
                 expected_first_time = "2018/02/28 21:30:00"
@@ -248,6 +256,7 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 "TRADINGPRICE",
                 "TRADINGREGIONSUM",
                 "TRADINGINTERCONNECT",
+                "ROOFTOP_PV_ACTUAL"
             ]:
                 expected_length = 2
                 expected_first_time = "2018/01/01 00:30:00"
@@ -303,6 +312,7 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 "TRADINGPRICE",
                 "TRADINGREGIONSUM",
                 "TRADINGINTERCONNECT",
+                "ROOFTOP_PV_ACTUAL"
             ]:
                 expected_length = 2
                 expected_first_time = "2017/12/31 23:30:00"
@@ -354,6 +364,7 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 "TRADINGPRICE",
                 "TRADINGREGIONSUM",
                 "TRADINGINTERCONNECT",
+                "ROOFTOP_PV_ACTUAL"
             ]:
                 expected_length = 4
                 expected_first_time = "2017/12/31 23:30:00"
