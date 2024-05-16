@@ -1,6 +1,6 @@
 import pandas as pd
 from datetime import datetime, timedelta
-from . import defaults
+from . import defaults, _parse_datetime
 
 
 def dispatch_date_setup(start_time, end_time):
@@ -70,5 +70,5 @@ def drop_duplicates_by_primary_key(data, start_time, table_name):
 
 def convert_genconid_effectivedate_to_datetime_format(data, start_time, table_name):
     if "GENCONID_EFFECTIVEDATE" in data.columns:
-        data["GENCONID_EFFECTIVEDATE"] = pd.to_datetime(data["GENCONID_EFFECTIVEDATE"])
+        data["GENCONID_EFFECTIVEDATE"] = _parse_datetime(data["GENCONID_EFFECTIVEDATE"])
     return data
