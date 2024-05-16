@@ -326,7 +326,9 @@ def static_table(
         else:
             table = _filters.filter_on_column_value(table, filter_cols, filter_values)
 
-    table = static_data_finaliser_map[table_name](table, table_name)
+    static_table_finalisers = static_data_finaliser_map[table_name]
+    for finaliser in static_table_finalisers:
+        table = finaliser(table, table_name)
 
     return table
 
@@ -407,6 +409,12 @@ def _finalise_excel_data(data, table_name):
     return data
 
 
+def _finalise_generators_and_scheduled_loads(data, table_name):
+    data = data.replace(to_replace=['', ' '], value='-')
+    data = data.fillna('-')
+    return data
+    
+
 def _finalise_csv_data(data, table_name):
     return data
 
@@ -426,10 +434,10 @@ static_file_reader_map = {
 }
 
 static_data_finaliser_map = {
-    "VARIABLES_FCAS_4_SECOND": _finalise_csv_data,
-    "ELEMENTS_FCAS_4_SECOND": _finalise_csv_data,
-    "Generators and Scheduled Loads": _finalise_excel_data,
-    "FCAS Providers": _finalise_excel_data,
+    "VARIABLES_FCAS_4_SECOND": [_finalise_csv_data],
+    "ELEMENTS_FCAS_4_SECOND": [_finalise_csv_data],
+    "Generators and Scheduled Loads": [_finalise_excel_data, _finalise_generators_and_scheduled_loads],
+    "FCAS Providers": [_finalise_excel_data],
 }
 
 
