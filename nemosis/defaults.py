@@ -849,8 +849,8 @@ primary_date_columns = {
 }
 
 reg_exemption_list_tabs = {
-    "Generators and Scheduled Loads": "Generators and Scheduled Loads",
-    "FCAS Providers": "Ancillary Services",
+    "Generators and Scheduled Loads": ["Generators and Scheduled Loads", "PU and Scheduled Loads"],
+    "FCAS Providers": ["Ancillary Services"],
 }
 
 months = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]

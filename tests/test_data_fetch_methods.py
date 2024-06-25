@@ -838,8 +838,8 @@ class TestDynamicDataCompilerWithSettlementDateFilteringNextDayTables(
         }
 
     def test_dispatch_tables_start_of_month(self):
-        start_time = "2024/04/01 00:00:00"
-        end_time = "2024/04/01 05:15:00"
+        start_time = "2024/06/01 00:00:00"
+        end_time = "2024/06/01 05:15:00"
         for table in self.table_names:
             print(f"Testing {table} returning values at start of month one.")
             dat_col = defaults.primary_date_columns[table]
@@ -867,8 +867,8 @@ class TestDynamicDataCompilerWithSettlementDateFilteringNextDayTables(
             print("Passed")
 
     def test_dispatch_tables_middle_of_month_and_day(self):
-        start_time = "2024/04/05 12:00:00"
-        end_time = "2024/04/05 17:15:00"
+        start_time = "2024/06/05 12:00:00"
+        end_time = "2024/06/05 17:15:00"
         for table in self.table_names:
             print(f"Testing {table} returning values at start of month one.")
             dat_col = defaults.primary_date_columns[table]
@@ -896,8 +896,8 @@ class TestDynamicDataCompilerWithSettlementDateFilteringNextDayTables(
             print("Passed")
 
     def test_dispatch_tables_start_market_day(self):
-        start_time = "2024/04/05 04:00:00"
-        end_time = "2024/04/05 04:05:00"
+        start_time = "2024/06/05 04:00:00"
+        end_time = "2024/06/05 04:05:00"
         for table in self.table_names:
             print(f"Testing {table} returning values at start of month one.")
             dat_col = defaults.primary_date_columns[table]
@@ -925,8 +925,8 @@ class TestDynamicDataCompilerWithSettlementDateFilteringNextDayTables(
             print("Passed")
 
     def test_dispatch_tables_end_market_day(self):
-        start_time = "2024/04/05 03:55:00"
-        end_time = "2024/04/05 04:00:00"
+        start_time = "2024/06/05 03:55:00"
+        end_time = "2024/06/05 04:00:00"
         for table in self.table_names:
             print(f"Testing {table} returning values at start of month one.")
             dat_col = defaults.primary_date_columns[table]

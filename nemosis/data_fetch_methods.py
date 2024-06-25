@@ -397,7 +397,14 @@ def _read_static_csv(path_and_name, table_name):
 
 def _read_excel(path_and_name, table_name):
     xls = _pd.ExcelFile(path_and_name)
-    return _pd.read_excel(xls, _defaults.reg_exemption_list_tabs[table_name], dtype=str)
+    for tab_option in _defaults.reg_exemption_list_tabs[table_name]:
+        try:
+            return _pd.read_excel(xls, tab_option, dtype=str)
+        except ValueError as e:
+            pass
+    raise NoDataToReturn(f"""
+        The excel file did not have any of the expected tabs {_defaults.reg_exemption_list_tabs[table_name]}.
+        """)
 
 
 def _finalise_excel_data(data, table_name):
