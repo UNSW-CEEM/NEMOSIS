@@ -34,3 +34,4 @@ line-profiler.py
 profiler.py
 test.ipynb
 .vscode/settings.json
+smoke2.py
