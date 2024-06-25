@@ -28,7 +28,7 @@ nemosis/smoke_tests.py
 nemosis/check_new_bid_table_functionality.py
 *.pyc
 smoke.py
-gui.exe
+NEMOSIS.exe
 nemosis_test_cache/
 line-profiler.py
 profiler.py
