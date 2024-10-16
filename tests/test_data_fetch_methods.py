@@ -1,12 +1,25 @@
 import unittest
 import os
 from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 from nemosis import data_fetch_methods
 from nemosis import defaults
 import pandas as pd
 from nemosis import custom_tables, filters
 from pandas._testing import assert_frame_equal
+from parameterized import parameterized
 import pytz
+
+test_months = [
+    # Use a recent month that is old enough to have data
+    [datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0) - relativedelta(months=2)],
+    # Use an arbitrary old month
+    [datetime(year=2018, month=5, day=1)]
+]
+
+
+def get_previous_month(month):
+    return month - relativedelta(months=1)
 
 
 class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
@@ -71,9 +84,16 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             "REGIONID-TYPE": (['NSW1'], ['DAILY']),
         }
 
-    def test_dispatch_tables_start_of_month(self):
-        start_time = "2018/02/01 00:00:00"
-        end_time = "2018/02/01 05:15:00"
+    @parameterized.expand([
+    # Use a recent month that is old enough to have data
+    [datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0) - relativedelta(months=2)],
+    # Use an arbitrary old month
+    [datetime(year=2018, month=5, day=1)]
+]
+)
+    def test_dispatch_tables_start_of_month(self, test_month):
+        start_time = f"{test_month.year}/{test_month.month}/01 00:00:00"
+        end_time = f"{test_month.year}/{test_month.month}/01 05:15:00"
         for table in self.table_names:
             print(f"Testing {table} returning values at start of month.")
             dat_col = defaults.primary_date_columns[table]
@@ -94,11 +114,11 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 "ROOFTOP_PV_ACTUAL"
             ]:
                 expected_length = 10
-                expected_first_time = "2018/02/01 00:30:00"
+                expected_first_time = f"{test_month.year}/{test_month.month}/01 00:30:00"
                 expected_first_time = pd.to_datetime(
                     expected_first_time, format="%Y/%m/%d %H:%M:%S"
                 )
-                expected_last_time = "2018/02/01 05:00:00"
+                expected_last_time = f"{test_month.year}/{test_month.month}/01 05:00:00"
                 expected_last_time = pd.to_datetime(
                     expected_last_time, format="%Y/%m/%d %H:%M:%S"
                 )
@@ -106,11 +126,12 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 expected_number_of_columns = 3
             if table == "BIDDAYOFFER_D":
                 expected_length = 2
-                expected_last_time = "2018/02/01 00:00:00"
+                expected_last_time = f"{test_month.year}/{test_month.month}/01 00:00:00"
                 expected_last_time = pd.to_datetime(
                     expected_last_time, format="%Y/%m/%d %H:%M:%S"
                 )
-                expected_first_time = "2018/01/31 00:00:00"
+                previous_month = get_previous_month(test_month)
+                expected_first_time = f"{previous_month.year}/{previous_month.month}/31 00:00:00"
                 expected_first_time = pd.to_datetime(
                     expected_first_time, format="%Y/%m/%d %H:%M:%S"
                 )

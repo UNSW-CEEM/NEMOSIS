@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 import zipfile
 import io
 import pandas as pd
+from urllib.parse import quote
 
 from . import defaults, custom_errors
 
@@ -20,7 +21,7 @@ USR_AGENT_HEADER = {
 }
 
 
-def run(year, month, day, index, filename_stub, down_load_to):
+def run(year, month, day, chunk, index, filename_stub, down_load_to):
     """This function"""
 
     url = defaults.aemo_mms_url
@@ -31,10 +32,11 @@ def run(year, month, day, index, filename_stub, down_load_to):
     try:
         download_unzip_csv(url_formatted, down_load_to)
     except Exception:
-        logger.warning(f"{filename_stub} not downloaded")
+        if chunk == 1:
+            logger.warning(f"{filename_stub} not downloaded")
 
 
-def run_bid_tables(year, month, day, index, filename_stub, down_load_to):
+def run_bid_tables(year, month, day, chunk, index, filename_stub, down_load_to):
     if day is None:
         run(year, month, day, index, filename_stub, down_load_to)
     else:
@@ -50,7 +52,7 @@ def run_bid_tables(year, month, day, index, filename_stub, down_load_to):
             logger.warning(f"{filename_stub} not downloaded")
 
 
-def run_next_day_region_tables(year, month, day, index, filename_stub, down_load_to):
+def run_next_day_region_tables(year, month, day, chunk, index, filename_stub, down_load_to):
     try:
         filename_stub = "PUBLIC_DAILY_{year}{month}{day}".format(year=year, month=month, day=day)
         download_url = _get_current_url(
@@ -63,7 +65,7 @@ def run_next_day_region_tables(year, month, day, index, filename_stub, down_load
         logger.warning(f"{filename_stub} not downloaded")
 
 
-def run_next_dispatch_tables(year, month, day, index, filename_stub, down_load_to):
+def run_next_dispatch_tables(year, month, day, chunk, index, filename_stub, down_load_to):
     try:
         filename_stub = "PUBLIC_NEXT_DAY_DISPATCH_{year}{month}{day}".format(year=year, month=month, day=day)
         download_url = _get_current_url(
@@ -216,6 +218,7 @@ def download_unzip_csv(url, down_load_to):
     This function downloads a zipped csv using a url,
     extracts the csv and saves it a specified location
     """
+    url = url.replace('#', '%23')
     r = requests.get(url, headers=USR_AGENT_HEADER)
     z = zipfile.ZipFile(io.BytesIO(r.content))
     z.extractall(down_load_to)

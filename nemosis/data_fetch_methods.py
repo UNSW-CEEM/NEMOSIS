@@ -545,81 +545,90 @@ def _dynamic_data_fetch_loop(
     date_gen = _processing_info_maps.date_gen[table_type](start_search, end_time)
 
     for year, month, day, index in date_gen:
-        filename_stub, full_filename, path_and_name = _create_filename(
-            table_name, table_type, raw_data_location, fformat, day, month, year, index
-        )
+        check_for_next_data_chunk = True
+        chunk = 0
+        while check_for_next_data_chunk:
+            chunk += 1
 
-        if not (
-            _glob.glob(full_filename) or _glob.glob(path_and_name + ".[cC][sS][vV]")
-        ) or (not _glob.glob(path_and_name + ".[cC][sS][vV]") and rebuild):
-            _download_data(
-                table_name,
-                table_type,
-                filename_stub,
-                day,
-                month,
-                year,
-                index,
-                raw_data_location,
+            filename_stub, full_filename, path_and_name = _create_filename(
+                table_name, table_type, raw_data_location, fformat, day, month, year, chunk, index
             )
 
-        if _glob.glob(full_filename) and fformat != "csv" and not rebuild:
-            if not caching_mode:
-                data = _get_read_function(fformat, table_type, day)(full_filename)
-            else:
-                data = None
-                logger.info(
-                    f"Cache for {table_name} in date range already compiled in"
-                    + f" {raw_data_location}."
+            if not (
+                _glob.glob(full_filename) or _glob.glob(path_and_name + ".[cC][sS][vV]")
+            ) or (not _glob.glob(path_and_name + ".[cC][sS][vV]") and rebuild):
+                _download_data(
+                    table_name,
+                    table_type,
+                    filename_stub,
+                    day,
+                    month,
+                    year,
+                    chunk,
+                    index,
+                    raw_data_location,
                 )
 
-        elif _glob.glob(path_and_name + ".[cC][sS][vV]"):
+            if _glob.glob(full_filename) and fformat != "csv" and not rebuild:
+                if not caching_mode:
+                    data = _get_read_function(fformat, table_type, day)(full_filename)
+                else:
+                    data = None
+                    logger.info(
+                        f"Cache for {table_name} in date range already compiled in"
+                        + f" {raw_data_location}."
+                    )
 
-            if select_columns != "all":
-                read_all_columns = False
+            elif _glob.glob(path_and_name + ".[cC][sS][vV]"):
+
+                if select_columns != "all":
+                    read_all_columns = False
+                else:
+                    read_all_columns = True
+
+                if not caching_mode:
+                    dtypes = "str"
+                else:
+                    dtypes = "all"
+
+                csv_path_and_name = _glob.glob(path_and_name + ".[cC][sS][vV]")[0]
+
+                csv_read_function = _get_read_function(
+                    fformat="csv", table_type=table_type, day=day
+                )
+                data = _determine_columns_and_read_csv(
+                    table_name,
+                    csv_path_and_name,
+                    csv_read_function,
+                    read_all_columns=read_all_columns,
+                    dtypes=dtypes,
+                )
+
+                if caching_mode:
+                    data = _perform_column_selection(data, select_columns, full_filename)
+
+                if data is not None and fformat != "csv":
+                    _log_file_creation_message(fformat, table_name, year, month, day, index)
+                    _write_to_format(data, fformat, full_filename, write_kwargs)
+
+                if not keep_csv:
+                    _os.remove(_glob.glob(path_and_name + ".[cC][sS][vV]")[0])
             else:
-                read_all_columns = True
+                data = None
 
-            if not caching_mode:
-                dtypes = "str"
-            else:
-                dtypes = "all"
+            if not caching_mode and data is not None:
 
-            csv_path_and_name = _glob.glob(path_and_name + ".[cC][sS][vV]")[0]
+                if date_filter is not None:
+                    data = date_filter(data, start_time, end_time)
 
-            csv_read_function = _get_read_function(
-                fformat="csv", table_type=table_type, day=day
-            )
-            data = _determine_columns_and_read_csv(
-                table_name,
-                csv_path_and_name,
-                csv_read_function,
-                read_all_columns=read_all_columns,
-                dtypes=dtypes,
-            )
-
-            if caching_mode:
                 data = _perform_column_selection(data, select_columns, full_filename)
 
-            if data is not None and fformat != "csv":
-                _log_file_creation_message(fformat, table_name, year, month, day, index)
-                _write_to_format(data, fformat, full_filename, write_kwargs)
+                data_tables.append(data)
+            elif not caching_mode and chunk == 1:
+                logger.warning(f"Loading data from {full_filename} failed.")
 
-            if not keep_csv:
-                _os.remove(_glob.glob(path_and_name + ".[cC][sS][vV]")[0])
-        else:
-            data = None
-
-        if not caching_mode and data is not None:
-
-            if date_filter is not None:
-                data = date_filter(data, start_time, end_time)
-
-            data = _perform_column_selection(data, select_columns, full_filename)
-
-            data_tables.append(data)
-        elif not caching_mode:
-            logger.warning(f"Loading data from {full_filename} failed.")
+            if data is None or '#' not in filename_stub:
+                check_for_next_data_chunk = False
 
     return data_tables
 
@@ -642,7 +651,7 @@ def _perform_column_selection(data, select_columns, full_filename):
 
 
 def _create_filename(
-    table_name, table_type, raw_data_location, fformat, day, month, year, index
+    table_name, table_type, raw_data_location, fformat, day, month, year, chunk, index
 ):
     """
     Gather:
@@ -652,7 +661,7 @@ def _create_filename(
     Returns: filename_stub, full_filename and path_and_name
     """
     filename_stub, path_and_name = _processing_info_maps.write_filename[table_type](
-        table_name, month, year, day, index, raw_data_location
+        table_name, month, year, day, chunk, index, raw_data_location
     )
     full_filename = path_and_name + f".{fformat}"
     return filename_stub, full_filename, path_and_name
@@ -751,31 +760,32 @@ def _write_to_format(data, fformat, full_filename, write_kwargs):
 
 
 def _download_data(
-    table_name, table_type, filename_stub, day, month, year, index, raw_data_location
+    table_name, table_type, filename_stub, day, month, year, chunk, index, raw_data_location
 ):
     """
     Dispatch table to downloader to be downloaded.
 
     Returns: nothing
     """
-    if day is None:
-        logger.info(
-            f"Downloading data for table {table_name}, " + f"year {year}, month {month}"
-        )
-    elif index is None:
-        logger.info(
-            f"Downloading data for table {table_name}, "
-            + f"year {year}, month {month}, day {day}"
-        )
-    else:
-        logger.info(
-            f"Downloading data for table {table_name}, "
-            + f"year {year}, month {month}, day {day},"
-            + f"time {index}."
-        )
+    if chunk == 1:
+        if day is None:
+            logger.info(
+                f"Downloading data for table {table_name}, " + f"year {year}, month {month}"
+            )
+        elif index is None:
+            logger.info(
+                f"Downloading data for table {table_name}, "
+                + f"year {year}, month {month}, day {day}"
+            )
+        else:
+            logger.info(
+                f"Downloading data for table {table_name}, "
+                + f"year {year}, month {month}, day {day},"
+                + f"time {index}."
+            )
 
     _processing_info_maps.downloader[table_type](
-        year, month, day, index, filename_stub, raw_data_location
+        year, month, day, chunk, index, filename_stub, raw_data_location
     )
     return
 
