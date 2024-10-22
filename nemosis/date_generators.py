@@ -5,6 +5,7 @@ from datetime import timedelta
 
 logger = logging.getLogger(__name__)
 
+
 def year_and_month_gen(start_time, end_time):
 
     if start_time.day == 1 and start_time.hour == 0 and start_time.minute == 0:

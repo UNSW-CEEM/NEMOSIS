@@ -1,13 +1,41 @@
 import unittest
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
+from dateutil.relativedelta import relativedelta
+import calendar
 from nemosis import data_fetch_methods
 from nemosis import defaults
 import pandas as pd
 from nemosis import custom_tables, filters
 from pandas._testing import assert_frame_equal
+from parameterized import parameterized
 import pytz
 
+
+recent_test_month = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0) - relativedelta(months=2)
+
+previous_month = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0) - relativedelta(months=1)
+
+# Discontinued dates are not precise but should work with current testing dates.
+discontinued_after = {
+    "TRADINGLOAD": "2022/01/01 00:00:00",
+    "TRADINGREGIONSUM": "2022/01/01 00:00:00",
+}
+
+test_iterations = [
+    [recent_test_month],
+    [datetime(year=2018, month=5, day=1)]
+]
+
+def get_previous_month(month):
+    return month - relativedelta(months=1)
+
+def get_next_month(month):
+    return month + relativedelta(months=1)
+
+def last_day_of_month(year, month):
+    day_number = date(year, month, calendar.monthrange(year, month)[1]).day
+    return str(day_number).zfill(2)
 
 class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
     def setUp(self):
@@ -40,7 +68,7 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             "TRADINGPRICE": "REGIONIDONLY",
             "TRADINGREGIONSUM": "REGIONIDONLY",
             "TRADINGINTERCONNECT": "INTERCONNECTORIDONLY",
-            "ROOFTOP_PV_ACTUAL": "REGIONID-TYPE",
+            "ROOFTOP_PV_ACTUAL": "REGIONID-PVVALUETYPE",
         }
 
         self.table_filters = {
@@ -69,12 +97,34 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             "CONSTRAINTID": (["DATASNAP_DFS_Q_CLST"], [0]),
             "DUID-BIDTYPE": (["AGLHAL"], ["ENERGY"]),
             "REGIONID-TYPE": (['NSW1'], ['DAILY']),
+            "REGIONID-PVVALUETYPE": (['NSW1'], ['SATELLITE', 'DAILY']),
         }
+        self.half_hourly_tables = [
+            "TRADINGLOAD",
+            "TRADINGPRICE",
+            "TRADINGREGIONSUM",
+            "TRADINGINTERCONNECT",
+            "ROOFTOP_PV_ACTUAL"
+        ]
+        self.change_to_five_min_table = [
+            "TRADINGPRICE",
+            "TRADINGINTERCONNECT",
+        ]
+        self.change_to_five_min_year = 2022
 
-    def test_dispatch_tables_start_of_month(self):
-        start_time = "2018/02/01 00:00:00"
-        end_time = "2018/02/01 05:15:00"
+    def _pv_extra_clean_up(self, data):
+        pv_types = data['TYPE'].unique()
+        if 'DAILY' in pv_types and 'SATELLITE' in pv_types:
+            data = data[data['TYPE'] == 'SATELLITE'].copy()
+        return data
+
+    @parameterized.expand(test_iterations)
+    def test_dispatch_tables_start_of_month(self, test_month):
+        start_time = f"{test_month.year}/{test_month.month}/01 00:00:00"
+        end_time = f"{test_month.year}/{test_month.month}/01 05:15:00"
         for table in self.table_names:
+            if table in discontinued_after and discontinued_after[table] < start_time:
+                continue
             print(f"Testing {table} returning values at start of month.")
             dat_col = defaults.primary_date_columns[table]
             table_type = self.table_types[table]
@@ -86,19 +136,14 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 start_time, format="%Y/%m/%d %H:%M:%S"
             ) + timedelta(minutes=5)
             expected_last_time = pd.to_datetime(end_time, format="%Y/%m/%d %H:%M:%S")
-            if table in [
-                "TRADINGLOAD",
-                "TRADINGPRICE",
-                "TRADINGREGIONSUM",
-                "TRADINGINTERCONNECT",
-                "ROOFTOP_PV_ACTUAL"
-            ]:
+            if (table in self.half_hourly_tables and
+                    not (table in self.change_to_five_min_table and test_month.year > self.change_to_five_min_year)):
                 expected_length = 10
-                expected_first_time = "2018/02/01 00:30:00"
+                expected_first_time = f"{test_month.year}/{test_month.month}/01 00:30:00"
                 expected_first_time = pd.to_datetime(
                     expected_first_time, format="%Y/%m/%d %H:%M:%S"
                 )
-                expected_last_time = "2018/02/01 05:00:00"
+                expected_last_time = f"{test_month.year}/{test_month.month}/01 05:00:00"
                 expected_last_time = pd.to_datetime(
                     expected_last_time, format="%Y/%m/%d %H:%M:%S"
                 )
@@ -106,14 +151,17 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 expected_number_of_columns = 3
             if table == "BIDDAYOFFER_D":
                 expected_length = 2
-                expected_last_time = "2018/02/01 00:00:00"
+                expected_last_time = f"{test_month.year}/{test_month.month}/01 00:00:00"
                 expected_last_time = pd.to_datetime(
                     expected_last_time, format="%Y/%m/%d %H:%M:%S"
                 )
-                expected_first_time = "2018/01/31 00:00:00"
+                previous_month = get_previous_month(test_month)
+                day = last_day_of_month(previous_month.year, previous_month.month)
+                expected_first_time = f"{previous_month.year}/{previous_month.month}/{day} 00:00:00"
                 expected_first_time = pd.to_datetime(
                     expected_first_time, format="%Y/%m/%d %H:%M:%S"
                 )
+            print(start_time)
             data = data_fetch_methods.dynamic_data_compiler(
                 start_time,
                 end_time,
@@ -125,6 +173,8 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 filter_cols=filter_cols,
                 filter_values=self.filter_values[table_type],
             )
+            if table == 'ROOFTOP_PV_ACTUAL':
+                data = self._pv_extra_clean_up(data)
             data = data.reset_index(drop=True)
             self.assertEqual(expected_length, data.shape[0])
             self.assertEqual(expected_number_of_columns, data.shape[1])
@@ -132,10 +182,15 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             self.assertEqual(expected_last_time, data[dat_col].iloc[-1])
             print("Passed")
 
-    def test_dispatch_tables_end_of_month(self):
-        start_time = "2018/01/31 21:00:00"
-        end_time = "2018/02/01 00:00:00"
+    @parameterized.expand(test_iterations)
+    def test_dispatch_tables_end_of_month(self, test_month):
+        day = last_day_of_month(test_month.year, test_month.month)
+        start_time = f"{test_month.year}/{test_month.month}/{day} 21:00:00"
+        following_month = get_next_month(test_month)
+        end_time = f"{following_month.year}/{following_month.month}/01 00:00:00"
         for table in self.table_names:
+            if table in discontinued_after and discontinued_after[table] < start_time:
+                continue
             print("Testing {} returing values at end of month.".format(table))
             dat_col = defaults.primary_date_columns[table]
             table_type = self.table_types[table]
@@ -147,15 +202,10 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 start_time, format="%Y/%m/%d %H:%M:%S"
             ) + timedelta(minutes=5)
             expected_last_time = pd.to_datetime(end_time, format="%Y/%m/%d %H:%M:%S")
-            if table in [
-                "TRADINGLOAD",
-                "TRADINGPRICE",
-                "TRADINGREGIONSUM",
-                "TRADINGINTERCONNECT",
-                "ROOFTOP_PV_ACTUAL"
-            ]:
+            if (table in self.half_hourly_tables and
+                    not (table in self.change_to_five_min_table and test_month.year > self.change_to_five_min_year)):
                 expected_length = 6
-                expected_first_time = "2018/01/31 21:30:00"
+                expected_first_time = f"{test_month.year}/{test_month.month}/{day} 21:30:00"
                 expected_first_time = pd.to_datetime(
                     expected_first_time, format="%Y/%m/%d %H:%M:%S"
                 )
@@ -176,6 +226,8 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 filter_cols=filter_cols,
                 filter_values=self.filter_values[table_type],
             )
+            if table == 'ROOFTOP_PV_ACTUAL':
+                data = self._pv_extra_clean_up(data)
             data = data.sort_values(dat_col)
             data = data.reset_index(drop=True)
             self.assertEqual(expected_length, data.shape[0])
@@ -184,10 +236,15 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             self.assertEqual(expected_last_time, data[dat_col].iloc[-1])
             print("Passed")
 
-    def test_dispatch_tables_straddle_2_months(self):
-        start_time = "2018/02/28 21:00:00"
-        end_time = "2018/03/01 21:00:00"
+    @parameterized.expand(test_iterations)
+    def test_dispatch_tables_straddle_2_months(self, test_month):
+        day = last_day_of_month(test_month.year, test_month.month)
+        start_time = f"{test_month.year}/{test_month.month}/{day} 21:00:00"
+        following_month = get_next_month(test_month)
+        end_time = f"{following_month.year}/{following_month.month}/01 21:00:00"
         for table in self.table_names:
+            if table in discontinued_after and discontinued_after[table] < start_time:
+                continue
             print(f"Testing {table} returing values from adjacent months.")
             dat_col = defaults.primary_date_columns[table]
             table_type = self.table_types[table]
@@ -199,15 +256,10 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 start_time, format="%Y/%m/%d %H:%M:%S"
             ) + timedelta(minutes=5)
             expected_last_time = pd.to_datetime(end_time, format="%Y/%m/%d %H:%M:%S")
-            if table in [
-                "TRADINGLOAD",
-                "TRADINGPRICE",
-                "TRADINGREGIONSUM",
-                "TRADINGINTERCONNECT",
-                "ROOFTOP_PV_ACTUAL"
-            ]:
+            if (table in self.half_hourly_tables and
+                    not (table in self.change_to_five_min_table and test_month.year > self.change_to_five_min_year)):
                 expected_length = 48
-                expected_first_time = "2018/02/28 21:30:00"
+                expected_first_time = f"{test_month.year}/{test_month.month}/{day} 21:30:00"
                 expected_first_time = pd.to_datetime(
                     expected_first_time, format="%Y/%m/%d %H:%M:%S"
                 )
@@ -228,6 +280,8 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 filter_cols=filter_cols,
                 filter_values=self.filter_values[table_type],
             )
+            if table == 'ROOFTOP_PV_ACTUAL':
+                data = self._pv_extra_clean_up(data)
             data = data.sort_values(dat_col)
             data = data.reset_index(drop=True)
             self.assertEqual(expected_length, data.shape[0])
@@ -236,10 +290,14 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             self.assertEqual(expected_last_time, data[dat_col].iloc[-1])
             print("Passed")
 
-    def test_dispatch_tables_start_of_year(self):
-        start_time = "2018/01/01 00:00:00"
-        end_time = "2018/01/01 01:00:00"
+    @parameterized.expand(test_iterations)
+    def test_dispatch_tables_start_of_year(self, test_month):
+        start_time = f"{test_month.year}/01/01 00:00:00"
+        following_month = get_next_month(test_month)
+        end_time = f"{following_month.year}/01/01 01:00:00"
         for table in self.table_names:
+            if table in discontinued_after and discontinued_after[table] < start_time:
+                continue
             print("Testing {} returing values at start of year.".format(table))
             dat_col = defaults.primary_date_columns[table]
             table_type = self.table_types[table]
@@ -251,15 +309,10 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 start_time, format="%Y/%m/%d %H:%M:%S"
             ) + timedelta(minutes=5)
             expected_last_time = pd.to_datetime(end_time, format="%Y/%m/%d %H:%M:%S")
-            if table in [
-                "TRADINGLOAD",
-                "TRADINGPRICE",
-                "TRADINGREGIONSUM",
-                "TRADINGINTERCONNECT",
-                "ROOFTOP_PV_ACTUAL"
-            ]:
+            if (table in self.half_hourly_tables and
+                    not (table in self.change_to_five_min_table and test_month.year > self.change_to_five_min_year)):
                 expected_length = 2
-                expected_first_time = "2018/01/01 00:30:00"
+                expected_first_time = f"{test_month.year}/01/01 00:30:00"
                 expected_first_time = pd.to_datetime(
                     expected_first_time, format="%Y/%m/%d %H:%M:%S"
                 )
@@ -284,6 +337,8 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 filter_cols=filter_cols,
                 filter_values=self.filter_values[table_type],
             )
+            if table == 'ROOFTOP_PV_ACTUAL':
+                data = self._pv_extra_clean_up(data)
             data = data.sort_values(dat_col)
             data = data.reset_index(drop=True)
             self.assertEqual(expected_length, data.shape[0])
@@ -292,10 +347,14 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             self.assertEqual(expected_last_time, data[dat_col].iloc[-1])
             print("Passed")
 
-    def test_dispatch_tables_end_of_year(self):
-        start_time = "2017/12/31 23:00:00"
-        end_time = "2018/01/01 00:00:00"
+    @parameterized.expand(test_iterations)
+    def test_dispatch_tables_end_of_year(self, test_month):
+        start_time = f"{test_month.year - 1}/12/31 23:00:00"
+        following_month = get_next_month(test_month)
+        end_time = f"{following_month.year}/01/01 00:00:00"
         for table in self.table_names:
+            if table in discontinued_after and discontinued_after[table] < start_time:
+                continue
             print("Testing {} returing values at end of year.".format(table))
             dat_col = defaults.primary_date_columns[table]
             table_type = self.table_types[table]
@@ -307,15 +366,10 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 start_time, format="%Y/%m/%d %H:%M:%S"
             ) + timedelta(minutes=5)
             expected_last_time = pd.to_datetime(end_time, format="%Y/%m/%d %H:%M:%S")
-            if table in [
-                "TRADINGLOAD",
-                "TRADINGPRICE",
-                "TRADINGREGIONSUM",
-                "TRADINGINTERCONNECT",
-                "ROOFTOP_PV_ACTUAL"
-            ]:
+            if (table in self.half_hourly_tables and
+                    not (table in self.change_to_five_min_table and test_month.year > self.change_to_five_min_year)):
                 expected_length = 2
-                expected_first_time = "2017/12/31 23:30:00"
+                expected_first_time = f"{test_month.year - 1}/12/31 23:30:00"
                 expected_first_time = pd.to_datetime(
                     expected_first_time, format="%Y/%m/%d %H:%M:%S"
                 )
@@ -336,6 +390,8 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 filter_cols=filter_cols,
                 filter_values=self.filter_values[table_type],
             )
+            if table == 'ROOFTOP_PV_ACTUAL':
+                data = self._pv_extra_clean_up(data)
             data = data.sort_values(dat_col)
             data = data.reset_index(drop=True)
             self.assertEqual(expected_length, data.shape[0])
@@ -344,10 +400,14 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             self.assertEqual(expected_last_time, data[dat_col].iloc[-1])
             print("Passed")
 
-    def test_dispatch_tables_straddle_years(self):
-        start_time = "2017/12/31 23:00:00"
-        end_time = "2018/01/01 01:00:00"
+    @parameterized.expand(test_iterations)
+    def test_dispatch_tables_straddle_years(self, test_month):
+        start_time = f"{test_month.year - 1}/12/31 23:00:00"
+        following_month = get_next_month(test_month)
+        end_time = f"{following_month.year}/01/01 01:00:00"
         for table in self.table_names:
+            if table in discontinued_after and discontinued_after[table] < start_time:
+                continue
             print(f"Testing {table} returning values from adjacent years.")
             dat_col = defaults.primary_date_columns[table]
             table_type = self.table_types[table]
@@ -359,15 +419,10 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 start_time, format="%Y/%m/%d %H:%M:%S"
             ) + timedelta(minutes=5)
             expected_last_time = pd.to_datetime(end_time, format="%Y/%m/%d %H:%M:%S")
-            if table in [
-                "TRADINGLOAD",
-                "TRADINGPRICE",
-                "TRADINGREGIONSUM",
-                "TRADINGINTERCONNECT",
-                "ROOFTOP_PV_ACTUAL"
-            ]:
+            if (table in self.half_hourly_tables and
+                    not (table in self.change_to_five_min_table and test_month.year > self.change_to_five_min_year)):
                 expected_length = 4
-                expected_first_time = "2017/12/31 23:30:00"
+                expected_first_time = f"{test_month.year - 1}/12/31 23:30:00"
                 expected_first_time = pd.to_datetime(
                     expected_first_time, format="%Y/%m/%d %H:%M:%S"
                 )
@@ -388,6 +443,8 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 filter_cols=filter_cols,
                 filter_values=self.filter_values[table_type],
             )
+            if table == 'ROOFTOP_PV_ACTUAL':
+                data = self._pv_extra_clean_up(data)
             data = data.sort_values(dat_col)
             data = data.reset_index(drop=True)
             self.assertEqual(expected_length, data.shape[0])
@@ -400,6 +457,10 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
 class TestDynamicDataCompilerWithSettlementDateFiltering2021OfferData(
     unittest.TestCase
 ):
+    """
+    Testing during 2021 because this is when AEMO stopped storing BIDDAYOFFER_D and BIDPEROFFER_D with the other mms
+    monthly files. Testing at this time checks that retreiving from the BIDMOVECOMPLETE files works.
+    """
     def setUp(self):
         self.table_names = ["BIDDAYOFFER_D", "BIDPEROFFER_D"]
 
@@ -838,8 +899,9 @@ class TestDynamicDataCompilerWithSettlementDateFilteringNextDayTables(
         }
 
     def test_dispatch_tables_start_of_month(self):
-        start_time = "2024/06/01 00:00:00"
-        end_time = "2024/06/01 05:15:00"
+        test_month = previous_month
+        start_time = f"{test_month.year}/{test_month.month}/01 00:00:00"
+        end_time = f"{test_month.year}/{test_month.month}/01 05:15:00"
         for table in self.table_names:
             print(f"Testing {table} returning values at start of month one.")
             dat_col = defaults.primary_date_columns[table]
@@ -867,8 +929,9 @@ class TestDynamicDataCompilerWithSettlementDateFilteringNextDayTables(
             print("Passed")
 
     def test_dispatch_tables_middle_of_month_and_day(self):
-        start_time = "2024/06/05 12:00:00"
-        end_time = "2024/06/05 17:15:00"
+        test_month = previous_month
+        start_time = f"{test_month.year}/{test_month.month}/05 12:00:00"
+        end_time = f"{test_month.year}/{test_month.month}/05 17:15:00"
         for table in self.table_names:
             print(f"Testing {table} returning values at start of month one.")
             dat_col = defaults.primary_date_columns[table]
@@ -896,8 +959,9 @@ class TestDynamicDataCompilerWithSettlementDateFilteringNextDayTables(
             print("Passed")
 
     def test_dispatch_tables_start_market_day(self):
-        start_time = "2024/06/05 04:00:00"
-        end_time = "2024/06/05 04:05:00"
+        test_month = previous_month
+        start_time = f"{test_month.year}/{test_month.month}/05 04:00:00"
+        end_time = f"{test_month.year}/{test_month.month}/05 04:05:00"
         for table in self.table_names:
             print(f"Testing {table} returning values at start of month one.")
             dat_col = defaults.primary_date_columns[table]
@@ -925,8 +989,9 @@ class TestDynamicDataCompilerWithSettlementDateFilteringNextDayTables(
             print("Passed")
 
     def test_dispatch_tables_end_market_day(self):
-        start_time = "2024/06/05 03:55:00"
-        end_time = "2024/06/05 04:00:00"
+        test_month = previous_month
+        start_time = f"{test_month.year}/{test_month.month}/05 03:55:00"
+        end_time = f"{test_month.year}/{test_month.month}/05 04:00:00"
         for table in self.table_names:
             print(f"Testing {table} returning values at start of month one.")
             dat_col = defaults.primary_date_columns[table]
@@ -963,9 +1028,13 @@ class TestDynamicDataCompilerWithEffectiveDateFiltering(unittest.TestCase):
             "SPDINTERCONNECTORCONSTRAINT",
         ]
 
-    def test_filtering_for_one_interval_returns(self):
-        start_time = "2018/02/20 23:00:00"
-        end_time = "2018/02/20 23:05:00"
+    @parameterized.expand([
+        [recent_test_month],
+        [datetime(year=2018, month=5, day=1)]
+    ])
+    def test_filtering_for_one_interval_returns(self, test_month):
+        start_time = f"{test_month.year}/{test_month.month}/20 23:00:00"
+        end_time = f"{test_month.year}/{test_month.month}/20 23:05:00"
         for table in self.table_names:
             print("Testing {} returing values for 1 interval.".format(table))
             data = data_fetch_methods.dynamic_data_compiler(
@@ -1111,9 +1180,13 @@ class TestDynamicDataCompilerWithStartDateFiltering(unittest.TestCase):
     def setUp(self):
         self.table_names = ["DUDETAILSUMMARY"]
 
-    def test_filtering_for_one_interval_returns(self):
-        start_time = "2018/02/20 23:00:00"
-        end_time = "2018/02/20 23:05:00"
+    @parameterized.expand([
+        [recent_test_month],
+        [datetime(year=2018, month=5, day=1)]
+    ])
+    def test_filtering_for_one_interval_returns(self, test_month):
+        start_time = f"{test_month.year}/{test_month.month}/20 23:00:00"
+        end_time = f"{test_month.year}/{test_month.month}/20 23:05:00"
         for table in self.table_names:
             print("Testing {} returing values for 1 interval.".format(table))
             data = data_fetch_methods.dynamic_data_compiler(
@@ -1136,12 +1209,18 @@ class TestDynamicDataCompilerWithStartDateFiltering(unittest.TestCase):
 
 
 class TestDynamicDataCompilerWithLastChangedFiltering(unittest.TestCase):
-    def test_that_a_narrow_time_range_returns_one_entry_per_participantid(self):
+    @parameterized.expand([
+        [recent_test_month],
+        [datetime(year=2018, month=5, day=1)]
+    ])
+    def test_that_a_narrow_time_range_returns_one_entry_per_participantid(self, test_month):
+        start_time = f"{test_month.year}/{test_month.month}/01 00:00:00"
+        end_time = f"{test_month.year}/{test_month.month}/01 00:05:00"
         table = "PARTICIPANT"
         cols = ["PARTICIPANTID", "NAME", "LASTCHANGED"]
         data = data_fetch_methods.dynamic_data_compiler(
-            "2022/01/01 00:00:00",
-            "2022/01/01 00:05:00",
+            start_time,
+            end_time,
             table,
             defaults.raw_data_cache,
             select_columns=cols,

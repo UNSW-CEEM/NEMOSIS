@@ -237,7 +237,9 @@ finalise = {
     ],
     "MARKET_PRICE_THRESHOLDS": None,
     "DAILY_REGION_SUMMARY": None,
-    "ROOFTOP_PV_ACTUAL": None,
+    "ROOFTOP_PV_ACTUAL": [
+        query_wrappers.drop_duplicates_by_primary_key
+    ],
 }
 
 date_gen = {
@@ -249,7 +251,7 @@ date_gen = {
 }
 
 write_filename = {
-    "MMS": write_file_names.write_file_names,
+    "MMS": write_file_names.write_mms_file_names,
     "NEXT_DAY_DISPATCHLOAD": write_file_names.write_file_names_current,
     "BIDDING": write_file_names.write_file_names_mms_and_current,
     "DAILY_REGION_SUMMARY": write_file_names.write_file_names_mms_and_current,

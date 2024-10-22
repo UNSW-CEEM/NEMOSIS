@@ -845,7 +845,7 @@ primary_date_columns = {
     "FCAS_4s_SCADA_MAP": None,
     "MARKET_PRICE_THRESHOLDS": "EFFECTIVEDATE",
     "DAILY_REGION_SUMMARY": "SETTLEMENTDATE",
-    "ROOFTOP_PV_ACTUAL": "INTERVAL_DATETIME",
+    "ROOFTOP_PV_ACTUAL": "INTERVAL_DATETIME"
 }
 
 reg_exemption_list_tabs = {
@@ -888,4 +888,4 @@ last_column = 100
 join_type = ["inner", "left", "right"]
 
 # Testing settings
-raw_data_cache = "D:/nemosis_test_cache"
+raw_data_cache = "/media/nick/Samsung_T5/nemosis_test_cache"
