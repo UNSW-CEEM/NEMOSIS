@@ -21,7 +21,7 @@ setuptools.setup(
         "pandas",
         "xlrd",
         "beautifulsoup4",
-        "openpyxl"
+        "openpyxl",
         "parameterized"
     ],
     classifiers=[

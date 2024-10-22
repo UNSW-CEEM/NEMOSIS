@@ -237,7 +237,9 @@ finalise = {
     ],
     "MARKET_PRICE_THRESHOLDS": None,
     "DAILY_REGION_SUMMARY": None,
-    "ROOFTOP_PV_ACTUAL": None,
+    "ROOFTOP_PV_ACTUAL": [
+        query_wrappers.drop_duplicates_by_primary_key
+    ],
 }
 
 date_gen = {

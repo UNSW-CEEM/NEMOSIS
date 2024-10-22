@@ -38,7 +38,7 @@ def run(year, month, day, chunk, index, filename_stub, down_load_to):
 
 def run_bid_tables(year, month, day, chunk, index, filename_stub, down_load_to):
     if day is None:
-        run(year, month, day, index, filename_stub, down_load_to)
+        run(year, month, day, chunk, index, filename_stub, down_load_to)
     else:
         try:
             filename_stub = "BIDMOVE_COMPLETE_{year}{month}{day}".format(year=year, month=month, day=day)
@@ -191,7 +191,7 @@ def _find_start_row_nth_table(sub_folder_zipfile, file_name, n):
 
 
 
-def run_fcas4s(year, month, day, index, filename_stub, down_load_to):
+def run_fcas4s(year, month, day, chunk, index, filename_stub, down_load_to):
     """This function"""
 
     # Add the year and month information to the generic AEMO data url

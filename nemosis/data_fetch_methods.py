@@ -359,16 +359,22 @@ def _get_read_function(fformat, table_type, day):
     return func
 
 
+def _count_csv_lines(file_path):
+    with open(file_path, 'rb') as f:
+        return sum(1 for _ in f)
+
+
 def _read_mms_csv(path_and_name, dtype=None, usecols=None, nrows=None, names=None):
+    last_line_number = _count_csv_lines(path_and_name) - 1
     data = _pd.read_csv(
         path_and_name,
-        skiprows=[0],
+        skiprows=[0, last_line_number],
         dtype=dtype,
         usecols=usecols,
         nrows=nrows,
         names=names,
     )
-    return data[:-1]
+    return data
 
 
 def _read_constructed_csv(
