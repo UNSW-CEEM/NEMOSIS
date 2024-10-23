@@ -9,7 +9,6 @@ jobs:
   # Publishes to PyPi if tests are passed and release is created
   publish:
     if: github.event_name == 'release' && github.event.action == 'created'
-    needs: test
     name: Upload release to PyPI
     runs-on: ubuntu-latest
     environment:
