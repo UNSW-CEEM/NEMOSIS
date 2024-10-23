@@ -1,6 +1,6 @@
 import pandas as pd
 from datetime import datetime, timedelta
-from . import defaults, _parse_datetime
+from nemosis import defaults, _parse_datetime
 
 
 def dispatch_date_setup(start_time, end_time):

@@ -1,6 +1,6 @@
 import tkinter as tk
 import tkinter.ttk as ttk
-from . import defaults
+from nemosis import defaults
 
 
 class Query:
@@ -68,8 +68,8 @@ class Query:
 
         self.name.grid(
             row=defaults.query_row_offset
-            + defaults.row_height * self.row_number
-            + defaults.names_internal_row,
+                + defaults.row_height * self.row_number
+                + defaults.names_internal_row,
             column=first_sub_column,
             padx=padx,
             sticky="sw",
@@ -78,8 +78,8 @@ class Query:
 
         self.start_time_label.grid(
             row=defaults.query_row_offset
-            + defaults.row_height * self.row_number
-            + defaults.start_time_label_internal_row,
+                + defaults.row_height * self.row_number
+                + defaults.start_time_label_internal_row,
             column=first_sub_column,
             padx=defaults.standard_x_pad,
             sticky="sw",
@@ -88,8 +88,8 @@ class Query:
 
         self.start_time.grid(
             row=defaults.query_row_offset
-            + defaults.row_height * self.row_number
-            + defaults.start_time_internal_row,
+                + defaults.row_height * self.row_number
+                + defaults.start_time_internal_row,
             column=first_sub_column,
             padx=padx,
             sticky="sw",
@@ -98,8 +98,8 @@ class Query:
 
         self.end_time_label.grid(
             row=defaults.query_row_offset
-            + defaults.row_height * self.row_number
-            + defaults.end_time_label_internal_row,
+                + defaults.row_height * self.row_number
+                + defaults.end_time_label_internal_row,
             column=first_sub_column,
             padx=padx,
             sticky="sw",
@@ -108,8 +108,8 @@ class Query:
 
         self.end_time.grid(
             row=defaults.query_row_offset
-            + defaults.row_height * self.row_number
-            + defaults.end_time_internal_row,
+                + defaults.row_height * self.row_number
+                + defaults.end_time_internal_row,
             column=first_sub_column,
             padx=padx,
             sticky="sw",
@@ -127,8 +127,8 @@ class Query:
 
         self.tables.grid(
             row=defaults.query_row_offset
-            + defaults.row_height * self.row_number
-            + defaults.table_list_internal_row,
+                + defaults.row_height * self.row_number
+                + defaults.table_list_internal_row,
             column=second_sub_column,
             rowspan=defaults.list_row_span,
             columnspan=defaults.list_column_span,
@@ -139,8 +139,8 @@ class Query:
 
         self.delete.grid(
             row=defaults.query_row_offset
-            + defaults.row_height * self.row_number
-            + defaults.delete_button_internal_row,
+                + defaults.row_height * self.row_number
+                + defaults.delete_button_internal_row,
             column=defaults.last_column,
             sticky="nw",
         )
@@ -193,8 +193,8 @@ class Query:
         self.col_list.grid(
             column=self.tables.grid_info()["column"] + defaults.list_column_span,
             row=defaults.query_row_offset
-            + self.row_number * defaults.row_height
-            + defaults.table_list_internal_row,
+                + self.row_number * defaults.row_height
+                + defaults.table_list_internal_row,
             rowspan=defaults.list_row_span,
             columnspan=defaults.list_column_span,
             padx=defaults.standard_x_pad,
@@ -247,8 +247,8 @@ class Query:
             else:
                 # Place the next filter next to the last filter.
                 col = (
-                    self.filter_label[last_filter].grid_info()["column"]
-                    + defaults.list_column_span
+                        self.filter_label[last_filter].grid_info()["column"]
+                        + defaults.list_column_span
                 )
 
             self.filter_label[column].grid(
@@ -260,16 +260,16 @@ class Query:
             self.filter_label[column].update()
             self.filter_entry[column].grid(
                 row=defaults.query_row_offset
-                + defaults.row_height * self.row_number
-                + defaults.names_internal_row,
+                    + defaults.row_height * self.row_number
+                    + defaults.names_internal_row,
                 column=col,
                 padx=defaults.standard_x_pad,
             )
             self.filter_entry[column].update()
             self.filter_list[column].grid(
                 row=defaults.query_row_offset
-                + defaults.row_height * self.row_number
-                + defaults.internal_filter_row,
+                    + defaults.row_height * self.row_number
+                    + defaults.internal_filter_row,
                 column=col,
                 columnspan=defaults.list_column_span,
                 rowspan=defaults.list_filter_row_span,
@@ -455,40 +455,40 @@ class Merge_as_of:
         self.merge_label.update()
         self.name.grid(
             row=defaults.query_row_offset
-            + defaults.row_height * self.row_number
-            + defaults.names_internal_row,
+                + defaults.row_height * self.row_number
+                + defaults.names_internal_row,
             column=0,
             padx=defaults.standard_x_pad,
         )
         self.name.update()
         self.left_table_label.grid(
             row=defaults.query_row_offset
-            + defaults.row_height * self.row_number
-            + defaults.start_time_label_internal_row,
+                + defaults.row_height * self.row_number
+                + defaults.start_time_label_internal_row,
             column=0,
             padx=defaults.standard_x_pad,
         )
         self.left_table_label.update()
         self.left_table.grid(
             row=defaults.query_row_offset
-            + defaults.row_height * self.row_number
-            + defaults.start_time_internal_row,
+                + defaults.row_height * self.row_number
+                + defaults.start_time_internal_row,
             column=0,
             padx=defaults.standard_x_pad,
         )
         self.left_table.update()
         self.right_table_label.grid(
             row=defaults.query_row_offset
-            + defaults.row_height * self.row_number
-            + defaults.end_time_label_internal_row,
+                + defaults.row_height * self.row_number
+                + defaults.end_time_label_internal_row,
             column=0,
             padx=defaults.standard_x_pad,
         )
         self.right_table_label.update()
         self.right_table.grid(
             row=defaults.query_row_offset
-            + defaults.row_height * self.row_number
-            + defaults.end_time_internal_row,
+                + defaults.row_height * self.row_number
+                + defaults.end_time_internal_row,
             column=0,
             padx=defaults.standard_x_pad,
         )
@@ -503,8 +503,8 @@ class Merge_as_of:
         self.join_types_label.update()
         self.join_types.grid(
             row=defaults.query_row_offset
-            + defaults.row_height * self.row_number
-            + defaults.table_list_internal_row,
+                + defaults.row_height * self.row_number
+                + defaults.table_list_internal_row,
             column=1,
             rowspan=defaults.list_row_span,
             columnspan=defaults.list_column_span,
@@ -514,8 +514,8 @@ class Merge_as_of:
         self.join_types.update()
         self.delete.grid(
             row=defaults.query_row_offset
-            + defaults.row_height * self.row_number
-            + defaults.delete_button_internal_row,
+                + defaults.row_height * self.row_number
+                + defaults.delete_button_internal_row,
             column=defaults.last_column,
             sticky="nw",
         )
@@ -524,18 +524,18 @@ class Merge_as_of:
         label_row = defaults.query_row_offset + defaults.row_height * self.row_number
         label_sticky = "w"
         entry_row = (
-            defaults.query_row_offset
-            + defaults.row_height * self.row_number
-            + defaults.names_internal_row
+                defaults.query_row_offset
+                + defaults.row_height * self.row_number
+                + defaults.names_internal_row
         )
         custom_list_row = (
-            defaults.query_row_offset
-            + defaults.row_height * self.row_number
-            + defaults.internal_filter_row
+                defaults.query_row_offset
+                + defaults.row_height * self.row_number
+                + defaults.internal_filter_row
         )
 
         left_time_keys_col = (
-            self.join_types.grid_info()["column"] + defaults.list_column_span
+                self.join_types.grid_info()["column"] + defaults.list_column_span
         )
         self.left_time_keys_label.grid(
             row=label_row,
@@ -561,7 +561,7 @@ class Merge_as_of:
         )
 
         right_time_keys_col = (
-            self.left_time_key_list.grid_info()["column"] + defaults.list_column_span
+                self.left_time_key_list.grid_info()["column"] + defaults.list_column_span
         )
         self.right_time_keys_label.grid(
             row=label_row,
@@ -587,7 +587,7 @@ class Merge_as_of:
         )
 
         left_keys_col = (
-            self.right_time_key_list.grid_info()["column"] + defaults.list_column_span
+                self.right_time_key_list.grid_info()["column"] + defaults.list_column_span
         )
         self.left_keys_label.grid(
             row=label_row,
@@ -613,7 +613,7 @@ class Merge_as_of:
         )
 
         right_keys_col = (
-            self.left_key_list.grid_info()["column"] + defaults.list_column_span
+                self.left_key_list.grid_info()["column"] + defaults.list_column_span
         )
         self.right_keys_label.grid(
             row=label_row,
@@ -786,8 +786,8 @@ class FilterVersionNo:
         self.output_label.update()
         self.name.grid(
             row=defaults.query_row_offset
-            + defaults.row_height * self.row_number
-            + defaults.names_internal_row,
+                + defaults.row_height * self.row_number
+                + defaults.names_internal_row,
             column=0,
             padx=defaults.standard_x_pad,
         )
@@ -795,8 +795,8 @@ class FilterVersionNo:
 
         self.input_label.grid(
             row=defaults.query_row_offset
-            + defaults.row_height * self.row_number
-            + defaults.start_time_label_internal_row,
+                + defaults.row_height * self.row_number
+                + defaults.start_time_label_internal_row,
             column=0,
             padx=defaults.standard_x_pad,
             sticky="ws",
@@ -804,16 +804,16 @@ class FilterVersionNo:
         self.input_label.update()
         self.input.grid(
             row=defaults.query_row_offset
-            + defaults.row_height * self.row_number
-            + defaults.start_time_internal_row,
+                + defaults.row_height * self.row_number
+                + defaults.start_time_internal_row,
             column=0,
             padx=defaults.standard_x_pad,
         )
         self.input.update()
         self.delete.grid(
             row=defaults.query_row_offset
-            + defaults.row_height * self.row_number
-            + defaults.delete_button_internal_row,
+                + defaults.row_height * self.row_number
+                + defaults.delete_button_internal_row,
             column=defaults.last_column,
             sticky="nw",
         )
@@ -900,40 +900,40 @@ class Merge:
         self.merge_label.update()
         self.name.grid(
             row=defaults.query_row_offset
-            + defaults.row_height * self.row_number
-            + defaults.names_internal_row,
+                + defaults.row_height * self.row_number
+                + defaults.names_internal_row,
             column=0,
             padx=defaults.standard_x_pad,
         )
         self.name.update()
         self.left_table_label.grid(
             row=defaults.query_row_offset
-            + defaults.row_height * self.row_number
-            + defaults.start_time_label_internal_row,
+                + defaults.row_height * self.row_number
+                + defaults.start_time_label_internal_row,
             column=0,
             padx=defaults.standard_x_pad,
         )
         self.left_table_label.update()
         self.left_table.grid(
             row=defaults.query_row_offset
-            + defaults.row_height * self.row_number
-            + defaults.start_time_internal_row,
+                + defaults.row_height * self.row_number
+                + defaults.start_time_internal_row,
             column=0,
             padx=defaults.standard_x_pad,
         )
         self.left_table.update()
         self.right_table_label.grid(
             row=defaults.query_row_offset
-            + defaults.row_height * self.row_number
-            + defaults.end_time_label_internal_row,
+                + defaults.row_height * self.row_number
+                + defaults.end_time_label_internal_row,
             column=0,
             padx=defaults.standard_x_pad,
         )
         self.right_table_label.update()
         self.right_table.grid(
             row=defaults.query_row_offset
-            + defaults.row_height * self.row_number
-            + defaults.end_time_internal_row,
+                + defaults.row_height * self.row_number
+                + defaults.end_time_internal_row,
             column=0,
             padx=defaults.standard_x_pad,
         )
@@ -948,8 +948,8 @@ class Merge:
         self.join_types_label.update()
         self.join_types.grid(
             row=defaults.query_row_offset
-            + defaults.row_height * self.row_number
-            + defaults.table_list_internal_row,
+                + defaults.row_height * self.row_number
+                + defaults.table_list_internal_row,
             column=1,
             rowspan=defaults.list_row_span,
             columnspan=defaults.list_column_span,
@@ -959,8 +959,8 @@ class Merge:
         self.join_types.update()
         self.delete.grid(
             row=defaults.query_row_offset
-            + defaults.row_height * self.row_number
-            + defaults.delete_button_internal_row,
+                + defaults.row_height * self.row_number
+                + defaults.delete_button_internal_row,
             column=defaults.last_column,
             sticky="nw",
         )
@@ -969,18 +969,18 @@ class Merge:
         label_row = defaults.query_row_offset + defaults.row_height * self.row_number
         label_sticky = "w"
         entry_row = (
-            defaults.query_row_offset
-            + defaults.row_height * self.row_number
-            + defaults.names_internal_row
+                defaults.query_row_offset
+                + defaults.row_height * self.row_number
+                + defaults.names_internal_row
         )
         custom_list_row = (
-            defaults.query_row_offset
-            + defaults.row_height * self.row_number
-            + defaults.internal_filter_row
+                defaults.query_row_offset
+                + defaults.row_height * self.row_number
+                + defaults.internal_filter_row
         )
 
         left_keys_col = (
-            self.join_types.grid_info()["column"] + defaults.list_column_span
+                self.join_types.grid_info()["column"] + defaults.list_column_span
         )
         self.left_keys_label.grid(
             row=label_row,
@@ -1006,7 +1006,7 @@ class Merge:
         )
 
         right_keys_col = (
-            self.left_key_list.grid_info()["column"] + defaults.list_column_span
+                self.left_key_list.grid_info()["column"] + defaults.list_column_span
         )
         self.right_keys_label.grid(
             row=label_row,

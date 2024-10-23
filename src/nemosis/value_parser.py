@@ -1,6 +1,6 @@
 import pandas as pd
 
-from . import defaults as _defaults
+from nemosis import defaults as _defaults
 
 
 def _parse_datetime(series):

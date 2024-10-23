@@ -1,6 +1,4 @@
-from nemosis import rows
-from nemosis import defaults
-from nemosis import data_fetch_methods
+from nemosis import rows, defaults, data_fetch_methods
 import pandas as pd
 import tkinter as tk
 import tkinter.ttk as ttk
@@ -190,8 +188,8 @@ class App(ttk.Frame):
         self.row_adder = ttk.Frame(self.frame.interior)
         self.row_adder.grid(
             row=defaults.query_row_offset
-            + len(self.rows) * defaults.row_height
-            + defaults.plus_internal_row,
+                + len(self.rows) * defaults.row_height
+                + defaults.plus_internal_row,
             column=0,
             padx=defaults.standard_x_pad,
             sticky="w",
@@ -565,8 +563,8 @@ class App(ttk.Frame):
         # Move the plus buttons to below all existing rows.
         self.row_adder.grid(
             row=defaults.query_row_offset
-            + (len(self.rows)) * defaults.row_height
-            + defaults.plus_internal_row
+                + (len(self.rows)) * defaults.row_height
+                + defaults.plus_internal_row
         )
         self.row_adder.update()
         self.frame.update_scrollbar(None)
@@ -578,7 +576,7 @@ def resource_path(relative_path):
         # PyInstaller creates a temp folder and stores path in _MEIPASS
         base_path = sys._MEIPASS
     except Exception:
-        base_path = os.path.abspath(".")
+        base_path = os.path.abspath("")
 
     return os.path.join(base_path, relative_path)
 

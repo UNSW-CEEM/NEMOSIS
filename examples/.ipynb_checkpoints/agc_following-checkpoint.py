@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from datetime import timedelta
-from nemosis import static_table, dynamic_data_compiler
+from src.nemosis import static_table, dynamic_data_compiler
 import plotly.express as px
 
 # Specify where we will be caching the raw AEMO data.

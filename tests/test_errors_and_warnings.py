@@ -1,7 +1,7 @@
 import unittest
-from nemosis import dynamic_data_compiler, cache_compiler, static_table, defaults
+from src.nemosis import dynamic_data_compiler, cache_compiler, static_table
+from src.nemosis import defaults
 import os
-import sys
 from unittest.mock import patch
 from io import StringIO
 
@@ -253,7 +253,7 @@ class TestStaticTableRaisesExpectedErrors(unittest.TestCase):
         good_url = defaults.static_table_url["VARIABLES_FCAS_4_SECOND"]
         defaults.static_table_url["VARIABLES_FCAS_4_SECOND"] = "bad_url"
         path_and_name = (
-            defaults.raw_data_cache + "/" + defaults.names["VARIABLES_FCAS_4_SECOND"]
+                defaults.raw_data_cache + "/" + defaults.names["VARIABLES_FCAS_4_SECOND"]
         )
         if os.path.isfile(path_and_name):
             os.remove(path_and_name)

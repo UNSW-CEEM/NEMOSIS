@@ -1,11 +1,9 @@
 import unittest
-from nemosis import data_fetch_methods
 import pandas as pd
-from nemosis import custom_tables
+from src.nemosis import custom_tables, defaults, data_fetch_methods
 import math
 import numpy as np
 import time
-from nemosis import defaults
 from datetime import datetime, timedelta
 import os
 

@@ -1,12 +1,8 @@
 import unittest
 
-from soupsieve import select
-from nemosis import processing_info_maps
-from nemosis import data_fetch_methods
-from nemosis import defaults
+from src.nemosis import processing_info_maps, defaults, query_wrappers, data_fetch_methods
 import pandas as pd
 from datetime import datetime, timedelta
-from nemosis import query_wrappers
 
 
 class TestSearchTypeValidity(unittest.TestCase):
@@ -21,10 +17,10 @@ class TestSearchTypeValidity(unittest.TestCase):
             if processing_info_maps.search_type[table_name] == "start_to_end":
                 print("Validating start_to_end type for table {}".format(table_name))
                 start_time = datetime.strptime(
-                    "2018/01/01 00:00:00", "%Y/%m/%d %H:%M:%S"
+                    "2018/06/01 00:00:00", "%Y/%m/%d %H:%M:%S"
                 )
-                end_time = datetime.strptime("2018/03/01 00:00:00", "%Y/%m/%d %H:%M:%S")
-                if table_name in ["DAILY_REGION_SUMMARY", "NEXT_DAY_DISPATCHLOAD"]:
+                end_time = datetime.strptime("2018/09/01 00:00:00", "%Y/%m/%d %H:%M:%S")
+                if table_name in ["DAILY_REGION_SUMMARY", "NEXT_DAY_DISPATCHLOAD", "INTERMITTENT_GEN_SCADA"]:
                     end_time = self.time_yesterday
                     start_time = self.time_yesterday - timedelta(days=8)
                 if table_name in ["FCAS_4_SECOND"]:
@@ -59,10 +55,14 @@ class TestSearchTypeValidity(unittest.TestCase):
                 has_interval_timestamp_col = (
                     "TIMESTAMP" in defaults.table_columns[table_name]
                 )
+                has_run_datetime_col = (
+                    "RUN_DATETIME" in defaults.table_columns[table_name]
+                )
                 has_either = (
                     has_interval_datetime_col
                     or has_settlement_date_col
                     or has_interval_timestamp_col
+                    or has_run_datetime_col
                 )
                 self.assertEqual(True, has_either)
                 print(
@@ -202,7 +202,7 @@ class TestSearchTypeValidity(unittest.TestCase):
                 )
                 first_data_table = data_tables[35].loc[
                     :, defaults.table_primary_keys[table_name]
-                ]
+                                   ]
                 last_data_table = data_tables[-1]
                 comp = pd.merge(
                     first_data_table,

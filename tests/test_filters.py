@@ -1,6 +1,6 @@
 import unittest
 import pandas as pd
-from nemosis import filters
+from src.nemosis import filters
 from pandas.testing import assert_frame_equal
 from datetime import datetime
 import numpy as np
