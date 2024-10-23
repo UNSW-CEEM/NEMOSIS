@@ -1,6 +1,35 @@
-[build-system]
-requires = [
-    "setuptools>=42",
-    "wheel"
+[project]
+name = "nemosis"
+version = "3.8.0"
+description = "A tool for accessing AEMO data."
+authors = [
+    { name = "nick-gorman", email = "n.gorman305@gmail.com"},
+    { name = "prakaa", email = "abiprakash007@gmail.com" }
 ]
-build-backend = "setuptools.build_meta"
+dependencies = [
+    "requests>=2.32.3",
+    "pyarrow>=17.0.0",
+    "feather-format>=0.4.1",
+    "pandas>=2.2.3",
+    "xlrd>=2.0.1",
+    "beautifulsoup4>=4.12.3",
+    "openpyxl>=3.1.5",
+]
+readme = "README.md"
+requires-python = ">= 3.8"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = [
+    "parameterized>=0.9.0"
+]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/nemosis"]

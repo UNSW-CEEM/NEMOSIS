@@ -8,6 +8,7 @@ names = {
     "DISPATCHCONSTRAINT": "PUBLIC_DVD_DISPATCHCONSTRAINT",
     "GENCONDATA": "PUBLIC_DVD_GENCONDATA",
     "DISPATCH_UNIT_SCADA": "PUBLIC_DVD_DISPATCH_UNIT_SCADA",
+    "INTERMITTENT_GEN_SCADA": "PUBLIC_NEXT_DAY_INTERMITTENT_GEN_SCADA",
     "DISPATCHPRICE": "PUBLIC_DVD_DISPATCHPRICE",
     "SPDREGIONCONSTRAINT": "PUBLIC_DVD_SPDREGIONCONSTRAINT",
     "SPDCONNECTIONPOINTCONSTRAINT": "PUBLIC_DVD_SPDCONNECTIONPOINTCONSTRAINT",
@@ -42,6 +43,7 @@ table_types = {
     "FCAS Providers": "STATICXL",
     "DISPATCHLOAD": "MMS",
     "NEXT_DAY_DISPATCHLOAD": "NEXT_DAY_DISPATCHLOAD",
+    "INTERMITTENT_GEN_SCADA": "INTERMITTENT_GEN_SCADA",
     "DUDETAILSUMMARY": "MMS",
     "PARTICIPANT": "MMS",
     "DUDETAIL": "MMS",
@@ -80,7 +82,7 @@ table_types = {
 dynamic_tables = [
     table
     for table, type in table_types.items()
-    if type in ["MMS", "BIDDING", "DAILY_REGION_SUMMARY", "NEXT_DAY_DISPATCHLOAD", "FCAS"]
+    if type in ["MMS", "BIDDING", "DAILY_REGION_SUMMARY", "NEXT_DAY_DISPATCHLOAD", "INTERMITTENT_GEN_SCADA", "FCAS"]
 ]
 
 return_tables = list(names.keys())
@@ -89,6 +91,7 @@ display_as_AMEO = [
     "FCAS Providers",
     "DISPATCHLOAD",
     "NEXT_DAY_DISPATCHLOAD",
+    "INTERMITTENT_GEN_SCADA",
     "DUDETAILSUMMARY",
     "PARTICIPANT",
     "DUDETAIL",
@@ -137,7 +140,8 @@ aemo_mms_url = "http://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/MMSD
 current_data_page_urls = {
     "BIDDING": "Reports/Current/Bidmove_Complete/",
     "DAILY_REGION_SUMMARY": "/Reports/Current/Daily_Reports/",
-    "NEXT_DAY_DISPATCHLOAD": "/Reports/Current/NEXT_DAY_DISPATCH/"
+    "NEXT_DAY_DISPATCHLOAD": "/Reports/Current/NEXT_DAY_DISPATCH/",
+    "INTERMITTENT_GEN_SCADA": "/Reports/Current/Next_Day_Intermittent_Gen_Scada/"
 }
 
 fcas_4_url = "http://www.nemweb.com.au/Reports/Current/Causer_Pays/FCAS_{}{}{}{}.zip"
@@ -275,6 +279,13 @@ table_columns = {
         "RAISEREGENABLEMENTMIN",
         "LOWERREGENABLEMENTMAX",
         "LOWERREGENABLEMENTMIN",
+    ],
+    "INTERMITTENT_GEN_SCADA": [
+        "RUN_DATETIME",
+        "DUID",
+        "SCADA_TYPE",
+        "SCADA_VALUE",
+        "SCADA_QUALITY"
     ],
     "TRADINGLOAD": [
         "SETTLEMENTDATE",
@@ -465,6 +476,7 @@ table_columns = {
         "BANDAVAIL10",
         "MAXAVAIL",
         "BIDTYPE",
+        "DIRECTION",
         "SETTLEMENTDATE",
         "ENABLEMENTMIN",
         "ENABLEMENTMAX",
@@ -508,6 +520,7 @@ table_columns = {
         "SETTLEMENTDATE",
         "DUID",
         "BIDTYPE",
+        "DIRECTION",
         "OFFERDATE",
         "VERSIONNO",
         "PRICEBAND1",
@@ -748,6 +761,7 @@ table_primary_keys = {
         "OFFERDATE",
         "INTERVAL_DATETIME",
         "SETTLEMENTDATE",
+        "DIRECTION"
     ],
     "DISPATCHINTERCONNECTORRES": [
         "DISPATCHINTERVAL",
@@ -757,7 +771,7 @@ table_primary_keys = {
     ],
     "INTERCONNECTOR": ["INTERCONNECTORID"],
     "DISPATCHPRICE": ["INTERVENTION", "REGIONID", "SETTLEMENTDATE"],
-    "BIDDAYOFFER_D": ["BIDTYPE", "DUID", "SETTLEMENTDATE"],
+    "BIDDAYOFFER_D": ["BIDTYPE", "DUID", "SETTLEMENTDATE", "DIRECTION"],
     "DISPATCHREGIONSUM": [
         "DISPATCHINTERVAL",
         "INTERVENTION",
@@ -766,6 +780,11 @@ table_primary_keys = {
     ],
     "DISPATCHLOAD": ["SETTLEMENTDATE", "INTERVENTION", "DUID"],
     "NEXT_DAY_DISPATCHLOAD": ["SETTLEMENTDATE", "INTERVENTION", "DUID"],
+    "INTERMITTENT_GEN_SCADA": [
+        "RUN_DATETIME",
+        "DUID",
+        "SCADA_TYPE",
+    ],
     "DISPATCH_UNIT_SCADA": ["SETTLEMENTDATE", "DUID"],
     "FCAS_4_SECOND": ["TIMESTAMP", "ELEMENTNUMBER", "VARIABLENUMBER"],
     "ELEMENTS_FCAS_4_SECOND": ["ELEMENTNUMBER"],
@@ -812,6 +831,7 @@ effective_date_group_col = {
 primary_date_columns = {
     "DISPATCHLOAD": "SETTLEMENTDATE",
     "NEXT_DAY_DISPATCHLOAD": "SETTLEMENTDATE",
+    "INTERMITTENT_GEN_SCADA": "RUN_DATETIME",
     "TRADINGLOAD": "SETTLEMENTDATE",
     "TRADINGPRICE": "SETTLEMENTDATE",
     "TRADINGREGIONSUM": "SETTLEMENTDATE",

@@ -1,9 +1,8 @@
 import unittest
 import pandas as pd
-from nemosis import query_wrappers
 from pandas.testing import assert_frame_equal
 from datetime import datetime
-from nemosis import defaults
+from src.nemosis import defaults, query_wrappers
 
 
 class TestDispatchDateSetup(unittest.TestCase):

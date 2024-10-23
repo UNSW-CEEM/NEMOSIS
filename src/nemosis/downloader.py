@@ -5,7 +5,6 @@ from bs4 import BeautifulSoup
 import zipfile
 import io
 import pandas as pd
-from urllib.parse import quote
 
 from . import defaults, custom_errors
 
@@ -72,6 +71,16 @@ def run_next_dispatch_tables(year, month, day, chunk, index, filename_stub, down
             filename_stub,
             defaults.current_data_page_urls["NEXT_DAY_DISPATCHLOAD"])
         _download_and_unpack_next_dispatch_load_files_complete_files(download_url, down_load_to)
+    except Exception:
+        logger.warning(f"{filename_stub} not downloaded")
+
+
+def run_intermittent_gen_scada(year, month, day, chunk, index, filename_stub, down_load_to):
+    try:
+        download_url = _get_current_url(
+            filename_stub,
+            defaults.current_data_page_urls["INTERMITTENT_GEN_SCADA"])
+        _download_and_unpack_intermittent_gen_scada_file(download_url, down_load_to)
     except Exception:
         logger.warning(f"{filename_stub} not downloaded")
 
@@ -168,6 +177,31 @@ def _download_and_unpack_next_dispatch_load_files_complete_files(
         os.path.join(
             down_load_to,
             "PUBLIC_NEXT_DAY_DISPATCHLOAD_" + file_name[25:33] + ".csv",
+        ),
+        index=False,
+    )
+
+
+def _download_and_unpack_intermittent_gen_scada_file(
+    download_url, down_load_to
+):
+    r = requests.get(download_url, headers=USR_AGENT_HEADER)
+    zipped_file = zipfile.ZipFile(io.BytesIO(r.content))
+
+    file_name = zipped_file.namelist()[
+        0
+    ]  # Just one file so we can pull it out of the list using 0
+    start_row_second_table = _find_start_row_nth_table(
+        zipped_file, file_name, 1
+    )
+    csv_file = zipped_file.open(file_name)
+    data = pd.read_csv(
+        csv_file, header=1, dtype=str
+    )[:-1]
+    data.to_csv(
+        os.path.join(
+            down_load_to,
+            "PUBLIC_NEXT_DAY_INTERMITTENT_GEN_SCADA_" + file_name[39:47] + ".csv",
         ),
         index=False,
     )

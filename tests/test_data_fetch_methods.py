@@ -3,14 +3,10 @@ import os
 from datetime import datetime, timedelta, date
 from dateutil.relativedelta import relativedelta
 import calendar
-from nemosis import data_fetch_methods
-from nemosis import defaults
 import pandas as pd
-from nemosis import custom_tables, filters
+from src.nemosis import custom_tables, defaults, filters, data_fetch_methods
 from pandas._testing import assert_frame_equal
 from parameterized import parameterized
-import pytz
-
 
 recent_test_month = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0) - relativedelta(months=2)
 
@@ -880,11 +876,16 @@ class TestDynamicDataCompilerWithSettlementDateFilteringNextDayTables(
 ):
 
     def setUp(self):
-        self.table_names = ["DAILY_REGION_SUMMARY", "NEXT_DAY_DISPATCHLOAD"]
+        self.table_names = [
+            "DAILY_REGION_SUMMARY",
+            "NEXT_DAY_DISPATCHLOAD",
+            "INTERMITTENT_GEN_SCADA"
+        ]
 
         self.table_filters = {
             "DAILY_REGION_SUMMARY": ["REGIONID"],
             "NEXT_DAY_DISPATCHLOAD": ["DUID"],
+            "INTERMITTENT_GEN_SCADA": ["DUID", "SCADA_TYPE"]
         }
 
         # Filter for bids at the start of the 2021-06-01 file and the end of the 2021-05-31, to make sure that we aren't
@@ -895,6 +896,10 @@ class TestDynamicDataCompilerWithSettlementDateFilteringNextDayTables(
             ),
             "NEXT_DAY_DISPATCHLOAD": (
                 ['AGLHAL'],
+            ),
+            "INTERMITTENT_GEN_SCADA": (
+                ['ADPPV1'],
+                ['ELAV']
             )
         }
 

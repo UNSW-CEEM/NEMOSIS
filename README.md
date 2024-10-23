@@ -71,11 +71,12 @@ To learn more about each dynamic table visit the [wiki](https://github.com/UNSW-
 You can view the dynamic tables available by printing the NEMOSIS default settings.
 
 ```python
-from nemosis import defaults
+
+from src.nemosis import defaults
 
 print(defaults.dynamic_tables)
 
-#['DISPATCHLOAD', 'DUDETAILSUMMARY', 'DUDETAIL', 'DISPATCHCONSTRAINT', 'GENCONDATA', 'DISPATCH_UNIT_SCADA', 'DISPATCHPRICE', . . .
+# ['DISPATCHLOAD', 'DUDETAILSUMMARY', 'DUDETAIL', 'DISPATCHCONSTRAINT', 'GENCONDATA', 'DISPATCH_UNIT_SCADA', 'DISPATCHPRICE', . . .
 ```
 
 #### Workflows
@@ -87,10 +88,10 @@ Your workflow may determine how you use NEMOSIS. Because the GUI relies on data 
 
 ##### Dynamic data compiler
 
-`dynamic_data_compiler` can be used to download and compile data from dynamic tables.  
+`dynamic_data_compiler` can be used to download and compile data from dynamic tables.
 
 ```python
-from nemosis import dynamic_data_compiler
+from src.nemosis import dynamic_data_compiler
 
 start_time = '2017/01/01 00:00:00'
 end_time = '2017/01/01 00:05:00'
@@ -111,7 +112,7 @@ A number of options are available to configure filtering (i.e. what data NEMOSIS
 To return only a subset of a particular table's columns, use the `select_columns` argument.
 
 ```python
-from nemosis import dynamic_data_compiler
+from src.nemosis import dynamic_data_compiler
 
 price_data = dynamic_data_compiler(start_time, end_time, table, raw_data_cache,
                                    select_columns=['REGIONID', 'SETTLEMENTDATE', 'RRP'])
@@ -120,7 +121,8 @@ price_data = dynamic_data_compiler(start_time, end_time, table, raw_data_cache,
 To see what columns a table has, you can inspect NEMOSIS' defaults.
 
 ```python
-from nemosis import defaults
+
+from src.nemosis import defaults
 
 print(defaults.table_columns['DISPATCHPRICE'])
 # ['SETTLEMENTDATE', 'REGIONID', 'INTERVENTION', 'RRP', 'RAISE6SECRRP', 'RAISE60SECRRP', 'RAISE5MINRRP', . . .
@@ -131,17 +133,20 @@ Columns can also be filtered by value. To do this, you need provide a column to 
 In the example below, the table will be filtered to only return rows where `REGIONID == 'SA1'`.
 
 ```python
-from nemosis import dynamic_data_compiler
+from src.nemosis import dynamic_data_compiler
 
-price_data = dynamic_data_compiler(start_time, end_time, table, raw_data_cache, filter_cols=['REGIONID'], filter_values=(['SA1'],))
+price_data = dynamic_data_compiler(start_time, end_time, table, raw_data_cache, filter_cols=['REGIONID'],
+                                   filter_values=(['SA1'],))
 ```
 
 Several filters can be applied simultaneously. A common filter is to extract pricing data excluding any physical intervention dispatch runs (`INTERVENTION == 0` is the appropriate filter, see [here](https://github.com/UNSW-CEEM/NEMOSIS/wiki/Column-Summary#intervention)). Below is an example of filtering to get data for Gladstone Unit 1 and Hornsdale Wind Farm 2 excluding any physical dispatch runs:
 
 ```python
-from nemosis import dynamic_data_compiler
+from src.nemosis import dynamic_data_compiler
 
-unit_dispatch_data = dynamic_data_compiler(start_time, end_time, 'DISPATCHLOAD', raw_data_cache, filter_cols=['DUID', 'INTERVENTION'], filter_values=(['GSTONE1', 'HDWF2'], [0]))
+unit_dispatch_data = dynamic_data_compiler(start_time, end_time, 'DISPATCHLOAD', raw_data_cache,
+                                           filter_cols=['DUID', 'INTERVENTION'],
+                                           filter_values=(['GSTONE1', 'HDWF2'], [0]))
 ```
 
 ###### Caching options
@@ -173,7 +178,7 @@ build a data cache, but then process the cache using other packages or applicati
 The example below downloads parquet data into the cache.
 
 ```python
-from nemosis import cache_compiler
+from src.nemosis import cache_compiler
 
 cache_compiler(start_time, end_time, table, raw_data_cache, fformat='parquet')
 ```
@@ -188,7 +193,8 @@ true so the additional columns are added to the cache files when they are rebuil
 columns should also work with the `cache_compiler` function.
 
 ```python
-from nemosis import defaults, dynamic_data_compiler
+from src.nemosis import dynamic_data_compiler
+from src.nemosis import defaults
 
 defaults.table_columns['BIDPEROFFER_D'] += ['PASAAVAILABILITY']
 
@@ -209,7 +215,8 @@ To learn more about each static table visit the [wiki](https://github.com/UNSW-C
 You can view the static tables available by printing the tables in NEMOSIS' defaults:
 
 ```python
-from nemosis import defaults
+
+from src.nemosis import defaults
 
 print(defaults.static_tables)
 # ['ELEMENTS_FCAS_4_SECOND', 'VARIABLES_FCAS_4_SECOND', 'Generators and Scheduled Loads', 'FCAS Providers']
@@ -220,7 +227,7 @@ print(defaults.static_tables)
 The `static_table` function can be used to access these tables
 
 ```python
-from nemosis import static_table
+from src.nemosis import static_table
 
 fcas_variables = static_table('VARIABLES_FCAS_4_SECOND', raw_data_cache)
 ```
@@ -233,7 +240,7 @@ imports, as shown below. This will disable log messages unless they are at least
 
 import logging
 
-from nemosis import dynamic_data_compiler
+from src.nemosis import dynamic_data_compiler
 
 logging.getLogger("nemosis").setLevel(logging.WARNING)
 

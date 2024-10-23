@@ -1,0 +1,37 @@
+name: Continuous Integration and Deployment
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+
+jobs:
+  # Publishes to PyPi if tests are passed and release is created
+  publish:
+    if: github.event_name == 'release' && github.event.action == 'created'
+    needs: test
+    name: Upload release to PyPI
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/nemosis/
+    permissions:
+      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+    steps:
+      # Checkout repo
+      - name: Checkout
+        uses: actions/checkout@v3
+      # Install rye with cache
+      - name: Install the latest version of rye
+        uses: eifinger/setup-rye@v4
+        with:
+          enable-cache: true
+      # Sync dependencies
+      - name: Sync dependencies
+        run: rye sync
+      # Build
+      - name: Build
+        run: rye build
+      # Publish to PyPI
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

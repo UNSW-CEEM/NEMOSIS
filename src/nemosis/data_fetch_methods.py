@@ -2,15 +2,14 @@ import logging
 import os as _os
 import glob as _glob
 import pandas as _pd
-import warnings
 from datetime import datetime as _datetime
-from . import filters as _filters
-from . import downloader as _downloader
-from . import processing_info_maps as _processing_info_maps
-from . import defaults as _defaults
-from . import custom_tables as _custom_tables
-from . import _infer_column_data_types
-from .custom_errors import UserInputError, NoDataToReturn, DataMismatchError
+from nemosis import filters as _filters
+from nemosis import downloader as _downloader
+from nemosis import processing_info_maps as _processing_info_maps
+from nemosis import defaults as _defaults
+from nemosis import custom_tables as _custom_tables
+from nemosis import _infer_column_data_types
+from nemosis.custom_errors import UserInputError, NoDataToReturn, DataMismatchError
 
 logger = logging.getLogger(__name__)
 
@@ -354,7 +353,7 @@ def _get_read_function(fformat, table_type, day):
                 func = _read_mms_csv
             else:
                 func = _read_constructed_csv
-        elif table_type in ['DAILY_REGION_SUMMARY', "NEXT_DAY_DISPATCHLOAD"]:
+        elif table_type in ['DAILY_REGION_SUMMARY', "NEXT_DAY_DISPATCHLOAD", "INTERMITTENT_GEN_SCADA"]:
             func = _read_constructed_csv
     return func
 
@@ -727,7 +726,8 @@ def _determine_columns_and_read_csv(
     else:
         type = str
     if (
-        _defaults.table_types[table_name] in ["MMS", "BIDDING", "DAILY_REGION_SUMMARY", "NEXT_DAY_DISPATCHLOAD"]
+        _defaults.table_types[table_name] in ["MMS", "BIDDING", "DAILY_REGION_SUMMARY", "NEXT_DAY_DISPATCHLOAD",
+                                              "INTERMITTENT_GEN_SCADA"]
         and not read_all_columns
     ):
         headers = read_csv_func(csv_file, nrows=1).columns.tolist()
@@ -867,5 +867,6 @@ _method_map = {
     "MARKET_PRICE_THRESHOLDS": _dynamic_data_wrapper_for_gui,
     "DAILY_REGION_SUMMARY": _dynamic_data_wrapper_for_gui,
     "NEXT_DAY_DISPATCHLOAD": _dynamic_data_wrapper_for_gui,
+    "INTERMITTENT_GEN_SCADA": _dynamic_data_wrapper_for_gui,
     "ROOFTOP_PV_ACTUAL": _dynamic_data_wrapper_for_gui
 }

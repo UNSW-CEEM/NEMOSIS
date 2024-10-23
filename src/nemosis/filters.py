@@ -1,9 +1,8 @@
 import logging
-import pandas as pd
 from datetime import datetime, timedelta
 import numpy as np
 
-from .value_parser import _parse_datetime
+from nemosis.value_parser import _parse_datetime
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +28,14 @@ def filter_on_settlementdate(data, start_time, end_time):
     data["SETTLEMENTDATE"] = _parse_datetime(data["SETTLEMENTDATE"])
     data = data[
         (data["SETTLEMENTDATE"] > start_time) & (data["SETTLEMENTDATE"] <= end_time)
+    ]
+    return data
+
+
+def filter_on_run_datetime(data, start_time, end_time):
+    data["RUN_DATETIME"] = _parse_datetime(data["RUN_DATETIME"])
+    data = data[
+        (data["RUN_DATETIME"] > start_time) & (data["RUN_DATETIME"] <= end_time)
     ]
     return data
 
