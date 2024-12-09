@@ -646,7 +646,8 @@ table_columns = {
         "Technology Type - Descriptor",
         "Aggregation",
         "DUID",
-        "Reg Cap (MW)",
+        "Reg Cap generation (MW)",
+        "Max Cap generation (MW)"
     ],
     "FCAS Providers": [
         "Participant",
