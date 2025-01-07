@@ -1469,16 +1469,17 @@ class TestCustomTables(unittest.TestCase):
     def setUp(self):
         pass
 
-    @unittest.skipIf(
-        (datetime.now() - datetime(year=datetime.now().year, month=1, day=1)).days > 60,
-        "start of year data not available: > 60 days ago",
-    )
-    def test_dispatch_tables_straddle_years(self):
+    def test_works_on_recent_data(self):
         table = "FCAS_4_SECOND"
         minute_offset = 5
-        start_time = self.start_year - timedelta(minutes=minute_offset)
+        start_time = datetime(
+            year=datetime.now().year,
+            month=datetime.now().month,
+            day=1
+        ) - timedelta(days=40)
         end_time = start_time + timedelta(minutes=minute_offset * 2)
-
+        start_time = start_time.strftime("%Y/%m/%d %H:%M:%S")
+        end_time = end_time.strftime("%Y/%m/%d %H:%M:%S")
         print("Testing custom table {}.".format(table))
         data = custom_tables.fcas4s_scada_match(
             start_time, end_time, table, defaults.raw_data_cache

@@ -8,6 +8,7 @@ A Python package for downloading historical data published by the Australian Ene
 
 - [Download Windows Application (GUI)](#download-windows-application-gui)
 - [Documentation](#documentation)
+- [Contributing](#contributing)
 - [Support NEMOSIS](#support-nemosis)
 - [Get Updates, Ask Questions](#get-updates-ask-questions)
 - [Using the Python Interface (API)](#using-the-python-interface-api)
@@ -45,6 +46,12 @@ Choose the exe from the latest [release](https://github.com/UNSW-CEEM/NEMOSIS/re
   - [Download generator dispatch data](https://youtu.be/HEAOk056Bss)
   - [Download dispatch data by fuel type](https://youtu.be/aKEI7URiJlI).
 - Read our [paper](https://www.researchgate.net/publication/329798805_NEMOSIS_-_NEM_Open_Source_Information_Service_open-source_access_to_Australian_National_Electricity_Market_Data) introducting NEMOSIS
+
+## Contributing
+
+Interested in contributing? Check out the [contributing instructions](./CONTRIBUTING. md), which also includes steps to install `nemosis` for development.
+
+Please note that this project is released with a [Code of Conduct](./CONDUCT.md). By contributing to this project, you agree to abide by its terms.
 
 ## Support NEMOSIS
 

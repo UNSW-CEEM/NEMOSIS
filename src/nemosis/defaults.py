@@ -1,3 +1,5 @@
+import os
+
 names = {
     "FCAS Providers": "NEM Registration and Exemption List.xls",
     "DISPATCHLOAD": "PUBLIC_DVD_DISPATCHLOAD",
@@ -908,4 +910,4 @@ last_column = 100
 join_type = ["inner", "left", "right"]
 
 # Testing settings
-raw_data_cache = "/media/nick/Samsung_T5/nemosis_test_cache"
+raw_data_cache = os.environ.get("NEMOSIS_TEST_CACHE")
