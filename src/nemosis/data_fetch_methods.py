@@ -56,6 +56,7 @@ def dynamic_data_compiler(
         parse_data_types (bool): infers data types of columns when reading
                                  data. default True for API use.
         rebuild (bool): If True then cache files are rebuilt
+                        (redownload, re-unzip, re-convert)
                         even if they exist already. False by default.
         **kwargs: additional arguments passed to the pd.to_{fformat}() function
 
@@ -63,7 +64,7 @@ def dynamic_data_compiler(
         all_data (pd.Dataframe): All data concatenated.
     """
     if not _os.path.isdir(raw_data_location):
-        raise UserInputError("The raw_data_location provided does not exist.")
+        raise UserInputError(f"The raw_data_location {raw_data_location} provided does not exist.")
 
     if table_name not in _defaults.dynamic_tables:
         raise UserInputError("Table name provided is not a dynamic table.")
@@ -177,6 +178,7 @@ def cache_compiler(
                           as object type (compatbile with GUI use). For
                           type inference for a cache, use cache_compiler.
         rebuild (bool): If True then cache files are rebuilt
+                        (redownload, re-unzip, re-convert)
                         even if they exist already. False by default.
         keep_csv (bool): If True raw CSVs from AEMO are not deleted after
                          the cache is built. False by default
@@ -186,7 +188,7 @@ def cache_compiler(
         Nothing
     """
     if not _os.path.isdir(raw_data_location):
-        raise UserInputError("The raw_data_location provided does not exist.")
+        raise UserInputError(f"The raw_data_location {raw_data_location} provided does not exist.")
 
     if table_name not in _defaults.dynamic_tables:
         raise UserInputError("Table name provided is not a dynamic table.")
@@ -262,7 +264,7 @@ def static_table(
         data (pd.Dataframe)
     """
     if not _os.path.isdir(raw_data_location):
-        raise UserInputError("The raw_data_location provided does not exist.")
+        raise UserInputError(f"The raw_data_location {raw_data_location} provided does not exist.")
 
     if table_name not in _defaults.static_tables:
         raise UserInputError("Table name provided is not a static table.")
@@ -434,8 +436,8 @@ def _finalise_csv_data(data, table_name):
 static_downloader_map = {
     "VARIABLES_FCAS_4_SECOND": _downloader.download_csv,
     "ELEMENTS_FCAS_4_SECOND": _downloader.download_elements_file,
-    "Generators and Scheduled Loads": _downloader.download_xl,
-    "_downloader.download_xl": _downloader.download_xl,
+    "Generators and Scheduled Loads": _downloader.download_xml,
+    "_downloader.download_xml": _downloader.download_xml,
 }
 
 static_file_reader_map = {
@@ -543,6 +545,8 @@ def _dynamic_data_fetch_loop(
     1. If it does, read the data in and write any required files
        (parquet or feather).
     2. If it does not, download data then do the same as 1.
+
+    Returns: None if caching_mode=False, else List[pd.Dataframe]
     """
     data_tables = []
 
@@ -719,7 +723,7 @@ def _determine_columns_and_read_csv(
     - To preserve compatability with previous versions of NEMOSIS and
       thus any existing data caches, read in all columns as strings.
 
-    Returns: data, columns
+    Returns: data
     """
     if dtypes == "all":
         type = None
@@ -751,7 +755,7 @@ def _determine_columns_and_read_csv(
 def _write_to_format(data, fformat, full_filename, write_kwargs):
     """
     Used by read_data_and_create_file
-    Writes the DataFrame to a non-CSV format is a non_CSV format is specified.
+    Writes the DataFrame to a non-CSV format if a non_CSV format is specified.
     """
     write_function = {"feather": data.to_feather, "parquet": data.to_parquet}
     # Remove files of the same name - deals with case of corrupted files.
