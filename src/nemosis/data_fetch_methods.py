@@ -183,7 +183,7 @@ def cache_compiler(
         **kwargs: additional arguments passed to the pd.to_{fformat}() function
 
     Returns:
-        Nothing
+        List[str] of full paths for the processed files
     """
     if not _os.path.isdir(raw_data_location):
         raise UserInputError("The raw_data_location provided does not exist.")
@@ -215,7 +215,7 @@ def cache_compiler(
     end_time = _datetime.strptime(end_time, "%Y/%m/%d %H:%M:%S")
     start_search = _datetime.strptime(start_search, "%Y/%m/%d %H:%M:%S")
 
-    _dynamic_data_fetch_loop(
+    paths = _dynamic_data_fetch_loop(
         start_search,
         start_time,
         end_time,
@@ -229,7 +229,7 @@ def cache_compiler(
         rebuild=rebuild,
         write_kwargs=kwargs,
     )
-    return
+    return paths
 
 
 def static_table(
@@ -543,8 +543,11 @@ def _dynamic_data_fetch_loop(
     1. If it does, read the data in and write any required files
        (parquet or feather).
     2. If it does not, download data then do the same as 1.
+
+    Returns: List[str] if caching_mode=False, else List[pd.Dataframe]
     """
     data_tables = []
+    final_filenames = []
 
     table_type = _defaults.table_types[table_name]
     date_gen = _processing_info_maps.date_gen[table_type](start_search, end_time)
@@ -635,7 +638,13 @@ def _dynamic_data_fetch_loop(
             if data is None or '#' not in filename_stub:
                 check_for_next_data_chunk = False
 
-    return data_tables
+            if caching_mode and (data is not None):
+                final_filenames.append(full_filename)
+
+    if caching_mode:
+        return final_filenames
+    else:
+        return data_tables
 
 
 def _perform_column_selection(data, select_columns, full_filename):
