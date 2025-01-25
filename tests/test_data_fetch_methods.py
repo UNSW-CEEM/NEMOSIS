@@ -1180,6 +1180,44 @@ class TestCacheCompiler(unittest.TestCase):
         self.assertSequenceEqual(got_columns, expected_columns)
         print("Passed")
 
+    def test_caching_returns_filenames(self):
+        start_time = "2024/11/01 00:05:00"
+        end_time = "2024/12/30 23:50:00"
+        expected_file_count = 12-11+1
+        table = "DISPATCHREGIONSUM"
+        column_subset = ["SETTLEMENTDATE", "REGIONID", "TOTALDEMAND"]
+
+        # if some other test downloads this same table
+        # for a different date range, we'll get an unexpected number of files
+        subcache = os.path.join(defaults.raw_data_cache, 'test_caching_returns_filenames')
+
+        for fmt in ["feather", "parquet", "csv"]:
+            for (select_columns, rebuild) in [(None, True), (None, False), (column_subset, True)]:
+                filenames = data_fetch_methods.cache_compiler(
+                    start_time,
+                    end_time,
+                    table,
+                    subcache,
+                    select_columns=select_columns,
+                    fformat=fmt,
+                    rebuild=rebuild,
+                )
+                self.assertIsNotNone(filenames)
+                for filename in filenames:
+                    self.assertTrue(os.path.isfile(filename), f"{filename} does not exist")
+
+                    self.assertTrue(
+                        filename.endswith('.' + fmt),
+                        "wrong file format returned"
+                    )
+
+                    self.assertTrue(
+                        os.path.commonpath([filename, subcache]) == subcache,
+                        "file not inside cache"
+                    )
+
+                self.assertEqual(len(filenames), expected_file_count, "unexpected number of files returned from cache")
+                
 
 class TestDynamicDataCompilerWithStartDateFiltering(unittest.TestCase):
     def setUp(self):
