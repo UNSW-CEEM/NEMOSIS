@@ -25,7 +25,8 @@ build-backend = "hatchling.build"
 [tool.uv]
 managed = true
 dev-dependencies = [
-    "parameterized>=0.9.0"
+    "parameterized>=0.9.0",
+    "pyinstaller>=6.11.1",
 ]
 
 [tool.hatch.metadata]
