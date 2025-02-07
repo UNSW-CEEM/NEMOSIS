@@ -1,6 +1,6 @@
 [project]
 name = "nemosis"
-version = "4.0.0"
+version = "3.8.1"
 description = "A tool for accessing AEMO data."
 authors = [
     { name = "nick-gorman", email = "n.gorman305@gmail.com"},
