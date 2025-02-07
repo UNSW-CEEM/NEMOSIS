@@ -20,17 +20,17 @@ jobs:
       # Checkout repo
       - name: Checkout
         uses: actions/checkout@v3
-      # Install rye with cache
-      - name: Install the latest version of rye
-        uses: eifinger/setup-rye@v4
+      # Install uv with cache
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v3
         with:
           enable-cache: true
       # Sync dependencies
       - name: Sync dependencies
-        run: rye sync
+        run: uv sync
       # Build
       - name: Build
-        run: rye build
+        run: uv build
       # Publish to PyPI
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1

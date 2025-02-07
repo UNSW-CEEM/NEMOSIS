@@ -1,6 +1,6 @@
 import unittest
 
-from src.nemosis import processing_info_maps, defaults, query_wrappers, data_fetch_methods
+from nemosis import processing_info_maps, defaults, query_wrappers, data_fetch_methods
 import pandas as pd
 from datetime import datetime, timedelta
 

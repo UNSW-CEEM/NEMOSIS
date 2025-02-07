@@ -1,6 +1,6 @@
 [project]
 name = "nemosis"
-version = "3.8.0"
+version = "4.0.0"
 description = "A tool for accessing AEMO data."
 authors = [
     { name = "nick-gorman", email = "n.gorman305@gmail.com"},
@@ -16,16 +16,18 @@ dependencies = [
     "openpyxl>=3.1.5",
 ]
 readme = "README.md"
-requires-python = ">= 3.8"
+requires-python = ">= 3.9"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[tool.rye]
+[tool.uv]
 managed = true
 dev-dependencies = [
-    "parameterized>=0.9.0"
+    "parameterized>=0.9.0",
+    "pyinstaller>=6.11.1",
+    "pytest>=8.3.4",
 ]
 
 [tool.hatch.metadata]
@@ -33,3 +35,6 @@ allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/nemosis"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

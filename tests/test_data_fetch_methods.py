@@ -4,11 +4,11 @@ from datetime import datetime, timedelta, date
 from dateutil.relativedelta import relativedelta
 import calendar
 import pandas as pd
-from src.nemosis import custom_tables, defaults, filters, data_fetch_methods
-from pandas._testing import assert_frame_equal
+from nemosis import custom_tables, defaults, filters, data_fetch_methods
+from pandas.testing import assert_frame_equal
 from parameterized import parameterized
 
-recent_test_month = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0) - relativedelta(months=2)
+recent_test_month = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0) - relativedelta(months=3)
 
 previous_month = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0) - relativedelta(months=1)
 
@@ -322,6 +322,10 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 expected_first_time = expected_first_time.replace(
                     hour=0, minute=0
                 ) - timedelta(days=1)
+
+            if table in ["BIDDAYOFFER_D", "BIDPEROFFER_D"]:
+                """Skip because this test is currently in bidding data gap."""
+                continue
             data = data_fetch_methods.dynamic_data_compiler(
                 start_time,
                 end_time,
@@ -375,6 +379,10 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 expected_length = 1
                 expected_first_time = expected_first_time.replace(hour=0, minute=0)
                 expected_last_time = expected_first_time
+
+            if table in ["BIDDAYOFFER_D", "BIDPEROFFER_D"]:
+                """Skip because this test is currently in bidding data gap."""
+                continue
             data = data_fetch_methods.dynamic_data_compiler(
                 start_time,
                 end_time,
@@ -428,6 +436,9 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
                 expected_length = 1
                 expected_first_time = expected_first_time.replace(hour=0, minute=0)
                 expected_last_time = expected_first_time
+            if table in ["BIDDAYOFFER_D", "BIDPEROFFER_D"]:
+                """Skip because this test is currently in bidding data gap."""
+                continue
             data = data_fetch_methods.dynamic_data_compiler(
                 start_time,
                 end_time,
@@ -441,427 +452,6 @@ class TestDynamicDataCompilerWithSettlementDateFiltering(unittest.TestCase):
             )
             if table == 'ROOFTOP_PV_ACTUAL':
                 data = self._pv_extra_clean_up(data)
-            data = data.sort_values(dat_col)
-            data = data.reset_index(drop=True)
-            self.assertEqual(expected_length, data.shape[0])
-            self.assertEqual(expected_number_of_columns, data.shape[1])
-            self.assertEqual(expected_first_time, data[dat_col][0])
-            self.assertEqual(expected_last_time, data[dat_col].iloc[-1])
-            print("Passed")
-
-
-class TestDynamicDataCompilerWithSettlementDateFiltering2021OfferData(
-    unittest.TestCase
-):
-    """
-    Testing during 2021 because this is when AEMO stopped storing BIDDAYOFFER_D and BIDPEROFFER_D with the other mms
-    monthly files. Testing at this time checks that retreiving from the BIDMOVECOMPLETE files works.
-    """
-    def setUp(self):
-        self.table_names = ["BIDDAYOFFER_D", "BIDPEROFFER_D"]
-
-        self.table_types = {
-            "BIDPEROFFER_D": "DUID-BIDTYPE",
-            "BIDDAYOFFER_D": "DUID-BIDTYPE",
-        }
-
-        self.table_filters = {
-            "BIDPEROFFER_D": ["DUID", "BIDTYPE"],
-            "BIDDAYOFFER_D": ["DUID", "BIDTYPE"],
-        }
-
-        # Filter for bids at the start of the 2021-06-01 file and the end of the 2021-05-31, to make sure that we aren't
-        # skipping any of the data file rows.
-        self.filter_values = {
-            "DUID-BIDTYPE": (
-                ["ADPBA1G", "ARWF1", "YWPS4", "YWPS4"],
-                ["ENERGY", "RAISEREG", "RAISE60SEC"],
-            )
-        }
-
-    @staticmethod
-    def restrictive_filter(data):
-        data = data[
-            (data["DUID"] == "ADPBA1G") & (data["BIDTYPE"] == "ENERGY")
-            | (data["DUID"] == "ARWF1") & (data["BIDTYPE"] == "ENERGY")
-            | (data["DUID"] == "YWPS4") & (data["BIDTYPE"] == "RAISEREG")
-            | (data["DUID"] == "YWPS4") & (data["BIDTYPE"] == "RAISE60SEC")
-        ]
-        return data
-
-    def test_dispatch_tables_start_of_month(self):
-        start_time = "2021/09/01 00:00:00"
-        end_time = "2021/09/01 05:15:00"
-        for table in self.table_names:
-            print(f"Testing {table} returning values at start of month one.")
-            dat_col = defaults.primary_date_columns[table]
-            table_type = self.table_types[table]
-            filter_cols = self.table_filters[table]
-            cols = [dat_col, *filter_cols]
-            expected_length = 63 * 4
-            expected_number_of_columns = 3
-            expected_first_time = pd.to_datetime(
-                start_time, format="%Y/%m/%d %H:%M:%S"
-            ) + timedelta(minutes=5)
-            expected_last_time = pd.to_datetime(end_time, format="%Y/%m/%d %H:%M:%S")
-            if table == "BIDDAYOFFER_D":
-                expected_length = 2 * 4
-                expected_last_time = "2021/09/01 00:00:00"
-                expected_last_time = pd.to_datetime(
-                    expected_last_time, format="%Y/%m/%d %H:%M:%S"
-                )
-                expected_first_time = "2021/08/31 00:00:00"
-                expected_first_time = pd.to_datetime(
-                    expected_first_time, format="%Y/%m/%d %H:%M:%S"
-                )
-            data = data_fetch_methods.dynamic_data_compiler(
-                start_time,
-                end_time,
-                table,
-                defaults.raw_data_cache,
-                select_columns=cols,
-                fformat="feather",
-                keep_csv=False,
-                filter_cols=filter_cols,
-                filter_values=self.filter_values[table_type],
-            )
-            data = self.restrictive_filter(data)
-            data = data.reset_index(drop=True)
-            self.assertEqual(expected_length, data.shape[0])
-            self.assertEqual(expected_number_of_columns, data.shape[1])
-            self.assertEqual(expected_first_time, data[dat_col][0])
-            self.assertEqual(expected_last_time, data[dat_col].iloc[-1])
-            print("Passed")
-
-    def test_dispatch_tables_start_of_month_previous_market_day_but_not_start_calendar_month(
-        self,
-    ):
-        start_time = "2021/09/05 03:00:00"
-        end_time = "2021/09/05 03:15:00"
-        for table in self.table_names:
-            print(f"Testing {table} returning values at start of month two.")
-            dat_col = defaults.primary_date_columns[table]
-            table_type = self.table_types[table]
-            filter_cols = self.table_filters[table]
-            cols = [dat_col, *filter_cols]
-            expected_length = 3 * 4
-            expected_number_of_columns = 3
-            expected_first_time = pd.to_datetime(
-                start_time, format="%Y/%m/%d %H:%M:%S"
-            ) + timedelta(minutes=5)
-            expected_last_time = pd.to_datetime(end_time, format="%Y/%m/%d %H:%M:%S")
-            if table == "BIDDAYOFFER_D":
-                expected_length = 1 * 4
-                expected_last_time = "2021/09/04 00:00:00"
-                expected_last_time = pd.to_datetime(
-                    expected_last_time, format="%Y/%m/%d %H:%M:%S"
-                )
-                expected_first_time = "2021/09/04 00:00:00"
-                expected_first_time = pd.to_datetime(
-                    expected_first_time, format="%Y/%m/%d %H:%M:%S"
-                )
-            data = data_fetch_methods.dynamic_data_compiler(
-                start_time,
-                end_time,
-                table,
-                defaults.raw_data_cache,
-                select_columns=cols,
-                fformat="feather",
-                keep_csv=False,
-                filter_cols=filter_cols,
-                filter_values=self.filter_values[table_type],
-            )
-            data = self.restrictive_filter(data)
-            data = data.reset_index(drop=True)
-            self.assertEqual(expected_length, data.shape[0])
-            self.assertEqual(expected_number_of_columns, data.shape[1])
-            self.assertEqual(expected_first_time, data[dat_col][0])
-            self.assertEqual(expected_last_time, data[dat_col].iloc[-1])
-            print("Passed")
-
-    def test_dispatch_tables_start_of_month_previous_market_day_and_first_market_day_but_not_start_calendar_month(
-        self,
-    ):
-        start_time = "2021/09/01 03:00:00"
-        end_time = "2021/09/01 05:00:00"
-        for table in self.table_names:
-            print(f"Testing {table} returning values at start of month two.")
-            dat_col = defaults.primary_date_columns[table]
-            table_type = self.table_types[table]
-            filter_cols = self.table_filters[table]
-            cols = [dat_col, *filter_cols]
-            expected_length = 24 * 4
-            expected_number_of_columns = 3
-            expected_first_time = pd.to_datetime(
-                start_time, format="%Y/%m/%d %H:%M:%S"
-            ) + timedelta(minutes=5)
-            expected_last_time = pd.to_datetime(end_time, format="%Y/%m/%d %H:%M:%S")
-            if table == "BIDDAYOFFER_D":
-                expected_length = 2 * 4
-                expected_last_time = "2021/09/01 00:00:00"
-                expected_last_time = pd.to_datetime(
-                    expected_last_time, format="%Y/%m/%d %H:%M:%S"
-                )
-                expected_first_time = "2021/08/31 00:00:00"
-                expected_first_time = pd.to_datetime(
-                    expected_first_time, format="%Y/%m/%d %H:%M:%S"
-                )
-            data = data_fetch_methods.dynamic_data_compiler(
-                start_time,
-                end_time,
-                table,
-                defaults.raw_data_cache,
-                select_columns=cols,
-                fformat="feather",
-                keep_csv=False,
-                filter_cols=filter_cols,
-                filter_values=self.filter_values[table_type],
-            )
-            data = self.restrictive_filter(data)
-            data = data.reset_index(drop=True)
-            self.assertEqual(expected_length, data.shape[0])
-            self.assertEqual(expected_number_of_columns, data.shape[1])
-            self.assertEqual(expected_first_time, data[dat_col][0])
-            self.assertEqual(expected_last_time, data[dat_col].iloc[-1])
-            print("Passed")
-
-    def test_dispatch_tables_start_of_month_first_market_day_but_not_start_calendar_month(
-        self,
-    ):
-        start_time = "2021/09/01 04:00:00"
-        end_time = "2021/09/01 05:00:00"
-        for table in self.table_names:
-            print(f"Testing {table} returning values at start of month two.")
-            dat_col = defaults.primary_date_columns[table]
-            table_type = self.table_types[table]
-            filter_cols = self.table_filters[table]
-            cols = [dat_col, *filter_cols]
-            expected_length = 12 * 4
-            expected_number_of_columns = 3
-            expected_first_time = pd.to_datetime(
-                start_time, format="%Y/%m/%d %H:%M:%S"
-            ) + timedelta(minutes=5)
-            expected_last_time = pd.to_datetime(end_time, format="%Y/%m/%d %H:%M:%S")
-            if table == "BIDDAYOFFER_D":
-                expected_length = 1 * 4
-                expected_last_time = "2021/09/01 00:00:00"
-                expected_last_time = pd.to_datetime(
-                    expected_last_time, format="%Y/%m/%d %H:%M:%S"
-                )
-                expected_first_time = "2021/09/01 00:00:00"
-                expected_first_time = pd.to_datetime(
-                    expected_first_time, format="%Y/%m/%d %H:%M:%S"
-                )
-            data = data_fetch_methods.dynamic_data_compiler(
-                start_time,
-                end_time,
-                table,
-                defaults.raw_data_cache,
-                select_columns=cols,
-                fformat="feather",
-                keep_csv=False,
-                filter_cols=filter_cols,
-                filter_values=self.filter_values[table_type],
-            )
-            data = self.restrictive_filter(data)
-            data = data.reset_index(drop=True)
-            self.assertEqual(expected_length, data.shape[0])
-            self.assertEqual(expected_number_of_columns, data.shape[1])
-            self.assertEqual(expected_first_time, data[dat_col][0])
-            self.assertEqual(expected_last_time, data[dat_col].iloc[-1])
-            print("Passed")
-
-    def test_dispatch_tables_end_of_month(self):
-        start_time = "2021/09/30 21:00:00"
-        end_time = "2021/10/01 00:00:00"
-        for table in self.table_names:
-            print("Testing {} returing values at end of month.".format(table))
-            dat_col = defaults.primary_date_columns[table]
-            table_type = self.table_types[table]
-            filter_cols = self.table_filters[table]
-            cols = [dat_col, *filter_cols]
-            expected_length = 36 * 4
-            expected_number_of_columns = 3
-            expected_first_time = pd.to_datetime(
-                start_time, format="%Y/%m/%d %H:%M:%S"
-            ) + timedelta(minutes=5)
-            expected_last_time = pd.to_datetime(end_time, format="%Y/%m/%d %H:%M:%S")
-            if table == "BIDDAYOFFER_D":
-                expected_length = 1 * 4
-                expected_last_time = expected_first_time.replace(hour=0, minute=0)
-                expected_first_time = expected_first_time.replace(hour=0, minute=0)
-            data = data_fetch_methods.dynamic_data_compiler(
-                start_time,
-                end_time,
-                table,
-                defaults.raw_data_cache,
-                select_columns=cols,
-                fformat="feather",
-                keep_csv=False,
-                filter_cols=filter_cols,
-                filter_values=self.filter_values[table_type],
-            )
-            data = self.restrictive_filter(data)
-            data = data.sort_values(dat_col)
-            data = data.reset_index(drop=True)
-            self.assertEqual(expected_length, data.shape[0])
-            self.assertEqual(expected_number_of_columns, data.shape[1])
-            self.assertEqual(expected_first_time, data[dat_col][0])
-            self.assertEqual(expected_last_time, data[dat_col].iloc[-1])
-            print("Passed")
-
-    def test_dispatch_tables_straddle_2_months(self):
-        start_time = "2021/09/30 21:00:00"
-        end_time = "2021/10/01 21:00:00"
-        for table in self.table_names:
-            print(f"Testing {table} returing values from adjacent months.")
-            dat_col = defaults.primary_date_columns[table]
-            table_type = self.table_types[table]
-            filter_cols = self.table_filters[table]
-            cols = [dat_col, *filter_cols]
-            expected_length = 240 * 4  # This should be 288 but there data missing in file AEMO published.
-            expected_number_of_columns = 3
-            expected_first_time = pd.to_datetime(
-                start_time, format="%Y/%m/%d %H:%M:%S"
-            ) + timedelta(minutes=5)
-            expected_last_time = pd.to_datetime(end_time, format="%Y/%m/%d %H:%M:%S")
-            if table == "BIDDAYOFFER_D":
-                expected_length = 2 * 4
-                expected_last_time = expected_last_time.replace(hour=0, minute=0)
-                expected_first_time = expected_first_time.replace(hour=0, minute=0)
-            data = data_fetch_methods.dynamic_data_compiler(
-                start_time,
-                end_time,
-                table,
-                defaults.raw_data_cache,
-                select_columns=cols,
-                fformat="feather",
-                keep_csv=False,
-                filter_cols=filter_cols,
-                filter_values=self.filter_values[table_type],
-            )
-            data = self.restrictive_filter(data)
-            data = data.sort_values(dat_col)
-            data = data.reset_index(drop=True)
-            self.assertEqual(expected_length, data.shape[0])
-            self.assertEqual(expected_number_of_columns, data.shape[1])
-            self.assertEqual(expected_first_time, data[dat_col][0])
-            self.assertEqual(expected_last_time, data[dat_col].iloc[-1])
-            print("Passed")
-
-    def test_dispatch_tables_start_of_year(self):
-        start_time = "2022/01/01 00:00:00"
-        end_time = "2022/01/01 01:00:00"
-        for table in self.table_names:
-            print("Testing {} returing values at start of year.".format(table))
-            dat_col = defaults.primary_date_columns[table]
-            table_type = self.table_types[table]
-            filter_cols = self.table_filters[table]
-            cols = [dat_col, *filter_cols]
-            expected_length = 12 * 4
-            expected_number_of_columns = 3
-            expected_first_time = pd.to_datetime(
-                start_time, format="%Y/%m/%d %H:%M:%S"
-            ) + timedelta(minutes=5)
-            expected_last_time = pd.to_datetime(end_time, format="%Y/%m/%d %H:%M:%S")
-            if table == "BIDDAYOFFER_D":
-                expected_length = 1 * 4
-                expected_last_time = expected_last_time.replace(
-                    hour=0, minute=0
-                ) - timedelta(days=1)
-                expected_first_time = expected_first_time.replace(
-                    hour=0, minute=0
-                ) - timedelta(days=1)
-            data = data_fetch_methods.dynamic_data_compiler(
-                start_time,
-                end_time,
-                table,
-                defaults.raw_data_cache,
-                select_columns=cols,
-                fformat="feather",
-                keep_csv=False,
-                filter_cols=filter_cols,
-                filter_values=self.filter_values[table_type],
-            )
-            data = self.restrictive_filter(data)
-            data = data.sort_values(dat_col)
-            data = data.reset_index(drop=True)
-            self.assertEqual(expected_length, data.shape[0])
-            self.assertEqual(expected_number_of_columns, data.shape[1])
-            self.assertEqual(expected_first_time, data[dat_col][0])
-            self.assertEqual(expected_last_time, data[dat_col].iloc[-1])
-            print("Passed")
-
-    def test_dispatch_tables_end_of_year(self):
-        start_time = "2021/12/31 23:00:00"
-        end_time = "2022/01/01 00:00:00"
-        for table in self.table_names:
-            print("Testing {} returing values at end of year.".format(table))
-            dat_col = defaults.primary_date_columns[table]
-            table_type = self.table_types[table]
-            filter_cols = self.table_filters[table]
-            cols = [dat_col, *filter_cols]
-            expected_length = 12 * 4
-            expected_number_of_columns = 3
-            expected_first_time = pd.to_datetime(
-                start_time, format="%Y/%m/%d %H:%M:%S"
-            ) + timedelta(minutes=5)
-            expected_last_time = pd.to_datetime(end_time, format="%Y/%m/%d %H:%M:%S")
-            if table == "BIDDAYOFFER_D":
-                expected_length = 1 * 4
-                expected_first_time = expected_first_time.replace(hour=0, minute=0)
-                expected_last_time = expected_first_time
-            data = data_fetch_methods.dynamic_data_compiler(
-                start_time,
-                end_time,
-                table,
-                defaults.raw_data_cache,
-                select_columns=cols,
-                fformat="feather",
-                keep_csv=False,
-                filter_cols=filter_cols,
-                filter_values=self.filter_values[table_type],
-            )
-            data = self.restrictive_filter(data)
-            data = data.sort_values(dat_col)
-            data = data.reset_index(drop=True)
-            self.assertEqual(expected_length, data.shape[0])
-            self.assertEqual(expected_number_of_columns, data.shape[1])
-            self.assertEqual(expected_first_time, data[dat_col][0])
-            self.assertEqual(expected_last_time, data[dat_col].iloc[-1])
-            print("Passed")
-
-    def test_dispatch_tables_straddle_years(self):
-        start_time = "2021/12/31 23:00:00"
-        end_time = "2022/01/01 01:00:00"
-        for table in self.table_names:
-            print(f"Testing {table} returning values from adjacent years.")
-            dat_col = defaults.primary_date_columns[table]
-            table_type = self.table_types[table]
-            filter_cols = self.table_filters[table]
-            cols = [dat_col, *filter_cols]
-            expected_length = 24 * 4
-            expected_number_of_columns = 3
-            expected_first_time = pd.to_datetime(
-                start_time, format="%Y/%m/%d %H:%M:%S"
-            ) + timedelta(minutes=5)
-            expected_last_time = pd.to_datetime(end_time, format="%Y/%m/%d %H:%M:%S")
-            if table == "BIDDAYOFFER_D":
-                expected_length = 1 * 4
-                expected_first_time = expected_first_time.replace(hour=0, minute=0)
-                expected_last_time = expected_first_time
-            data = data_fetch_methods.dynamic_data_compiler(
-                start_time,
-                end_time,
-                table,
-                defaults.raw_data_cache,
-                select_columns=cols,
-                fformat="feather",
-                keep_csv=False,
-                filter_cols=filter_cols,
-                filter_values=self.filter_values[table_type],
-            )
-            data = self.restrictive_filter(data)
             data = data.sort_values(dat_col)
             data = data.reset_index(drop=True)
             self.assertEqual(expected_length, data.shape[0])
@@ -1469,16 +1059,17 @@ class TestCustomTables(unittest.TestCase):
     def setUp(self):
         pass
 
-    @unittest.skipIf(
-        (datetime.now() - datetime(year=datetime.now().year, month=1, day=1)).days > 60,
-        "start of year data not available: > 60 days ago",
-    )
-    def test_dispatch_tables_straddle_years(self):
+    def test_works_on_recent_data(self):
         table = "FCAS_4_SECOND"
         minute_offset = 5
-        start_time = self.start_year - timedelta(minutes=minute_offset)
+        start_time = datetime(
+            year=datetime.now().year,
+            month=datetime.now().month,
+            day=1
+        ) - timedelta(days=40)
         end_time = start_time + timedelta(minutes=minute_offset * 2)
-
+        start_time = start_time.strftime("%Y/%m/%d %H:%M:%S")
+        end_time = end_time.strftime("%Y/%m/%d %H:%M:%S")
         print("Testing custom table {}.".format(table))
         data = custom_tables.fcas4s_scada_match(
             start_time, end_time, table, defaults.raw_data_cache

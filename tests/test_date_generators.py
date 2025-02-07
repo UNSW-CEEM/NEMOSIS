@@ -1,6 +1,6 @@
 import unittest
 from datetime import datetime
-from src.nemosis import date_generators
+from nemosis import date_generators
 
 
 class TestYearAndMonthGen(unittest.TestCase):

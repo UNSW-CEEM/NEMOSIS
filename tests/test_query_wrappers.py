@@ -2,7 +2,7 @@ import unittest
 import pandas as pd
 from pandas.testing import assert_frame_equal
 from datetime import datetime
-from src.nemosis import defaults, query_wrappers
+from nemosis import defaults, query_wrappers
 
 
 class TestDispatchDateSetup(unittest.TestCase):

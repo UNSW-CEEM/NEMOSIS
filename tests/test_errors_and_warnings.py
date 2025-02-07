@@ -1,6 +1,6 @@
 import unittest
-from src.nemosis import dynamic_data_compiler, cache_compiler, static_table
-from src.nemosis import defaults
+from nemosis import dynamic_data_compiler, cache_compiler, static_table
+from nemosis import defaults
 import os
 from unittest.mock import patch
 from io import StringIO
@@ -101,7 +101,7 @@ class TestDynamicDataCompilerRaisesExpectedErrors(unittest.TestCase):
             )
         self.assertIn(
             (
-                f"None of columns ['NOTACOLUMN'] are in D:/nemosis_test_cache\\PUBLIC_DVD_DISPATCHPRICE_201812010000.feather. "
+                f"None of columns ['NOTACOLUMN'] are in D:\\nemosis_test_cache\\PUBLIC_DVD_DISPATCHPRICE_201812010000.feather. "
                 "This may be caused by user input if the 'select_columns' "
                 "argument is being used, or by changed AEMO data formats. "
                 "This error can be avoided by using the argument select_columns='all'."
@@ -314,7 +314,7 @@ class TestStaticTableRaisesExpectedErrors(unittest.TestCase):
             )
         self.assertIn(
             (
-                f"None of columns ['NOTACOLUMN'] are in D:/nemosis_test_cache\\Ancillary Services Market Causer Pays Variables File.csv. "
+                f"None of columns ['NOTACOLUMN'] are in D:\\nemosis_test_cache\\Ancillary Services Market Causer Pays Variables File.csv. "
                 "This may be caused by user input if the 'select_columns' "
                 "argument is being used, or by changed AEMO data formats. "
                 "This error can be avoided by using the argument select_columns='all'."

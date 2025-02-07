@@ -1,6 +1,6 @@
 import unittest
 import pandas as pd
-from src.nemosis import custom_tables, defaults, data_fetch_methods
+from nemosis import custom_tables, defaults, data_fetch_methods
 import math
 import numpy as np
 import time

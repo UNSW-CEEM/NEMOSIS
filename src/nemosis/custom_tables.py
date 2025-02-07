@@ -31,7 +31,7 @@ def fcas4s_scada_match(
         fcas4s_variable_types["VARIABLETYPE"].isin(["MW", "Gen_MW"])
     ]
     fcas4s = fcas4s[
-        fcas4s["VARIABLENUMBER"].isin(fcas4s_variable_types["VARIABLENUMBER"])
+        fcas4s["VARIABLENUMBER"].isin(fcas4s_variable_types["VARIABLENUMBER"].astype(int))
     ]
 
     # Select just the fcas 4 second data variable columns that we need.
@@ -94,6 +94,12 @@ def fcas4s_scada_match(
     error_comp = profile_comp.groupby(
         ["MARKETNAME", "ELEMENTNUMBER", "TIMESTAMP"], as_index=False
     ).first()
+
+    error_comp = error_comp.drop(columns=["TIMESTAMP"])
+
+    error_comp = error_comp.loc[
+        :, ("ELEMENTNUMBER", "MARKETNAME", 'SCADAVALUE', "ERROR")
+    ]
 
     # Aggregate the error to comapre each scada and fcas element potential match.
     error_comp = error_comp.groupby(
