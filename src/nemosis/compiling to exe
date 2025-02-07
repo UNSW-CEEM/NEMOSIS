@@ -30,7 +30,7 @@ a = Analysis(['nemosis\\gui.py'],
              cipher=block_cipher,
              noarchive=False)
 
-a.datas += [('favicon.ico', 'C:\\Users\\nick\\Documents\\GitHub\\nemosis\\nemosis\\favicon.ico',  'DATA')]
+a.datas += [('favicon.ico', 'C:\\Users\\nick\\Documents\\GitHub\\src\\nemosis\\favicon.ico',  'DATA')]
 
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
