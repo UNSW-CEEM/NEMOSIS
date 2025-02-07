@@ -1,6 +1,6 @@
 import unittest
 from datetime import timedelta
-from src.nemosis import defaults, data_fetch_methods
+from nemosis import defaults, data_fetch_methods
 import pandas as pd
 import os
 
