@@ -98,6 +98,7 @@ def _download_and_unpack_bid_move_complete_files(
     download_url, down_load_to
 ):
     r = session.get(download_url)
+    r.raise_for_status()
     zipped_file = zipfile.ZipFile(io.BytesIO(r.content))
 
     file_name = zipped_file.namelist()[
@@ -134,6 +135,7 @@ def _download_and_unpack_next_region_tables(
     download_url, down_load_to
 ):
     r = session.get(download_url)
+    r.raise_for_status()
     zipped_file = zipfile.ZipFile(io.BytesIO(r.content))
 
     file_name = zipped_file.namelist()[
@@ -163,6 +165,7 @@ def _download_and_unpack_next_dispatch_load_files_complete_files(
     download_url, down_load_to
 ):
     r = session.get(download_url)
+    r.raise_for_status()
     zipped_file = zipfile.ZipFile(io.BytesIO(r.content))
 
     file_name = zipped_file.namelist()[
@@ -188,6 +191,7 @@ def _download_and_unpack_intermittent_gen_scada_file(
     download_url, down_load_to
 ):
     r = session.get(download_url)
+    r.raise_for_status()
     zipped_file = zipfile.ZipFile(io.BytesIO(r.content))
 
     file_name = zipped_file.namelist()[
@@ -256,6 +260,7 @@ def download_unzip_csv(url, down_load_to):
     """
     url = url.replace('#', '%23')
     r = session.get(url)
+    r.raise_for_status()
     z = zipfile.ZipFile(io.BytesIO(r.content))
     z.extractall(down_load_to)
 
@@ -266,18 +271,21 @@ def download_csv(url, path_and_name):
     extracts the csv and saves it a specified location
     """
     r = session.get(url)
+    r.raise_for_status()
     with open(path_and_name, "wb") as f:
         f.write(r.content)
 
 
 def download_elements_file(url, path_and_name):
     page = session.get(url)
+    page.raise_for_status()
     text = page.text
     soup = BeautifulSoup(text, "html.parser")
     links = soup.find_all("a")
     last_file_name = links[-1].text
     link = url + last_file_name
     r = session.get(link)
+    r.raise_for_status()
     with open(path_and_name, "wb") as f:
         f.write(r.content)
 
@@ -288,6 +296,7 @@ def download_xl(url, path_and_name):
     saves it a specified location
     """
     r = session.get(url)
+    r.raise_for_status()
     with open(path_and_name, "wb") as f:
         f.write(r.content)
 
@@ -302,13 +311,9 @@ def format_aemo_url(url, year, month, filename_stub):
     return url.format(year, year, month, filename_stub)
 
 
-def status_code_return(url):
-    r = session.get(url)
-    return r.status_code
-
-
 def _get_matching_link(url, stub_link):
     r = session.get(url)
+    r.raise_for_status()
     soup = BeautifulSoup(r.content, "html.parser")
     links = [link.get("href") for link in soup.find_all("a")]
     for link in links:
