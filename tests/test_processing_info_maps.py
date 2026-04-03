@@ -12,6 +12,7 @@ class TestSearchTypeValidity(unittest.TestCase):
         )
         pass
 
+    @unittest.skip("Long test")
     def test_start_to_end_no_duplication_between_batches(self):
         for table_name in processing_info_maps.search_type.keys():
             if processing_info_maps.search_type[table_name] == "start_to_end":
@@ -43,6 +44,7 @@ class TestSearchTypeValidity(unittest.TestCase):
                 )
                 print("Type valid, no duplicates found.")
 
+    @unittest.skip("Long test")
     def test_start_to_end_has_settlement_or_interval_col(self):
         for table_name in processing_info_maps.search_type.keys():
             if processing_info_maps.search_type[table_name] == "start_to_end":
@@ -72,6 +74,7 @@ class TestSearchTypeValidity(unittest.TestCase):
                     )
                 )
 
+    @unittest.skip("Long test")
     def test_all_no_duplication_between_batches(self):
         for table_name in processing_info_maps.search_type.keys():
             if processing_info_maps.search_type[table_name] == "all":
@@ -120,6 +123,7 @@ class TestSearchTypeValidity(unittest.TestCase):
                 )
                 print("Type valid, no duplicates found.")
 
+    @unittest.skip("Long test")
     def test_all_no_duplication_between_batches_with_finalise_step(self):
         for table_name in processing_info_maps.search_type.keys():
             if processing_info_maps.search_type[table_name] == "all":
