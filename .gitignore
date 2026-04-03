@@ -1,6 +1,7 @@
 .idea/*
 src/nemosis/__pycache__/*
 venv/*
+venv*/*
 build/*
 dist/*
 src/nemosis/build/*
