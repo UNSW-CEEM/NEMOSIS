@@ -267,8 +267,8 @@ def download_unzip_csv(url, down_load_to):
 
 def download_csv(url, path_and_name):
     """
-    This function downloads a zipped csv using a url,
-    extracts the csv and saves it a specified location
+    This function downloads a csv using a url,
+    and saves it a specified location
     """
     r = session.get(url)
     r.raise_for_status()
@@ -290,9 +290,9 @@ def download_elements_file(url, path_and_name):
         f.write(r.content)
 
 
-def download_xl(url, path_and_name):
+def download_xml(url, path_and_name):
     """
-    This function downloads a zipped csv using a url, extracts the csv and
+    This function downloads a XML using a url, and
     saves it a specified location
     """
     r = session.get(url)
