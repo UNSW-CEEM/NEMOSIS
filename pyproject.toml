@@ -14,9 +14,10 @@ dependencies = [
     "xlrd>=2.0.1",
     "beautifulsoup4>=4.12.3",
     "openpyxl>=3.1.5",
+    "cachetools>=7",
 ]
 readme = "README.md"
-requires-python = ">= 3.9"
+requires-python = ">= 3.10"
 
 [build-system]
 requires = ["hatchling"]
