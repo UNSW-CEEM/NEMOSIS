@@ -196,7 +196,10 @@ def cache_compiler(
         raise UserInputError("The raw_data_location provided is None.")
 
     if not _os.path.isdir(raw_data_location):
-        raise UserInputError(f"The raw_data_location {raw_data_location} provided does not exist.")
+        if _os.path.isfile(raw_data_location):
+            raise UserInputError(f"The raw_data_location {raw_data_location} provided exists as a file, not directory.")
+        else:
+            _os.makedirs(raw_data_location)
 
     if table_name not in _defaults.dynamic_tables:
         raise UserInputError("Table name provided is not a dynamic table.")
