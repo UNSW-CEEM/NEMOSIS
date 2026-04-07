@@ -323,6 +323,8 @@ class App(ttk.Frame):
                     date_format="%Y/%m/%d %H:%M:%S",
                 )
             messagebox.showinfo("Finished", "Your query has finished!")
+        except KeyboardInterrupt:
+            raise
         except Exception:
             traceback.print_exc()
             messagebox.showerror(
@@ -575,6 +577,8 @@ def resource_path(relative_path):
     try:
         # PyInstaller creates a temp folder and stores path in _MEIPASS
         base_path = sys._MEIPASS
+    except KeyboardInterrupt:
+        raise
     except Exception:
         base_path = os.path.abspath("")
 
