@@ -869,6 +869,7 @@ class TestDynamicDataCompilerWithLastChangedFiltering(unittest.TestCase):
         assert_frame_equal(raw_data, data)
 
 
+@unittest.skip(f"Nemweb changed, so 4sec data no longer works. Issue #64")
 class TestFCAS4SecondData(unittest.TestCase):
     def setUp(self):
         self.start_day = (datetime.now() - timedelta(30)).replace(
@@ -1059,6 +1060,7 @@ class TestCustomTables(unittest.TestCase):
     def setUp(self):
         pass
 
+    @unittest.skip(f"Nemweb changed, so 4sec data no longer works. Issue #64")
     def test_works_on_recent_data(self):
         table = "FCAS_4_SECOND"
         minute_offset = 5
