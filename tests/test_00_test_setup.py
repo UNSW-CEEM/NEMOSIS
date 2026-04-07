@@ -7,4 +7,4 @@ from nemosis import defaults
 
 class TestDefault(unittest.TestCase):
     def test_cache_path(self):
-        self.assertIsNotNone(raw_data_cache, "raw_data_cache not set. Try setting NEMOSIS_TEST_CACHE env var.")
+        self.assertIsNotNone(defaults.raw_data_cache, "raw_data_cache not set. Try setting NEMOSIS_TEST_CACHE env var.")
