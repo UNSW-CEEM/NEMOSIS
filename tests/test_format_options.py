@@ -33,6 +33,7 @@ class TestFormatOptions(unittest.TestCase):
             "DUID-BIDTYPE": (["AGLHAL", "ENERGY"],),
         }
 
+    @unittest.skip("Purges cache") # TODO: just choose a different folder
     def test_dispatch_tables_start_of_month_just_csv_format_dont_keep(self):
         # Empty cache.
         for f in os.listdir(defaults.raw_data_cache):
@@ -104,6 +105,7 @@ class TestFormatOptions(unittest.TestCase):
             self.assertEqual(len(os.listdir(defaults.raw_data_cache)), 0)
             print("Passed")
 
+    @unittest.skip("Purges cache") # TODO: just choose a different folder
     def test_dispatch_tables_start_of_month_just_csv_format(self):
         # Empty cache.
         for f in os.listdir(defaults.raw_data_cache):
