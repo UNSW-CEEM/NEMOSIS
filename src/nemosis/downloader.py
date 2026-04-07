@@ -5,6 +5,8 @@ from bs4 import BeautifulSoup
 import zipfile
 import io
 import pandas as pd
+from cachetools import cached, TTLCache
+from urllib.parse import urlparse, urljoin, urldefrag
 
 from . import defaults, custom_errors
 
@@ -32,9 +34,11 @@ def run(year, month, day, chunk, index, filename_stub, down_load_to):
     # Perform the download, unzipping saving of the file
     try:
         download_unzip_csv(url_formatted, down_load_to)
-    except Exception:
+    except KeyboardInterrupt:
+        raise
+    except Exception as e:
         if chunk == 1:
-            logger.warning(f"{filename_stub} not downloaded")
+            logger.warning(f"{filename_stub} not downloaded ({e})")
 
 
 def run_bid_tables(year, month, day, chunk, index, filename_stub, down_load_to):
@@ -49,8 +53,10 @@ def run_bid_tables(year, month, day, chunk, index, filename_stub, down_load_to):
             _download_and_unpack_bid_move_complete_files(
                 download_url, down_load_to
             )
-        except Exception:
-            logger.warning(f"{filename_stub} not downloaded")
+        except KeyboardInterrupt:
+            raise
+        except Exception as e:
+            logger.warning(f"{filename_stub} not downloaded ({e})")
 
 
 def run_next_day_region_tables(year, month, day, chunk, index, filename_stub, down_load_to):
@@ -62,8 +68,10 @@ def run_next_day_region_tables(year, month, day, chunk, index, filename_stub, do
         _download_and_unpack_next_region_tables(
             download_url, down_load_to
         )
-    except Exception:
-        logger.warning(f"{filename_stub} not downloaded")
+    except KeyboardInterrupt:
+        raise
+    except Exception as e:
+        logger.warning(f"{filename_stub} not downloaded ({e})")
 
 
 def run_next_dispatch_tables(year, month, day, chunk, index, filename_stub, down_load_to):
@@ -73,8 +81,10 @@ def run_next_dispatch_tables(year, month, day, chunk, index, filename_stub, down
             filename_stub,
             defaults.current_data_page_urls["NEXT_DAY_DISPATCHLOAD"])
         _download_and_unpack_next_dispatch_load_files_complete_files(download_url, down_load_to)
-    except Exception:
-        logger.warning(f"{filename_stub} not downloaded")
+    except KeyboardInterrupt:
+        raise
+    except Exception as e:
+        logger.warning(f"{filename_stub} not downloaded ({e})")
 
 
 def run_intermittent_gen_scada(year, month, day, chunk, index, filename_stub, down_load_to):
@@ -83,8 +93,10 @@ def run_intermittent_gen_scada(year, month, day, chunk, index, filename_stub, do
             filename_stub,
             defaults.current_data_page_urls["INTERMITTENT_GEN_SCADA"])
         _download_and_unpack_intermittent_gen_scada_file(download_url, down_load_to)
-    except Exception:
-        logger.warning(f"{filename_stub} not downloaded")
+    except KeyboardInterrupt:
+        raise
+    except Exception as e:
+        logger.warning(f"{filename_stub} not downloaded ({e})")
 
 
 def _get_current_url(filename_stub, current_page_url):
@@ -97,120 +109,116 @@ def _get_current_url(filename_stub, current_page_url):
 def _download_and_unpack_bid_move_complete_files(
     download_url, down_load_to
 ):
-    r = session.get(download_url)
-    r.raise_for_status()
-    zipped_file = zipfile.ZipFile(io.BytesIO(r.content))
-
-    file_name = zipped_file.namelist()[
-        0
-    ]  # Just one file so we can pull it out of the list using 0
-    start_row_second_table = _find_start_row_nth_table(
-        zipped_file, file_name, 2
-    )
-    csv_file = zipped_file.open(file_name)
-    BIDDAYOFFER_D = pd.read_csv(
-        csv_file, header=1, nrows=start_row_second_table - 3, dtype=str
-    )
-    BIDDAYOFFER_D.to_csv(
-        os.path.join(
-            down_load_to,
-            "PUBLIC_DVD_BIDDAYOFFER_D_" + file_name[24:32] + ".csv",
-        ),
-        index=False,
-    )
-    csv_file = zipped_file.open(file_name)
-    BIDPEROFFER_D = pd.read_csv(
-        csv_file, header=start_row_second_table - 1, dtype=str
-    )[:-1]
-    BIDPEROFFER_D.to_csv(
-        os.path.join(
-            down_load_to,
-            "PUBLIC_DVD_BIDPEROFFER_D_" + file_name[24:32] + ".csv",
-        ),
-        index=False,
-    )
+    zip_local_path = download_to_dir(download_url, down_load_to)
+    with zipfile.ZipFile(zip_local_path) as zipped_file:
+        
+        file_name = zipped_file.namelist()[
+            0
+        ]  # Just one file so we can pull it out of the list using 0
+        start_row_second_table = _find_start_row_nth_table(
+            zipped_file, file_name, 2
+        )
+        csv_file = zipped_file.open(file_name)
+        BIDDAYOFFER_D = pd.read_csv(
+            csv_file, header=1, nrows=start_row_second_table - 3, dtype=str
+        )
+        BIDDAYOFFER_D.to_csv(
+            os.path.join(
+                down_load_to,
+                "PUBLIC_DVD_BIDDAYOFFER_D_" + file_name[24:32] + ".csv",
+            ),
+            index=False,
+        )
+        csv_file = zipped_file.open(file_name)
+        BIDPEROFFER_D = pd.read_csv(
+            csv_file, header=start_row_second_table - 1, dtype=str
+        )[:-1]
+        BIDPEROFFER_D.to_csv(
+            os.path.join(
+                down_load_to,
+                "PUBLIC_DVD_BIDPEROFFER_D_" + file_name[24:32] + ".csv",
+            ),
+            index=False,
+        )
 
 
 def _download_and_unpack_next_region_tables(
     download_url, down_load_to
 ):
-    r = session.get(download_url)
-    r.raise_for_status()
-    zipped_file = zipfile.ZipFile(io.BytesIO(r.content))
+    zip_local_path = download_to_dir(download_url, down_load_to)
+    with zipfile.ZipFile(zip_local_path) as zipped_file:
 
-    file_name = zipped_file.namelist()[
-        0
-    ]  # Just one file so we can pull it out of the list using 0
-    start_row_second_table = _find_start_row_nth_table(
-        zipped_file, file_name, 2
-    )
-    start_row_third_table = _find_start_row_nth_table(
-        zipped_file, file_name, 3
-    )
-    csv_file = zipped_file.open(file_name)
-    DAILY_REGION_SUMMARY = pd.read_csv(
-        csv_file, header=start_row_second_table - 1,
-        nrows=start_row_third_table - start_row_second_table - 1, dtype=str
-    )
-    DAILY_REGION_SUMMARY.to_csv(
-        os.path.join(
-            down_load_to,
-            "PUBLIC_DAILY_REGION_SUMMARY_" + file_name[13:21] + ".csv",
-        ),
-        index=False,
-    )
+        file_name = zipped_file.namelist()[
+            0
+        ]  # Just one file so we can pull it out of the list using 0
+        start_row_second_table = _find_start_row_nth_table(
+            zipped_file, file_name, 2
+        )
+        start_row_third_table = _find_start_row_nth_table(
+            zipped_file, file_name, 3
+        )
+        csv_file = zipped_file.open(file_name)
+        DAILY_REGION_SUMMARY = pd.read_csv(
+            csv_file, header=start_row_second_table - 1,
+            nrows=start_row_third_table - start_row_second_table - 1, dtype=str
+        )
+        DAILY_REGION_SUMMARY.to_csv(
+            os.path.join(
+                down_load_to,
+                "PUBLIC_DAILY_REGION_SUMMARY_" + file_name[13:21] + ".csv",
+            ),
+            index=False,
+        )
     
 
 def _download_and_unpack_next_dispatch_load_files_complete_files(
     download_url, down_load_to
 ):
-    r = session.get(download_url)
-    r.raise_for_status()
-    zipped_file = zipfile.ZipFile(io.BytesIO(r.content))
+    zip_local_path = download_to_dir(download_url, down_load_to)
+    with zipfile.ZipFile(zip_local_path) as zipped_file:
 
-    file_name = zipped_file.namelist()[
-        0
-    ]  # Just one file so we can pull it out of the list using 0
-    start_row_second_table = _find_start_row_nth_table(
-        zipped_file, file_name, 2
-    )
-    csv_file = zipped_file.open(file_name)
-    NEXT_DAY_DISPATCHLOAD = pd.read_csv(
-        csv_file, header=1, nrows=start_row_second_table - 3, dtype=str
-    )
-    NEXT_DAY_DISPATCHLOAD.to_csv(
-        os.path.join(
-            down_load_to,
-            "PUBLIC_NEXT_DAY_DISPATCHLOAD_" + file_name[25:33] + ".csv",
-        ),
-        index=False,
-    )
+        file_name = zipped_file.namelist()[
+            0
+        ]  # Just one file so we can pull it out of the list using 0
+        start_row_second_table = _find_start_row_nth_table(
+            zipped_file, file_name, 2
+        )
+        csv_file = zipped_file.open(file_name)
+        NEXT_DAY_DISPATCHLOAD = pd.read_csv(
+            csv_file, header=1, nrows=start_row_second_table - 3, dtype=str
+        )
+        NEXT_DAY_DISPATCHLOAD.to_csv(
+            os.path.join(
+                down_load_to,
+                "PUBLIC_NEXT_DAY_DISPATCHLOAD_" + file_name[25:33] + ".csv",
+            ),
+            index=False,
+        )
 
 
 def _download_and_unpack_intermittent_gen_scada_file(
     download_url, down_load_to
 ):
-    r = session.get(download_url)
-    r.raise_for_status()
-    zipped_file = zipfile.ZipFile(io.BytesIO(r.content))
+    zip_local_path = download_to_dir(download_url, down_load_to)
+    with zipfile.ZipFile(zip_local_path) as zipped_file:
 
-    file_name = zipped_file.namelist()[
-        0
-    ]  # Just one file so we can pull it out of the list using 0
-    start_row_second_table = _find_start_row_nth_table(
-        zipped_file, file_name, 1
-    )
-    csv_file = zipped_file.open(file_name)
-    data = pd.read_csv(
-        csv_file, header=1, dtype=str
-    )[:-1]
-    data.to_csv(
-        os.path.join(
-            down_load_to,
-            "PUBLIC_NEXT_DAY_INTERMITTENT_GEN_SCADA_" + file_name[39:47] + ".csv",
-        ),
-        index=False,
-    )
+        file_name = zipped_file.namelist()[
+            0
+        ]  # Just one file so we can pull it out of the list using 0
+        start_row_second_table = _find_start_row_nth_table(
+            zipped_file, file_name, 1
+        )
+        csv_file = zipped_file.open(file_name)
+        data = pd.read_csv(
+            csv_file, header=1, dtype=str
+        )[:-1]
+        data.to_csv(
+            os.path.join(
+                down_load_to,
+                "PUBLIC_NEXT_DAY_INTERMITTENT_GEN_SCADA_" + file_name[39:47] + ".csv",
+            ),
+            index=False,
+        )
 
 
 def _find_start_row_nth_table(sub_folder_zipfile, file_name, n):
@@ -242,27 +250,94 @@ def run_fcas4s(year, month, day, chunk, index, filename_stub, down_load_to):
     # Perform the download, unzipping saving of the file
     try:
         download_unzip_csv(url_formatted_latest, down_load_to)
+    except KeyboardInterrupt:
+        raise
     except Exception:
         try:
             download_unzip_csv(url_formatted_hist, down_load_to)
+        except KeyboardInterrupt:
+            raise
         except Exception as e:
             # FCAS csvs are bundled in 30 minute bundles
             # Check if the csv exists before warning
             file_check = os.path.join(down_load_to, filename_stub + ".csv")
             if not os.path.isfile(file_check):
-                logger.warning(f"{filename_stub} not downloaded")
+                logger.warning(f"{filename_stub} not downloaded {(e)}")
 
+def download_to_dir(url, down_load_to, force_redo=False):
+    """
+    This function downloads a file from a url to a folder.
+    It streams it, so that large files do not fill up memory.
+    An exception is thrown if the url does not exist.
+    """
+
+    url = url.replace('#', '%23')
+    filename = url.split('/')[-1].split('?')[0]
+    path = os.path.join(down_load_to, filename)
+    download_to_path(url, path)
+    return path
+
+def download_to_path(url, path_and_name, force_redo=False):
+    """
+    This function downloads a file from a url to a specific path.
+    It streams it, so that large files do not fill up memory.
+    An exception is thrown if the url does not exist.
+    """
+    url = url.replace('#', '%23')
+    filename = url.split('/')[-1].split('?')[0]
+    if (not os.path.exists(path_and_name)) or force_redo:
+
+        # Most headers should be set via the session
+        # This is just for per-request variation
+        headers = {}
+
+        # For the few files that are hosted outside the usual dataset,
+        # AEMO discriminates based on user agent, blocking scrapers.
+        # So let's pretend we're a normal web browser.
+        # AEMO, if you see this and don't like it,
+        # then just move the participant registration spreadsheet
+        # into the usual MMS nemweb dataset, 
+        # at https://nemweb.com.au/ instead of https://www.aemo.com.au
+        # ideally as the same CSV format everything else is.
+        # That would make life easier for both of us.
+        # https://github.com/UNSW-CEEM/NEMOSIS/issues/60
+        domain = urlparse(url).netloc
+        if domain.endswith("aemo.com.au"):
+            chrome_user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            headers["User-Agent"] = chrome_user_agent
+
+        if _pre_check_file_is_missing(url):
+            # Since we cache the parent HTML, this should be faster than doing a real request and getting 404
+            raise ValueError(f"File {url} is missing (according to parent HTML)")
+
+        with session.get(url, stream=True, headers=headers) as response:
+            if response.status_code not in [200, 404]:
+                logger.debug(f"URL {url} gave status {response.status_code}: {response.text[:1000]}")
+            response.raise_for_status()
+            try:
+                with open(path_and_name, 'wb') as file:
+                    for chunk in response.iter_content(chunk_size=2**13):
+                        file.write(chunk)
+            except KeyboardInterrupt:
+                raise
+            except Exception as e:
+                logger.error(f"Failed to write file to {path_and_name}: {e}")
+                if os.path.exists(path_and_name):
+                    os.remove(path_and_name)
+                raise
+
+        # temporary debugging
+        if url.lower().endswith('.zip'):
+            logger.info(f"Zip downloaded to {path_and_name}")
 
 def download_unzip_csv(url, down_load_to):
     """
     This function downloads a zipped csv using a url,
     extracts the csv and saves it a specified location
     """
-    url = url.replace('#', '%23')
-    r = session.get(url)
-    r.raise_for_status()
-    z = zipfile.ZipFile(io.BytesIO(r.content))
-    z.extractall(down_load_to)
+    zip_local_path = download_to_dir(url, down_load_to)
+    with zipfile.ZipFile(zip_local_path) as z:
+        z.extractall(down_load_to)
 
 
 def download_csv(url, path_and_name):
@@ -270,35 +345,25 @@ def download_csv(url, path_and_name):
     This function downloads a csv using a url,
     and saves it a specified location
     """
-    r = session.get(url)
-    r.raise_for_status()
-    with open(path_and_name, "wb") as f:
-        f.write(r.content)
+    download_to_path(url, path_and_name)
 
 
 def download_elements_file(url, path_and_name):
-    page = session.get(url)
-    page.raise_for_status()
-    text = page.text
+    text = download_html(url)
     soup = BeautifulSoup(text, "html.parser")
     links = soup.find_all("a")
     last_file_name = links[-1].text
     link = url + last_file_name
-    r = session.get(link)
-    r.raise_for_status()
-    with open(path_and_name, "wb") as f:
-        f.write(r.content)
 
+    download_to_path(link, path_and_name)
+    
 
 def download_xml(url, path_and_name):
     """
     This function downloads a XML using a url, and
     saves it a specified location
     """
-    r = session.get(url)
-    r.raise_for_status()
-    with open(path_and_name, "wb") as f:
-        f.write(r.content)
+    download_to_path(url, path_and_name)
 
 
 def format_aemo_url(url, year, month, filename_stub):
@@ -310,13 +375,67 @@ def format_aemo_url(url, year, month, filename_stub):
     year = str(year)
     return url.format(year, year, month, filename_stub)
 
-
-def _get_matching_link(url, stub_link):
+# cache 5 minutes for operational data
+# however we only look at monthly data,
+# so an hourly cache is probably fine.
+@cached(cache=TTLCache(maxsize=2**10, ttl=60*60))
+def download_html(url):
     r = session.get(url)
     r.raise_for_status()
-    soup = BeautifulSoup(r.content, "html.parser")
+    return r.text
+
+
+@cached(cache=TTLCache(maxsize=2**10, ttl=60*60))
+def download_html_as_soup(url):
+    return BeautifulSoup(download_html(url), "html.parser")
+
+
+def _pre_check_file_is_missing(file_url):
+    """
+    When we check for files in folders earlier than when they exist,
+    we get many 404 errors. These are slow to iterate through.
+    If we check the HTML parent page, with many files,
+    we can check if a file exists or not.
+    By caching this HTML, which applies to many ZIP/CSV files,
+    we can spot missing files more quickly.
+    This function returns True if missing, False if present, 
+    None if it's not a URL with a suitable HTML parent.
+    """
+
+    if (file_url.startswith("https://www.nemweb.com.au/Data_Archive/") or file_url.startswith("https://www.nemweb.com.au/Reports/")) \
+        and (file_url.upper().endswith(".ZIP") or file_url.upper().endswith(".CSV")):
+        parent_url = urljoin(file_url, "./")
+        try:
+            soup = download_html_as_soup(parent_url)
+        except KeyboardInterrupt:
+            raise
+        except Exception:
+            # The parent HTML can't be loaded
+            return None
+
+        matches: list[str] = []
+        for a_tag in soup.find_all("a", href=True):
+            # Resolve relative URLs against the parent page URL
+            absolute_href = urljoin(parent_url, a_tag["href"])
+            # Normalise (remove fragments, query ordering etc.) for a fair comparison
+            normalized_href = urldefrag(absolute_href)[0]
+            normalized_original = urldefrag(file_url)[0]
+            if normalized_href == normalized_original:
+                return False # link found, not missing
+
+        return True
+
+    else:
+        assert not file_url.startswith("http://"), f"URLs should use encryption: {file_url}"
+        assert file_url.startswith("https://"), f"URLs should use encryption: {file_url}"
+
+
+
+def _get_matching_link(url, stub_link):
+    html = download_html(url)
+    soup = BeautifulSoup(html, "html.parser")
     links = [link.get("href") for link in soup.find_all("a")]
     for link in links:
         if stub_link in link:
             return link
-    logger.warning(f"{stub_link} not downloaded")
+    logger.warning(f"{stub_link} not downloaded because no match for {stub_link} was found on {url}")
