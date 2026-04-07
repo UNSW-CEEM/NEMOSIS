@@ -642,7 +642,10 @@ def _dynamic_data_fetch_loop(
 
                 data_tables.append(data)
             elif not caching_mode and chunk == 1:
-                logger.warning(f"Loading data from {full_filename} failed.")
+                if _os.path.exists(path_and_name):
+                    logger.warning(f"Loading data from {full_filename} failed.")
+                else:
+                    logger.warning(f"Loading data from {full_filename} failed, file does not exist locally.")
 
             if data is None or '#' not in filename_stub:
                 check_for_next_data_chunk = False
