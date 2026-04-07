@@ -883,7 +883,11 @@ date_formats = [
     '%Y-%m-%d %H:%M:%S'
 ]
 
-nem_data_model_start_time = "2009/07/01 00:00:00"
+# data is available from 2009
+# however for 2009-2014, the structure in MMSDM is different.
+# It's one zip per month, with all tables combined.
+# 2015 is when it's back to the per-table files.
+nem_data_model_start_time = "2015/01/01 00:00:00"
 
 
 # GUI settings.
