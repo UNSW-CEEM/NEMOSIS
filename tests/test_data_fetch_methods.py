@@ -868,7 +868,20 @@ class TestDynamicDataCompilerWithLastChangedFiltering(unittest.TestCase):
             groupby(['PARTICIPANTID'], as_index=False).count().sort_values('PARTICIPANTID').reset_index(drop=True)
         assert_frame_equal(raw_data, data)
 
-
+class TestDynamicDataCompiler(unittest.TestCase):
+    def test_1s_cols(self):
+        start_time = f"{recent_test_month.year}/{recent_test_month.month}/01 00:00:00"
+        end_time = f"{recent_test_month.year}/{recent_test_month.month}/01 00:05:00"
+        table = "DISPATCHPRICE"
+        data = data_fetch_methods.dynamic_data_compiler(
+            start_time,
+            end_time,
+            table,
+            defaults.raw_data_cache,
+        )
+        self.assertIn("RAISE1SECRRP", data.columns, "1sec price missing from DISPATCHPRICE")
+        self.assertIn("LOWER1SECRRP", data.columns, "1sec price missing from DISPATCHPRICE")
+        
 @unittest.skip(f"Nemweb changed, so 4sec data no longer works. Issue #64")
 class TestFCAS4SecondData(unittest.TestCase):
     def setUp(self):
