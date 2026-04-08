@@ -232,8 +232,7 @@ def stats_for_group(capacity_and_scada_grouped):
     peak_percentile = capacity_factor_over_90th_percentile_of_nodal_demand(
         capacity_and_scada_grouped
     )
-    month = list(capacity_and_scada_grouped["MONTH"])[0]
-    duid = list(capacity_and_scada_grouped["DUID"])[0]
+    month, duid = capacity_and_scada_grouped.name # the keys used for the grouping
     cf_df = pd.DataFrame(
         {
             "Month": [month],
@@ -260,7 +259,7 @@ def stats_by_month_and_plant(capacity_and_scada):
     )
     capacity_factors = capacity_and_scada.groupby(
         ["MONTH", "DUID"], as_index=False
-    ).apply(stats_for_group)
+    ).apply(stats_for_group, include_groups=False)
     return capacity_factors
 
 
