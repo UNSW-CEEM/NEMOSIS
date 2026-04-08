@@ -156,7 +156,7 @@ def cache_compiler(
     select_columns=None,
     fformat="feather",
     rebuild=False,
-    keep_csv=False,
+    keep_csv=True,
     **kwargs,
 ):
     """
@@ -185,7 +185,7 @@ def cache_compiler(
                         (redownload, re-unzip, re-convert)
                         even if they exist already. False by default.
         keep_csv (bool): If True raw CSVs from AEMO are not deleted after
-                         the cache is built. False by default
+                         the cache is built. True by default
         **kwargs: additional arguments passed to the pd.to_{fformat}() function
 
     Returns:
