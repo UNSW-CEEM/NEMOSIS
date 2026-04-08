@@ -781,11 +781,17 @@ def _write_to_format(data, fformat, full_filename, write_kwargs):
     if _os.path.isfile(full_filename) and fformat != "csv":
         _os.unlink(full_filename)
     # Write to required format
-    if fformat == "feather":
-        write_function[fformat](full_filename, **write_kwargs)
-    elif fformat == "parquet":
-        write_function[fformat](full_filename, index=False, **write_kwargs)
-    return
+    try:
+        if fformat == "feather":
+            write_function[fformat](full_filename, **write_kwargs)
+        elif fformat == "parquet":
+            write_function[fformat](full_filename, index=False, **write_kwargs)
+        return
+    except Exception:
+        # tidy up incomplete file
+        if os.path.exists(full_filename):
+            os.remove(full_filename)
+        raise
 
 
 def _download_data(
