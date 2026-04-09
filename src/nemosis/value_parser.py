@@ -3,7 +3,7 @@ import pandas as pd
 from nemosis import defaults as _defaults
 
 
-def _parse_datetime(series):
+def _parse_datetime_np(series):
     """
     Attempts to parse a column into a datetime
     If unable to (because the data is not a datetime), will raise a ValueError
@@ -38,7 +38,7 @@ def _parse_column(series):
     """
 
     try:
-        return _parse_datetime(series)
+        return _parse_datetime_np(series)
     except ValueError:
         try:
             col_new = pd.to_numeric(series)

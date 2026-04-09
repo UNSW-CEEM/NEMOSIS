@@ -1,7 +1,7 @@
 import logging
 from nemosis import defaults
 from calendar import monthrange
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 logger = logging.getLogger(__name__)
 
@@ -155,3 +155,19 @@ def current_gen(start_time, end_time):
                 ):
                     continue
                 yield str(year), month, str(day).zfill(2), None
+
+def parse_datetime_py(t, midnight='end'):
+    """
+    Takes in a string of a datetime, or a native datetime
+    Returns a datetime.
+    This is not intended to be used for conversions within Pandas/CSV/Parquet etc.
+    """
+    if isinstance(t, str):
+        return datetime.strptime(t, defaults.nemosis_date_format)
+    elif isinstance(t, datetime):
+        if t.utcoffset() is not None:
+            raise ValueError(f"Conversion between timezones not implemented. (Even if it's market time.) "
+                             f"For {t}, pass a timezone unaware version, which will be treated as market time.")
+        return t
+    else:
+        raise ValueError(f"Unsure how to handle datetime {t} of unexpected type {type(t)}")

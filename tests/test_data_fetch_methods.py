@@ -770,6 +770,23 @@ class TestCacheCompiler(unittest.TestCase):
         self.assertSequenceEqual(got_columns, expected_columns)
         print("Passed")
 
+    
+    def test_dt_not_string(self):
+        start_time_dt = datetime(2018, 2, 20, 23)
+        start_time_s = "2018/02/20 23:00:00"
+        end_time_dt = datetime(2018, 2, 20, 23, 30)
+        end_time_s = "2018/02/20 23:30:00"
+        table = "DISPATCHPRICE"
+        data_fetch_methods.cache_compiler(
+            start_time_s, end_time_s, table, defaults.raw_data_cache
+        )
+        # just check that it doesn't throw an exception
+        # (since there's no return value to test)
+        data_fetch_methods.cache_compiler(
+            start_time_dt, end_time_dt, table, defaults.raw_data_cache
+        )
+
+
 
 class TestDynamicDataCompilerWithStartDateFiltering(unittest.TestCase):
     def setUp(self):
@@ -882,6 +899,22 @@ class TestDynamicDataCompiler(unittest.TestCase):
         self.assertIn("RAISE1SECRRP", data.columns, "1sec price missing from DISPATCHPRICE")
         self.assertIn("LOWER1SECRRP", data.columns, "1sec price missing from DISPATCHPRICE")
         
+    def test_dt_not_string(self):
+        start_time_dt = datetime(2018, 2, 20, 23)
+        start_time_s = "2018/02/20 23:00:00"
+        end_time_dt = datetime(2018, 2, 20, 23, 30)
+        end_time_s = "2018/02/20 23:30:00"
+        table = "DISPATCHPRICE"
+        data_s = data_fetch_methods.dynamic_data_compiler(
+            start_time_s, end_time_s, table, defaults.raw_data_cache
+        )
+        data_dt = data_fetch_methods.dynamic_data_compiler(
+            start_time_dt, end_time_dt, table, defaults.raw_data_cache
+        )
+
+        assert_frame_equal(data_s, data_dt)
+        
+
 @unittest.skip(f"Nemweb changed, so 4sec data no longer works. Issue #64")
 class TestFCAS4SecondData(unittest.TestCase):
     def setUp(self):
