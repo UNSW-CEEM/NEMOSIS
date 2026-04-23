@@ -22,7 +22,7 @@ $ uv run pytest tests/ --ignore=tests/test_performance_stats.py
 `custom_tables` module (VWAP, capacity factors, plant stats) which hasn't been ported offline
 yet — most of its assertions run on synthetic DataFrames and are trivially portable, but a
 few depend on local plant-stats files (`E:\plants_stats_test_data\`) that exist only on one
-developer's machine. CI uses the same invocation (see `.github/workflows/tests.yml`).
+developer's machine. CI uses the same invocation (see `.github/workflows/cicd.yml`).
 
 To run a single file:
 
