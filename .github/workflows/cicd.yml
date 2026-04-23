@@ -3,7 +3,7 @@ name: Continuous Integration and Deployment
 on:
   pull_request:
   push:
-    branches: [master]
+    branches: [master, offline-test-suite]   # TEMP: remove `offline-test-suite` before merge — used to bootstrap CI while the pull_request trigger isn't yet on master
   release:
     types: [created]
   workflow_dispatch:
