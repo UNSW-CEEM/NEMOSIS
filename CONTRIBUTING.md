@@ -51,19 +51,22 @@ Ready to contribute? Here's how to set up `ispypsa` for local development.
     $ git checkout -b name-of-your-bugfix-or-feature
     ```
 
-6. When you're done making changes, check that your changes pass any tests.
+6. When you're done making changes, check that your changes pass the tests:
 
-    - Configure an environment variable called "NEMOSIS_TEST_CACHE" specifying the location of the raw data cache to use
-      while testing
-    - Run all tests by running `uv run -m unittest discover tests`
-    - Run a subset of tests using the name of the test class or method, for example 
-      `uv run -m unittest discover tests -v -k TestDynamicDataCompilerWithSettlementDateFiltering`
-    - All tests should pass before a PR is considered good to merge into main. However, the tests are very long running
-      so it is best to test on a small subset of tests that are likely to fail, before running the full suite. 
-      Additionally, the full suite should be run twice, once with an empty cache, and then again with cache prefilled.
-    - We acknowledge the testing process is currently a bit cumbersome and slow, any contributions to improve this
-      process are welcomed :)
-    - A bit more info to come on testing once I get them all working again . . . 
+    ```console
+    $ uv run pytest tests/ \
+        --ignore=tests/test_data_fetch_methods.py \
+        --ignore=tests/test_errors_and_warnings.py \
+        --ignore=tests/test_format_options.py \
+        --ignore=tests/test_performance_stats.py \
+        --ignore=tests/test_processing_info_maps.py
+    ```
+
+    The suite is fully offline and runs in under a minute. The five ignored files are legacy
+    network-hitting tests slated for removal. CI runs the same invocation on every PR.
+
+    For details on how the test suite is structured, how to add tests for new tables, and how
+    fixtures are maintained, see [testing_and_maintenance.md](testing_and_maintenance.md).
 
 7. Commit your changes and open a pull request.
 
