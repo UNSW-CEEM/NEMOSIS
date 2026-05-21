@@ -77,10 +77,9 @@ DYNAMIC_TABLES = {
     # were discontinued at that point and only have pre-2022 eras.
     #
     # The `extra_eras` entry for 2021-10 is a build-only era used by the
-    # dedicated stride-transition test in test_trading_price.py. It doesn't
-    # go into the boundary matrix: the matrix's `into` flavour would query a
-    # window straddling the cutover with rows at two different strides, which
-    # the boundary helper can't express as a single regular grid.
+    # dedicated stride-transition test in test_trading_price.py. It is not
+    # listed in `eras`, so the boundary tests skip it — the 5MS cutover
+    # month is covered by that dedicated test instead.
     "TRADINGPRICE":        {"eras": ["2018-05", "2020-01", "2021-05", "2022-01", "2022-06", "2024-08", "2025-01"], "extra_eras": ["2021-10"], "filter": {"REGIONID": REGIONS}},
     "TRADINGINTERCONNECT": {"eras": ["2018-05", "2020-01", "2021-05", "2022-01", "2022-06", "2024-08", "2025-01"], "extra_eras": ["2021-10"], "filter": {"INTERCONNECTORID": INTERCONNECTORS}},
     # TRADINGLOAD/TRADINGREGIONSUM were discontinued before 2022 — 2022-01 returns 404.

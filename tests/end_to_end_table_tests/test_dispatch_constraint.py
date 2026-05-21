@@ -3,7 +3,7 @@
 Per-constraint five-minute state (RHS, marginal value, LHS terms). The
 pinned CONSTRAINTID `DATASNAP_DFS_Q_CLST` binds every 5-min interval on
 day 1 across every fixtured era (verified empirically 2018-05 → 2025-01),
-so the standard boundary matrix applies here.
+so the standard boundary tests apply here.
 
 Fixtured eras: 2018-05, 2020-01, 2021-05, 2022-01, 2024-08, 2025-01;
 CONSTRAINTID ∈ {DATASNAP_DFS_Q_CLST}.

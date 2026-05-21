@@ -4,7 +4,7 @@ Per-region five-minute summary: total demand, cleared generation, FCAS
 enablements, etc. Has INTERVENTION column like DISPATCHPRICE, so tests
 filter INTERVENTION == 0 to pin the normal-run timeline.
 
-Boundary matrix (`test_dispatch_region_sum_boundary`) is auto-generated
+Boundary tests (`test_dispatch_region_sum_boundary`) are auto-generated
 from `spec.DYNAMIC_TABLES["DISPATCHREGIONSUM"]["eras"]` by
 `_boundaries.py`.
 

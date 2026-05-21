@@ -5,7 +5,7 @@ Per-region trading price summary. Interval granularity changed on 2021-10-01
 matches dispatch at 5-min. The tests make that transition explicit via era
 parametrisation and a dedicated cutover test.
 
-Boundary matrix (`test_trading_price_boundary`) is auto-generated from
+Boundary tests (`test_trading_price_boundary`) are auto-generated from
 `spec.DYNAMIC_TABLES["TRADINGPRICE"]["eras"]` by `_boundaries.py`. The
 helper picks the right stride per era automatically (30 → 5 at 2021-10).
 

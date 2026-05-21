@@ -5,7 +5,7 @@ interval, giving per-unit dispatch targets, ramp rates, availability, etc.
 Like DISPATCHPRICE it has both a "normal" and an "intervention" run per
 interval; the tests filter INTERVENTION == 0 to pin the normal run.
 
-Boundary matrix (`test_dispatch_load_boundary`) is auto-generated from
+Boundary tests (`test_dispatch_load_boundary`) are auto-generated from
 `spec.DYNAMIC_TABLES["DISPATCHLOAD"]["eras"]` by `_boundaries.py`.
 
 The fixture pre-filters rows to DUID ∈ {AGLHAL, HDWF2}.

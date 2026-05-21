@@ -13,10 +13,10 @@ eras:
     2024-08 — PUBLIC_DVD → PUBLIC_ARCHIVE# filename cutover
     2025-01 — year boundary, PUBLIC_ARCHIVE# format
 
-The boundary matrix (`test_dispatch_price_boundary`) is auto-generated from
+The boundary tests (`test_dispatch_price_boundary`) are auto-generated from
 `spec.DYNAMIC_TABLES["DISPATCHPRICE"]["eras"]` by
 `tests/end_to_end_table_tests/_boundaries.py` — see that module for flavour
-and time-of-day semantics.
+semantics.
 """
 import pandas as pd
 import pytest
@@ -82,7 +82,7 @@ def test_select_columns_returns_only_those_columns(nemosis_fixture):
 
 def test_multi_day_cross_month_query(nemosis_fixture):
     """3-day window straddling Aug→Sep 2024 exercises `year_and_month_gen`'s
-    multi-month iteration (which the boundary matrix's <=5.5h windows
+    multi-month iteration (which the boundary tests' 1h windows
     don't reach). 3 days × 288 intervals = 864 timestamps per region."""
     data = dynamic_data_compiler(
         start_time="2024/08/30 00:00:00",

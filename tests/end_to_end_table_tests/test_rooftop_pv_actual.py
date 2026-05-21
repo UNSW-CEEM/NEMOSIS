@@ -5,9 +5,9 @@ around 2019. Has a TYPE column with both SATELLITE (regional estimate
 updated through the day) and DAILY (next-day reconciled) values —
 a given (REGIONID, INTERVAL_DATETIME) can have up to two rows.
 
-Boundary matrix (`test_rooftop_pv_actual_boundary`) filters TYPE=SATELLITE
+Boundary tests (`test_rooftop_pv_actual_boundary`) filter TYPE=SATELLITE
 so the helper sees one row per (REGIONID, interval) and its row-count
-assertions hold. The matrix is auto-generated from
+assertions hold. They are auto-generated from
 `spec.DYNAMIC_TABLES["ROOFTOP_PV_ACTUAL"]["eras"]` by `_boundaries.py`
 — 30-min stride throughout.
 

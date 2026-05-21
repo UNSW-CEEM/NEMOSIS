@@ -3,7 +3,7 @@
 Per-interconnector trading summary. Same 30-min → 5-min transition
 at 2021-10-01 (5MS reform) as TRADINGPRICE.
 
-Boundary matrix (`test_trading_interconnect_boundary`) is auto-generated
+Boundary tests (`test_trading_interconnect_boundary`) are auto-generated
 from `spec.DYNAMIC_TABLES["TRADINGINTERCONNECT"]["eras"]` by
 `_boundaries.py`. The helper picks the right stride per era automatically.
 

@@ -97,35 +97,47 @@ full list lives in `tests/fixtures/spec.py::ERAS`:
 | `2025-01` | Year boundary, `PUBLIC_ARCHIVE#` format, post-bidding-gap                 |
 | `recent`  | Pinned to a date inside AEMO's rolling current-data window                |
 
-The three Jan-1 eras (2020-01, 2022-01, 2025-01) exist primarily for the boundary test matrix —
+The three Jan-1 eras (2020-01, 2022-01, 2025-01) exist primarily for the boundary tests —
 year wraps are exercised by anchoring boundary cases on Jan 1.
 
-## The boundary test matrix
+## Boundary tests
 
-`_boundaries.py` generates a parametrised matrix of (era × flavour × time-of-day) cases for every
-dynamic time-series table. Each case asserts entity-set match, exact per-entity row count,
-first/last timestamp, no duplicates, and regular stride.
+`_boundaries.py` generates two test cases per (table, era) for every dynamic time-series table,
+both anchored on midnight of day 1 of the era month — the natural fence between monthly fixture
+files. Each case asserts entity-set match, exact per-entity row count, first/last timestamp, no
+duplicates, and regular stride.
 
 **Vocabulary:**
 
 - **Era** — a tagged anchor month (e.g. `2021-05`).
-- **T** — time of day for a probe point (e.g. `00:00`, `04:00`, `04:05`).
 - **Stride** — the table's native interval, in minutes (5, 30, etc.).
-- **Boundary** — midnight on day 1 of the era month — the natural fence between fixture files.
-- **Flavour** — how the query window is positioned relative to the boundary:
-  - `at` — 1h forward window starting at T on day 1.
-  - `before` — 1h backward window ending at T on day 1.
-  - `into` — variable window from `last-day-of-prev-month@23:00` to `day1@T`, straddles the
-    boundary at every T.
+- **Boundary** — midnight on day 1 of the era month.
+- **Flavour** — how the 1-hour query window sits against the boundary:
+  - `at` — `[day1 00:00, day1 01:00]`. Every returned row is in the era-month file, but NEMOSIS
+    must still reach into the previous month's file (the uniform buffer-back) in case it holds
+    rows dated into the new month. Catches buffer-back failing to fire.
+  - `before` — `[last-day 23:00, day1 00:00]`. Every returned row is in the *previous* month's
+    file. Catches the previous-month file not running right up to `day1 00:00` — e.g. if a
+    table's month overhang shifts from calendar-day to market-day partitioning — and confirms
+    NEMOSIS never needs a *forward* buffer.
+
+Together the two flavours cover every boundary failure mode known: under-fetch (`at`),
+end-of-archive convention drift (`before`), and filter off-by-one at both window edges. An
+earlier version probed a 9-cell matrix (3 window shapes × 3 times-of-day); 7 of the 9 cells
+turned out to be re-testing plain filter correctness, which is a property of the filter and
+only needs probing once.
+
+Year wraps are exercised for free: the boundary at a Jan-1 era *is* the year boundary, so the
+`at`/`before` cases at 2020-01 / 2022-01 / 2025-01 cover the Dec→Jan file stitch.
 
 **Tables not covered by the helper** (with reasons, in `_boundaries.py::_HELPER_DOES_NOT_COVER`):
 
-- `BIDDAYOFFER_D`, `MNSP_DAYOFFER` — daily stride.
-- `BIDPEROFFER_D` — partitioned by AEMO trading day (04:05 → 04:00 next day) not calendar day.
+- `BIDDAYOFFER_D`, `MNSP_DAYOFFER` — daily stride, not per-interval.
+- `BIDPEROFFER_D` — partitioned by AEMO trading day (04:05 → 04:00 next day) not calendar day;
+  covered directly in `test_bid_per_offer_d.py` instead.
 - `MNSP_PEROFFER` — multi-dimensional rows + known bug (see Known quirks).
-- `DISPATCHCONSTRAINT` — variable per-interval presence.
 
-These tables keep their per-era smoke tests; only the matrix is skipped.
+These tables keep their per-era smoke tests.
 
 ## Adding a test for a new table
 
@@ -138,7 +150,7 @@ These tables keep their per-era smoke tests; only the matrix is skipped.
    files into `tests/fixtures/data/`.
 4. **Write `test_<table_lower>.py`** in `tests/end_to_end_table_tests/`, following the style of
    an existing file. Use the `nemosis_fixture` fixture (from `conftest.py`) to get a fresh cache
-   directory. If the table is suitable for the boundary matrix, parametrise on
+   directory. If the table is suitable for the boundary tests, parametrise on
    `boundary_cases("<TABLE_NAME>")` and assert with `assert_boundary_shape(...)`.
 5. **Run** `uv run pytest tests/end_to_end_table_tests/test_<table>.py -v` and iterate.
 

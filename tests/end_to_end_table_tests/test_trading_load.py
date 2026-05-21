@@ -5,7 +5,7 @@ Per-unit 30-minute trading summary (INITIALMW, TOTALCLEARED, etc.).
 archive for this table when trading merged with dispatch. Only
 pre-2022 eras are fixtured.
 
-Boundary matrix (`test_trading_load_boundary`) is auto-generated from
+Boundary tests (`test_trading_load_boundary`) are auto-generated from
 `spec.DYNAMIC_TABLES["TRADINGLOAD"]["eras"]` by `_boundaries.py` —
 30-min stride throughout.
 

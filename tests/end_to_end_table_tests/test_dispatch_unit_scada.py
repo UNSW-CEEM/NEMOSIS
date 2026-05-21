@@ -4,7 +4,7 @@ Per-unit measured output (SCADAVALUE) at five-minute resolution. Unlike
 DISPATCHLOAD this table has no INTERVENTION column, so every interval
 produces exactly one row per DUID.
 
-Boundary matrix (`test_dispatch_unit_scada_boundary`) is auto-generated
+Boundary tests (`test_dispatch_unit_scada_boundary`) are auto-generated
 from `spec.DYNAMIC_TABLES["DISPATCH_UNIT_SCADA"]["eras"]` by
 `_boundaries.py`.
 

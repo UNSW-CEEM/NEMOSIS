@@ -3,7 +3,7 @@
 Per-interconnector five-minute flow data (MW, losses, constraints).
 Has INTERVENTION column like other dispatch tables.
 
-Boundary matrix (`test_dispatch_interconnectorres_boundary`) is
+Boundary tests (`test_dispatch_interconnectorres_boundary`) are
 auto-generated from `spec.DYNAMIC_TABLES["DISPATCHINTERCONNECTORRES"]
 ["eras"]` by `_boundaries.py`.
 

@@ -3,7 +3,7 @@
 Per-region 30-minute trading summary. Discontinued in 2022 (same
 reason as TRADINGLOAD), so only pre-2022 eras are fixtured.
 
-Boundary matrix (`test_trading_region_sum_boundary`) is auto-generated
+Boundary tests (`test_trading_region_sum_boundary`) are auto-generated
 from `spec.DYNAMIC_TABLES["TRADINGREGIONSUM"]["eras"]` by `_boundaries.py`
 — 30-min stride throughout.
 
