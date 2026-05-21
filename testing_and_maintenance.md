@@ -42,7 +42,6 @@ tests/
   end_to_end_table_tests/
     _boundaries.py                 # Shared boundary-test helper
     test_<table>.py                # One file per AEMO table
-    DECISIONS.md                   # Internal design notes (transitional)
   test_filters.py                  # Pure unit tests
   test_date_generators.py
   test_query_wrappers.py
