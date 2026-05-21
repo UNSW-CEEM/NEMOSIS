@@ -31,8 +31,8 @@ def test_trading_day_buffer_back_at_start_of_month(nemosis_fixture, era_start):
     """A calendar-midnight query on day 1 must reach into the prev-month
     archive for the prior trading day's 00:05 → 04:00 rows and stitch them
     to day 1's 04:05 → onward rows. The [day1 00:00, day1 05:15] window is
-    the canonical shape that exercises this — the buffer-back only fires
-    when start_time is exactly first-of-month midnight (see issue #70)."""
+    the canonical shape that exercises this. The non-midnight start is
+    covered by test_trading_day_buffer_back_at_non_midnight_start."""
     start = pd.to_datetime(era_start, format="%Y/%m/%d %H:%M:%S")
     end = start + pd.Timedelta(hours=5, minutes=15)
 
@@ -50,6 +50,40 @@ def test_trading_day_buffer_back_at_start_of_month(nemosis_fixture, era_start):
     assert len(timestamps) == 63                                      # 5h15min / 5min
     assert timestamps[0] == start + pd.Timedelta(minutes=5)           # 00:05
     assert timestamps[-1] == start + pd.Timedelta(hours=5, minutes=15)  # 05:15
+    diffs = {b - a for a, b in zip(timestamps, timestamps[1:])}
+    assert diffs == {pd.Timedelta(minutes=5)}
+
+
+@pytest.mark.parametrize("era_start", [
+    "2018/05/01 03:00:00",
+    "2021/02/01 03:00:00",
+    "2024/09/01 03:00:00",
+])
+def test_trading_day_buffer_back_at_non_midnight_start(nemosis_fixture, era_start):
+    """Regression test for issue #70. A day-1 query that starts after
+    midnight still needs the previous trading day's archive: the 03:05 →
+    04:00 rows belong to the prior trading day and live in the prev-month
+    file. NEMOSIS used to buffer back only when start_time was exactly
+    first-of-month midnight, so non-midnight day-1 queries silently dropped
+    those rows. The [03:00, 05:00] window straddles the 04:00/04:05
+    trading-day fence, so it also confirms the two archives stitch."""
+    start = pd.to_datetime(era_start, format="%Y/%m/%d %H:%M:%S")
+    end = start + pd.Timedelta(hours=2)
+
+    data = dynamic_data_compiler(
+        start_time=start.strftime("%Y/%m/%d %H:%M:%S"),
+        end_time=end.strftime("%Y/%m/%d %H:%M:%S"),
+        table_name="BIDPEROFFER_D",
+        raw_data_location=str(nemosis_fixture),
+        select_columns=["INTERVAL_DATETIME", "DUID", "BIDTYPE", "MAXAVAIL"],
+        filter_cols=["DUID", "BIDTYPE"],
+        filter_values=(["AGLHAL"], ["ENERGY"]),
+    )
+
+    timestamps = sorted(data["INTERVAL_DATETIME"].tolist())
+    assert len(timestamps) == 24                                  # 2h / 5min
+    assert timestamps[0] == start + pd.Timedelta(minutes=5)       # 03:05
+    assert timestamps[-1] == end                                  # 05:00
     diffs = {b - a for a, b in zip(timestamps, timestamps[1:])}
     assert diffs == {pd.Timedelta(minutes=5)}
 
