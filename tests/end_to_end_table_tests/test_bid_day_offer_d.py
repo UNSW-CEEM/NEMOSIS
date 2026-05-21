@@ -12,6 +12,9 @@ import pytest
 from nemosis import dynamic_data_compiler
 
 
+# Verified against raw AEMO MMSDM archives for each fixtured trading day —
+# HDWF2 bids in exactly these 7 services and no others. See
+# scripts/verify_hdwf2_bidtypes.py to re-check.
 EXPECTED_BIDTYPES = {
     "ENERGY", "RAISEREG", "LOWERREG",
     "RAISE5MIN", "RAISE60SEC", "LOWER5MIN", "LOWER60SEC",
