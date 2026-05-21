@@ -54,16 +54,12 @@ Ready to contribute? Here's how to set up `ispypsa` for local development.
 6. When you're done making changes, check that your changes pass the tests:
 
     ```console
-    $ uv run pytest tests/ \
-        --ignore=tests/test_data_fetch_methods.py \
-        --ignore=tests/test_errors_and_warnings.py \
-        --ignore=tests/test_format_options.py \
-        --ignore=tests/test_performance_stats.py \
-        --ignore=tests/test_processing_info_maps.py
+    $ uv run pytest tests/ --ignore=tests/test_performance_stats.py
     ```
 
-    The suite is fully offline and runs in under a minute. The five ignored files are legacy
-    network-hitting tests slated for removal. CI runs the same invocation on every PR.
+    The suite is fully offline and runs in under a minute. `test_performance_stats.py` is the
+    one remaining legacy network-hitting file (it covers `custom_tables`, not yet ported
+    offline). CI runs the same invocation on every PR.
 
     For details on how the test suite is structured, how to add tests for new tables, and how
     fixtures are maintained, see [testing_and_maintenance.md](testing_and_maintenance.md).

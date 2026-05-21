@@ -28,11 +28,14 @@ FIXTURED_DUIDS = {"AGLHAL", "HDWF2"}
     "2024/09/01 00:00:00",
 ])
 def test_trading_day_buffer_back_at_start_of_month(nemosis_fixture, era_start):
-    """A calendar-midnight query on day 1 must reach into the prev-month
-    archive for the prior trading day's 00:05 → 04:00 rows and stitch them
-    to day 1's 04:05 → onward rows. The [day1 00:00, day1 05:15] window is
-    the canonical shape that exercises this. The non-midnight start is
-    covered by test_trading_day_buffer_back_at_non_midnight_start."""
+    """BIDPEROFFER_D archives are keyed by trading day (04:05 → 04:00),
+    not calendar day: the May 2018 archive's first row is 2018/05/01 04:05,
+    so May 1's 00:05 → 04:00 rows are the tail of the *April* archive. A
+    calendar-midnight query on day 1 therefore has to load the prev-month
+    archive for those rows and stitch them to day 1's 04:05 → onward rows
+    from the current archive. The [day1 00:00, day1 05:15] window is the
+    canonical shape that exercises this; the non-midnight start is covered
+    by test_trading_day_buffer_back_at_non_midnight_start."""
     start = pd.to_datetime(era_start, format="%Y/%m/%d %H:%M:%S")
     end = start + pd.Timedelta(hours=5, minutes=15)
 
