@@ -410,7 +410,7 @@ def plant_stats(
     ix = pd.date_range(
         start=datetime.strptime(start_time, "%Y/%m/%d %H:%M:%S"),
         end=datetime.strptime(end_time, "%Y/%m/%d %H:%M:%S") - timedelta(minutes=5),
-        freq="5T",
+        freq="5min",
     )
     timeseries_df = pd.DataFrame(index=ix)
     timeseries_df.reset_index(inplace=True)
@@ -534,7 +534,7 @@ def trading_and_dispatch_cost():
     ix = pd.date_range(
         start=datetime.strptime("2017/01/01 00:00:00", "%Y/%m/%d %H:%M:%S"),
         end=datetime.strptime("2018/01/01 00:00:00", "%Y/%m/%d %H:%M:%S"),
-        freq="5T",
+        freq="5min",
     )
     timeseries_df = pd.DataFrame(index=ix)
     timeseries_df.reset_index(inplace=True)

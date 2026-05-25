@@ -80,6 +80,24 @@ def test_select_columns_returns_only_those_columns(nemosis_fixture):
     assert list(data.columns) == ["SETTLEMENTDATE", "RRP"]
 
 
+def test_one_second_fcas_columns_included_by_default(nemosis_fixture):
+    """AEMO added 1-second contingency FCAS to DISPATCHPRICE in October
+    2023. When no explicit select_columns is passed, the default list
+    (defaults.table_columns['DISPATCHPRICE']) must include RAISE1SECRRP
+    and LOWER1SECRRP so they round-trip through dynamic_data_compiler.
+    Uses the 2024-12 fixture, which is post-cutover and contains the
+    columns in the source CSV."""
+    data = dynamic_data_compiler(
+        start_time="2024/12/01 00:00:00",
+        end_time="2024/12/01 00:30:00",
+        table_name="DISPATCHPRICE",
+        raw_data_location=str(nemosis_fixture),
+    )
+
+    assert "RAISE1SECRRP" in data.columns
+    assert "LOWER1SECRRP" in data.columns
+
+
 def test_multi_day_cross_month_query(nemosis_fixture):
     """3-day window straddling Aug→Sep 2024 exercises `year_and_month_gen`'s
     multi-month iteration (which the boundary tests' 1h windows
