@@ -446,8 +446,7 @@ def _finalise_csv_data(data, table_name):
 static_downloader_map = {
     "VARIABLES_FCAS_4_SECOND": _downloader.download_csv,
     "ELEMENTS_FCAS_4_SECOND": _downloader.download_elements_file,
-    "Generators and Scheduled Loads": _downloader.download_xl,
-    "_downloader.download_xl": _downloader.download_xl,
+    "Generators and Scheduled Loads": _downloader.download_xlsx,
 }
 
 static_file_reader_map = {

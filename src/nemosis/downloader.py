@@ -280,10 +280,10 @@ def download_elements_file(url, path_and_name):
         f.write(r.content)
 
 
-def download_xl(url, path_and_name):
+def download_xlsx(url, path_and_name):
     """
-    This function downloads a zipped csv using a url, extracts the csv and
-    saves it a specified location
+    Download an Excel (.xlsx) file from a URL and save it to the
+    specified path. Used for AEMO's NEM Registration and Exemption List.
     """
     r = requests.get(url, headers=USR_AGENT_HEADER)
     with open(path_and_name, "wb") as f:
