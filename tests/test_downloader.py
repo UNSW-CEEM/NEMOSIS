@@ -51,10 +51,10 @@ def test_download_csv_raises_on_404(aemo_mock_server):
             )
 
 
-def test_download_xl_raises_on_404(aemo_mock_server):
+def test_download_xlsx_raises_on_404(aemo_mock_server):
     with tempfile.TemporaryDirectory() as tmp:
         with pytest.raises(requests.HTTPError):
-            downloader.download_xl(
+            downloader.download_xlsx(
                 f"{aemo_mock_server}/does/not/exist.xlsx",
                 f"{tmp}/out.xlsx",
             )
