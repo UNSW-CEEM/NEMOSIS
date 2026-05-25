@@ -50,7 +50,7 @@ Choose the exe from the latest [release](https://github.com/UNSW-CEEM/NEMOSIS/re
 
 ## Contributing
 
-Interested in contributing? Check out the [contributing instructions](./CONTRIBUTING. md), which also includes steps to install `nemosis` for development.
+Interested in contributing? Check out the [contributing instructions](./CONTRIBUTING.md), which also includes steps to install `nemosis` for development.
 
 Please note that this project is released with a [Code of Conduct](./CONDUCT.md). By contributing to this project, you agree to abide by its terms.
 
