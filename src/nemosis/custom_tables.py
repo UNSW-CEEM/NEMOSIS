@@ -2,8 +2,10 @@ import pandas as pd
 from datetime import timedelta, datetime
 import math
 import numpy as np
-from nemosis import defaults, data_fetch_methods, filters
-
+from nemosis import defaults
+from nemosis.date_generators import parse_datetime_py
+from nemosis.filters import filter_on_column_value
+from nemosis.data_fetch_methods import dynamic_data_compiler, static_table
 
 def fcas4s_scada_match(
     start_time,
@@ -17,12 +19,12 @@ def fcas4s_scada_match(
 
     # Pull in the 4 second fcas data.
     table_name_fcas4s = "FCAS_4_SECOND"
-    fcas4s = data_fetch_methods.dynamic_data_compiler(
+    fcas4s = dynamic_data_compiler(
         start_time, end_time, table_name_fcas4s, raw_data_location
     )
     # Pull in the 4 second fcas variable types.
     table_name_variable_types = "VARIABLES_FCAS_4_SECOND"
-    fcas4s_variable_types = data_fetch_methods.static_table(
+    fcas4s_variable_types = static_table(
         table_name_variable_types, raw_data_location
     )
 
@@ -52,7 +54,7 @@ def fcas4s_scada_match(
 
     # Pull in the dispatch unit scada data.
     table_name_scada = "DISPATCH_UNIT_SCADA"
-    scada = data_fetch_methods.dynamic_data_compiler(
+    scada = dynamic_data_compiler(
         start_time, end_time, table_name_scada, raw_data_location
     )
     scada["SETTLEMENTDATE"] = scada["SETTLEMENTDATE"] - timedelta(minutes=5)
@@ -62,7 +64,7 @@ def fcas4s_scada_match(
 
     # Pull in the interconnector scada data and use the intervention records where the exist.
     table_name_inter_flow = "DISPATCHINTERCONNECTORRES"
-    inter_flows = data_fetch_methods.dynamic_data_compiler(
+    inter_flows = dynamic_data_compiler(
         start_time, end_time, table_name_inter_flow, raw_data_location
     )
     inter_flows["METEREDMWFLOW"] = pd.to_numeric(inter_flows["METEREDMWFLOW"])
@@ -144,7 +146,7 @@ def fcas4s_scada_match(
         best_matches_scada = best_matches_scada.loc[:, select_columns]
 
     if filter_cols is not None:
-        best_matches_scada = filters.filter_on_column_value(
+        best_matches_scada = filter_on_column_value(
             best_matches_scada, filter_cols, filter_values
         )
 
@@ -408,15 +410,15 @@ def plant_stats(
 ):
 
     ix = pd.date_range(
-        start=datetime.strptime(start_time, "%Y/%m/%d %H:%M:%S"),
-        end=datetime.strptime(end_time, "%Y/%m/%d %H:%M:%S") - timedelta(minutes=5),
+        start=parse_datetime_py(start_time, midnight='start'),
+        end=parse_datetime_py(end_time, midnight='end') - timedelta(minutes=5),
         freq="5min",
     )
     timeseries_df = pd.DataFrame(index=ix)
     timeseries_df.reset_index(inplace=True)
     timeseries_df.columns = ["SETTLEMENTDATE"]
 
-    gen_max_cap = data_fetch_methods.dynamic_data_compiler(
+    gen_max_cap = dynamic_data_compiler(
         start_time,
         end_time,
         "DUDETAIL",
@@ -428,7 +430,7 @@ def plant_stats(
     gen_max_cap = select_highest_version_number(
         gen_max_cap, defaults.table_primary_keys["DUDETAIL"]
     )
-    gen_region = data_fetch_methods.dynamic_data_compiler(
+    gen_region = dynamic_data_compiler(
         start_time,
         end_time,
         "DUDETAILSUMMARY",
@@ -437,14 +439,14 @@ def plant_stats(
         filter_cols=filter_cols,
         filter_values=filter_values,
     )
-    scada = data_fetch_methods.dynamic_data_compiler(
+    scada = dynamic_data_compiler(
         start_time,
         end_time,
         "DISPATCH_UNIT_SCADA",
         raw_data_location,
         select_columns=["SETTLEMENTDATE", "DUID", "SCADAVALUE"],
     )
-    dispatch_price = data_fetch_methods.dynamic_data_compiler(
+    dispatch_price = dynamic_data_compiler(
         start_time,
         end_time,
         "DISPATCHPRICE",
@@ -454,7 +456,7 @@ def plant_stats(
     dispatch_price = select_intervention_if_present(
         dispatch_price, defaults.table_primary_keys["DISPATCHPRICE"]
     )
-    trading_price = data_fetch_methods.dynamic_data_compiler(
+    trading_price = dynamic_data_compiler(
         start_time,
         end_time,
         "TRADINGPRICE",
@@ -465,7 +467,7 @@ def plant_stats(
     trading_price["RRP"] = pd.to_numeric(trading_price["RRP"])
     # trading_price = calc_trading_price(dispatch_price)
 
-    region_summary = data_fetch_methods.dynamic_data_compiler(
+    region_summary = dynamic_data_compiler(
         start_time,
         end_time,
         "DISPATCHREGIONSUM",
@@ -517,14 +519,14 @@ def plant_stats(
 
 
 def trading_and_dispatch_cost():
-    gen_region = data_fetch_methods.dynamic_data_compiler(
+    gen_region = dynamic_data_compiler(
         "2017/01/01 00:05:00",
         "2018/01/01 00:05:00",
         "DUDETAILSUMMARY",
         defaults.raw_data_cache,
         select_columns=["START_DATE", "END_DATE", "DUID", "REGIONID"],
     )
-    scada = data_fetch_methods.dynamic_data_compiler(
+    scada = dynamic_data_compiler(
         "2017/01/01 00:05:00",
         "2018/01/01 00:05:00",
         "DISPATCH_UNIT_SCADA",
@@ -532,8 +534,8 @@ def trading_and_dispatch_cost():
     )
 
     ix = pd.date_range(
-        start=datetime.strptime("2017/01/01 00:00:00", "%Y/%m/%d %H:%M:%S"),
-        end=datetime.strptime("2018/01/01 00:00:00", "%Y/%m/%d %H:%M:%S"),
+        start=datetime(2017, 1, 1),
+        end=datetime(2018, 1, 1),
         freq="5min",
     )
     timeseries_df = pd.DataFrame(index=ix)
@@ -551,7 +553,7 @@ def trading_and_dispatch_cost():
 
     scada = pd.concat(scada_list)
 
-    dispatch_price = data_fetch_methods.dynamic_data_compiler(
+    dispatch_price = dynamic_data_compiler(
         "2017/01/01 00:00:00",
         "2018/01/01 00:05:00",
         "DISPATCHPRICE",

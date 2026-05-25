@@ -892,6 +892,10 @@ date_formats = [
     '%Y-%m-%d %H:%M:%S'
 ]
 
+# If a user passes a datetime to us, as a string,
+# it should be in this format.
+nemosis_date_format = "%Y/%m/%d %H:%M:%S"
+
 # data is available from 2009
 # however for 2009-2014, the structure in MMSDM is different.
 # It's one zip per month, with all tables combined.

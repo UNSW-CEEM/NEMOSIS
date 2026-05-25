@@ -1,15 +1,25 @@
 import pandas as pd
 from datetime import datetime, timedelta
-from nemosis import defaults, _parse_datetime
+from nemosis import defaults
+from nemosis.date_generators import parse_datetime_py
+from nemosis.value_parser import _parse_datetime_np
+
+
+# Setup functions normalise their start_time / end_time inputs via
+# parse_datetime_py so they accept any of the public input shapes
+# (str / datetime / date) — see #44, #53. They still return strings
+# because the existing downstream contract feeds back through
+# _parse_datetime_py again in dynamic_data_compiler / cache_compiler;
+# returning datetimes would also work but enlarges the diff.
 
 
 def dispatch_date_setup(start_time, end_time):
-    start_time = datetime.strptime(start_time, "%Y/%m/%d %H:%M:%S")
+    start_time = parse_datetime_py(start_time, midnight='start')
     start_time = start_time - timedelta(hours=4)
     start_time = start_time.replace(hour=0, minute=0)
     start_time = start_time - timedelta(seconds=1)
     start_time = datetime.isoformat(start_time).replace("-", "/").replace("T", " ")
-    end_time = datetime.strptime(end_time, "%Y/%m/%d %H:%M:%S")
+    end_time = parse_datetime_py(end_time, midnight='end')
     end_time = end_time - timedelta(hours=4, seconds=1)
     end_time = datetime.isoformat(end_time).replace("-", "/").replace("T", " ")
     end_time = end_time[:10]
@@ -19,7 +29,7 @@ def dispatch_date_setup(start_time, end_time):
 
 
 def dispatch_half_hour_setup(start_time, end_time):
-    start_time = datetime.strptime(start_time, "%Y/%m/%d %H:%M:%S")
+    start_time = parse_datetime_py(start_time, midnight='start')
     start_time = datetime(
         year=start_time.year,
         month=start_time.month,
@@ -70,5 +80,5 @@ def drop_duplicates_by_primary_key(data, start_time, table_name):
 
 def convert_genconid_effectivedate_to_datetime_format(data, start_time, table_name):
     if "GENCONID_EFFECTIVEDATE" in data.columns:
-        data["GENCONID_EFFECTIVEDATE"] = _parse_datetime(data["GENCONID_EFFECTIVEDATE"])
+        data["GENCONID_EFFECTIVEDATE"] = _parse_datetime_np(data["GENCONID_EFFECTIVEDATE"])
     return data

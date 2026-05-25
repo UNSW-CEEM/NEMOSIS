@@ -3,13 +3,13 @@ import os as _os
 import glob as _glob
 import pandas as _pd
 from datetime import datetime as _datetime, timedelta as _timedelta
-from nemosis import filters as _filters
 from nemosis import downloader as _downloader
+from nemosis.filters import filter_on_column_value as _filter_on_column_value
 from nemosis import processing_info_maps as _processing_info_maps
 from nemosis import date_generators as _date_generators
 from nemosis import defaults as _defaults
-from nemosis import custom_tables as _custom_tables
-from nemosis import _infer_column_data_types
+from nemosis.value_parser import _infer_column_data_types
+from nemosis.date_generators import parse_datetime_py as _parse_datetime_py
 from nemosis.custom_errors import UserInputError, NoDataToReturn, DataMismatchError
 
 logger = logging.getLogger(__name__)
@@ -35,8 +35,12 @@ def dynamic_data_compiler(
     will save data typed as strings/objects. To save typed data (e.g.
     appropriate cols are Float or Int), use cache_compiler.
     Args:
-        start_time (str): format 'yyyy/mm/dd HH:MM:SS'.
-        end_time (str): format 'yyyy/mm/dd HH:MM:SS'.
+        start_time (datetime): A native datetime. (Timezone unaware) 
+                               For legacy reasons, may be a string 
+                               of format 'yyyy/mm/dd HH:MM:SS'.
+        end_time (datetime):   A native datetime. (Timezone unaware) 
+                               For legacy reasons, may be a string 
+                               of format 'yyyy/mm/dd HH:MM:SS'.
         table_name (str): table as per Wiki.
         raw_data_location (str): directory to download and cache data to.
                                  existing data will be used if in this dir.
@@ -107,9 +111,10 @@ def dynamic_data_compiler(
 
     logger.info(f"Compiling data for table {table_name}")
 
-    start_time = _datetime.strptime(start_time, "%Y/%m/%d %H:%M:%S")
-    end_time = _datetime.strptime(end_time, "%Y/%m/%d %H:%M:%S")
-    start_search = _datetime.strptime(start_search, "%Y/%m/%d %H:%M:%S")
+    # cast from string to datetime, if not already datetime
+    start_time = _parse_datetime_py(start_time, midnight='start')
+    end_time = _parse_datetime_py(end_time, midnight='end')
+    start_search = _parse_datetime_py(start_search, midnight='start')
     data_tables = _dynamic_data_fetch_loop(
         start_search,
         start_time,
@@ -140,7 +145,7 @@ def dynamic_data_compiler(
                 ]
                 UserInputError(f"Filter columns {missing_columns} not in data.")
             else:
-                all_data = _filters.filter_on_column_value(
+                all_data = _filter_on_column_value(
                     all_data, filter_cols, filter_values
                 )
         logger.info(f"Returning {table_name}.")
@@ -178,8 +183,12 @@ def cache_compiler(
     that is used to store csvs (such as the cache for the GUI).
 
     Args:
-        start_time (str): format 'yyyy/mm/dd HH:MM:SS'.
-        end_time (str): format 'yyyy/mm/dd HH:MM:SS'.
+        start_time (datetime): A native datetime. (Timezone unaware) 
+                               For legacy reasons, may be a string 
+                               of format 'yyyy/mm/dd HH:MM:SS'.
+        end_time (datetime):   A native datetime. (Timezone unaware) 
+                               For legacy reasons, may be a string 
+                               of format 'yyyy/mm/dd HH:MM:SS'.
         table_name (str): table as per Wiki.
         raw_data_location (str): directory to download and cache data to.
                                  existing data will be used if in this dir.
@@ -239,9 +248,9 @@ def cache_compiler(
         _,
         start_search,
     ) = _set_up_dynamic_compilers(table_name, start_time, end_time, select_columns)
-    start_time = _datetime.strptime(start_time, "%Y/%m/%d %H:%M:%S")
-    end_time = _datetime.strptime(end_time, "%Y/%m/%d %H:%M:%S")
-    start_search = _datetime.strptime(start_search, "%Y/%m/%d %H:%M:%S")
+    start_time = _parse_datetime_py(start_time, midnight='start')
+    end_time = _parse_datetime_py(end_time, midnight='end')
+    start_search = _parse_datetime_py(start_search, midnight='start')
 
     _dynamic_data_fetch_loop(
         start_search,
@@ -355,7 +364,7 @@ def static_table(
             missing_columns = [col for col in filter_cols if col not in table.columns]
             UserInputError(f"Filter columns {missing_columns} not in data.")
         else:
-            table = _filters.filter_on_column_value(table, filter_cols, filter_values)
+            table = _filter_on_column_value(table, filter_cols, filter_values)
 
     static_table_finalisers = static_data_finaliser_map[table_name]
     for finaliser in static_table_finalisers:
@@ -878,44 +887,3 @@ def _static_table_wrapper_for_gui(
     )
     return table
 
-
-_method_map = {
-    "DISPATCHLOAD": _dynamic_data_wrapper_for_gui,
-    "DISPATCHPRICE": _dynamic_data_wrapper_for_gui,
-    "TRADINGLOAD": _dynamic_data_wrapper_for_gui,
-    "TRADINGPRICE": _dynamic_data_wrapper_for_gui,
-    "TRADINGREGIONSUM": _dynamic_data_wrapper_for_gui,
-    "TRADINGINTERCONNECT": _dynamic_data_wrapper_for_gui,
-    "DISPATCH_UNIT_SCADA": _dynamic_data_wrapper_for_gui,
-    "DISPATCHCONSTRAINT": _dynamic_data_wrapper_for_gui,
-    "DUDETAILSUMMARY": _dynamic_data_wrapper_for_gui,
-    "PARTICIPANT": _dynamic_data_wrapper_for_gui,
-    "DUDETAIL": _dynamic_data_wrapper_for_gui,
-    "GENCONDATA": _dynamic_data_wrapper_for_gui,
-    "SPDREGIONCONSTRAINT": _dynamic_data_wrapper_for_gui,
-    "SPDCONNECTIONPOINTCONSTRAINT": _dynamic_data_wrapper_for_gui,
-    "SPDINTERCONNECTORCONSTRAINT": _dynamic_data_wrapper_for_gui,
-    "FCAS_4_SECOND": _dynamic_data_wrapper_for_gui,
-    "ELEMENTS_FCAS_4_SECOND": _static_table_wrapper_for_gui,
-    "VARIABLES_FCAS_4_SECOND": _static_table_wrapper_for_gui,
-    "Generators and Scheduled Loads": _static_table_wrapper_for_gui,
-    "FCAS Providers": _static_table_wrapper_for_gui,
-    "BIDDAYOFFER_D": _dynamic_data_wrapper_for_gui,
-    "BIDPEROFFER_D": _dynamic_data_wrapper_for_gui,
-    "FCAS_4s_SCADA_MAP": _custom_tables.fcas4s_scada_match,
-    "PLANTSTATS": _custom_tables.plant_stats,
-    "DISPATCHINTERCONNECTORRES": _dynamic_data_wrapper_for_gui,
-    "DISPATCHREGIONSUM": _dynamic_data_wrapper_for_gui,
-    "LOSSMODEL": _dynamic_data_wrapper_for_gui,
-    "LOSSFACTORMODEL": _dynamic_data_wrapper_for_gui,
-    "MNSP_DAYOFFER": _dynamic_data_wrapper_for_gui,
-    "MNSP_PEROFFER": _dynamic_data_wrapper_for_gui,
-    "MNSP_INTERCONNECTOR": _dynamic_data_wrapper_for_gui,
-    "INTERCONNECTOR": _dynamic_data_wrapper_for_gui,
-    "INTERCONNECTORCONSTRAINT": _dynamic_data_wrapper_for_gui,
-    "MARKET_PRICE_THRESHOLDS": _dynamic_data_wrapper_for_gui,
-    "DAILY_REGION_SUMMARY": _dynamic_data_wrapper_for_gui,
-    "NEXT_DAY_DISPATCHLOAD": _dynamic_data_wrapper_for_gui,
-    "INTERMITTENT_GEN_SCADA": _dynamic_data_wrapper_for_gui,
-    "ROOFTOP_PV_ACTUAL": _dynamic_data_wrapper_for_gui
-}

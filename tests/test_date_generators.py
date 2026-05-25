@@ -1,6 +1,9 @@
 import unittest
-from datetime import datetime
-from nemosis import date_generators
+from datetime import datetime, date
+
+import pytz
+
+from nemosis import defaults, date_generators
 
 
 class TestYearAndMonthGen(unittest.TestCase):
@@ -357,3 +360,50 @@ class TestYearMonthDayIndexGen(unittest.TestCase):
         self.assertEqual(times[-1][2], "07")
         self.assertEqual(times[-1][3], "0000")
         self.assertEqual(len(times), 1740)
+
+class TestParseDatetimePy(unittest.TestCase):
+    def test_dt_to_dt(self):
+        # if we pass in a dt (no timezone) we get the same thing back
+        dt = datetime(2023, 1, 1, 12, 0, 0)
+        result = date_generators.parse_datetime_py(dt)
+        self.assertEqual(result, dt)
+        self.assertIsNone(result.tzinfo)
+
+    def test_dt_to_dt_with_tz(self):
+        # if we pass in a dt with a timezone specified, we get an exception thrown
+        tz = pytz.timezone('Australia/Brisbane')
+        dt_with_tz = tz.localize(datetime(2023, 1, 1, 12, 0, 0))
+        with self.assertRaises((ValueError, TypeError, AssertionError)):
+            date_generators.parse_datetime_py(dt_with_tz)
+
+    def test_valid_s_to_dt(self):
+        # if we pass in a string of right format, we get the corresponding datetime back
+        dt_string = "2023/01/01 12:00:00"
+        expected = datetime(2023, 1, 1, 12, 0, 0)
+        result = date_generators.parse_datetime_py(dt_string)
+        self.assertEqual(result, expected)
+        self.assertIsNone(result.tzinfo)
+
+    def test_invalid_s_to_dt(self):
+        # if we pass in a string in the wrong format,
+        # we get an exception thrown
+        # ("T" is the wrong part)
+        dt_string_invalid = "2023/01/01T12:00:00"
+        with self.assertRaises((ValueError, TypeError, AssertionError)):
+            date_generators.parse_datetime_py(dt_string_invalid)
+
+    def test_date_to_dt(self):
+        d = date(2026, 1, 2)
+        expected_t_start = datetime(2026, 1, 2)
+        expected_t_end = datetime(2026, 1, 3)
+        
+        actual_t_start = date_generators.parse_datetime_py(d, midnight='start')
+        actual_t_end = date_generators.parse_datetime_py(d, midnight='end')
+
+        self.assertEqual(expected_t_start, actual_t_start)
+        self.assertEqual(expected_t_end, actual_t_end)
+
+        with self.assertRaises(ValueError):
+            actual_t_start = date_generators.parse_datetime_py(d, midnight='Start')
+
+        self.assertEqual(date_generators.parse_datetime_py(d, midnight='start'), date_generators.parse_datetime_py(d))

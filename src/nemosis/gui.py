@@ -1,4 +1,5 @@
-from nemosis import rows, defaults, data_fetch_methods
+from nemosis import rows, defaults
+from nemosis.method_map import _method_map
 import pandas as pd
 import tkinter as tk
 import tkinter.ttk as ttk
@@ -362,7 +363,7 @@ class App(ttk.Frame):
         start_time = row.start_time.get()
         end_time = row.end_time.get()
         # Call the query using the tables predefined wraper function.
-        result = data_fetch_methods._method_map[table](
+        result = _method_map[table](
             start_time,
             end_time,
             table,

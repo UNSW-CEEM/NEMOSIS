@@ -100,9 +100,10 @@ Your workflow may determine how you use NEMOSIS. Because the GUI relies on data 
 
 ```python
 from nemosis import dynamic_data_compiler
+from datetime import datetime
 
-start_time = '2017/01/01 00:00:00'
-end_time = '2017/01/01 00:05:00'
+start_time = datetime(2017, 1, 1, 0, 0)
+end_time = datetime(2017, 1, 1, 0, 5)
 table = 'DISPATCHPRICE'
 raw_data_cache = 'C:/Users/your_data_storage'
 
@@ -112,6 +113,8 @@ price_data = dynamic_data_compiler(start_time, end_time, table, raw_data_cache)
 Using the default settings of `dynamic_data_compiler` will download CSV data from AEMO's NEMWeb portal and save it to the `raw_data_cache` directory. It will also create a feather file version of each CSV (feather files have a faster read time). Subsequent `dynamic_data_compiler` calls will check if any data in `raw_data_cache` matches the query and loads it. This means that subsequent `dynamic_data_compiler` will be faster so long as the cached data is available.
 
 A number of options are available to configure filtering (i.e. what data NEMOSIS returns as a pandas DataFrame) and caching.
+
+For `start_time` and `end_time` you can pass a datetime (timezone unaware), a `date`, or a string of the form "YYYY/MM/DD HH:MM:SS", e.g. `2017/01/01 00:00:00`.
 
 ###### Filter options
 
@@ -206,8 +209,8 @@ from nemosis import defaults
 
 defaults.table_columns['BIDPEROFFER_D'] += ['PASAAVAILABILITY']
 
-start_time = '2017/01/01 00:00:00'
-end_time = '2017/01/01 00:05:00'
+start_time = datetime(2017, 1, 1, 0, 0)
+end_time = datetime(2017, 1, 1, 0, 5)
 table = 'BIDPEROFFER_D'
 raw_data_cache = 'C:/Users/your_data_storage'
 
