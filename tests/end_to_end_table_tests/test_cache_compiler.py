@@ -4,13 +4,13 @@ that writes typed feather / parquet files to disk for downstream consumers.
 Verifies (a) the round-trip through cache → dynamic_data_compiler preserves
 typed columns, (b) `select_columns` narrows the cached file itself, not
 just the returned frame, (c) cache directory is auto-created when missing,
-(d) keep_csv=True is the default behaviour, and (e) partial cache files
-are cleaned up when a feather/parquet write fails mid-flight.
+(d) keep_csv / keep_zip defaults and opt-in paths, and (e) partial cache
+files are cleaned up when a feather/parquet write fails mid-flight.
 """
 import pandas as pd
 import pytest
 
-from nemosis import cache_compiler, data_fetch_methods, dynamic_data_compiler
+from nemosis import cache_compiler, data_fetch_methods, defaults, dynamic_data_compiler
 from nemosis.custom_errors import UserInputError
 
 
@@ -92,12 +92,12 @@ def test_raises_when_cache_path_is_a_file(nemosis_fixture):
         )
 
 
-def test_keep_csv_true_by_default_keeps_fetched_csv(nemosis_fixture):
+def test_keep_csv_true_retains_csv(nemosis_fixture):
     """When cache_compiler actually has to fetch (no existing feather, so
-    the code path that downloads + extracts a CSV runs), the default
-    keep_csv=True must leave the extracted CSV on disk alongside the
-    feather. rebuild=True forces the fetch path so this test isn't
-    dependent on tmp_path being empty at start.
+    the code path that downloads + extracts a CSV runs), `keep_csv=True`
+    must leave the extracted CSV on disk alongside the feather.
+    rebuild=True forces the fetch path so this test isn't dependent on
+    tmp_path being empty at start.
 
     AEMO zips contain CSV files with an uppercase .CSV extension —
     NEMOSIS handles this internally with [cC][sS][vV] globs and the
@@ -107,25 +107,25 @@ def test_keep_csv_true_by_default_keeps_fetched_csv(nemosis_fixture):
         table_name="DISPATCHPRICE",
         raw_data_location=str(nemosis_fixture),
         rebuild=True,
-        # no keep_csv kwarg — exercises the default
+        keep_csv=True,
     )
     csv_files = list(nemosis_fixture.glob("*DISPATCHPRICE*.[Cc][Ss][Vv]"))
-    assert csv_files, "default keep_csv=True should retain the fetched CSV"
+    assert csv_files, "keep_csv=True should retain the fetched CSV"
 
 
-def test_keep_csv_false_removes_fetched_csv(nemosis_fixture):
-    """Mirror of the above with the override — verifies the opt-out
-    path still works (the source-side delete in _dynamic_data_fetch_loop
-    fires only when keep_csv is False)."""
+def test_keep_csv_default_is_false(nemosis_fixture):
+    """Default behaviour — keep_csv=False removes the extracted CSV
+    after the typed feather is written, leaving only the feather in
+    the cache. Users who want raw retention opt in via keep_csv=True."""
     cache_compiler(
         start_time=START, end_time=END,
         table_name="DISPATCHPRICE",
         raw_data_location=str(nemosis_fixture),
         rebuild=True,
-        keep_csv=False,
+        # no keep_csv kwarg — exercises the default
     )
     csv_files = list(nemosis_fixture.glob("*DISPATCHPRICE*.[Cc][Ss][Vv]"))
-    assert not csv_files, "keep_csv=False should remove the fetched CSV"
+    assert not csv_files, f"default keep_csv=False should remove CSV; found: {csv_files}"
 
 
 def test_existing_feather_means_no_csv_is_fetched(nemosis_fixture):
@@ -153,6 +153,77 @@ def test_existing_feather_means_no_csv_is_fetched(nemosis_fixture):
         "keep_csv=True should NOT cause a CSV to be created when the "
         "feather already exists — the CSV branch must not run at all"
     )
+
+
+def test_keep_zip_default_is_false(nemosis_fixture):
+    """Default behaviour — keep_zip=False removes the downloaded zip
+    after extracting the CSV. Lean cache; only the typed feather (and
+    optional CSV if keep_csv=True) remains."""
+    cache_compiler(
+        start_time=START, end_time=END,
+        table_name="DISPATCHPRICE",
+        raw_data_location=str(nemosis_fixture),
+        rebuild=True,
+        # no keep_zip kwarg — exercises the default
+    )
+    zip_files = list(nemosis_fixture.glob("*.zip"))
+    assert not zip_files, f"default keep_zip=False should remove zips; found: {zip_files}"
+
+
+def test_keep_zip_true_retains_zip(nemosis_fixture):
+    """keep_zip=True is the opt-in for #56's slow-internet use case —
+    the AEMO archive zip stays on disk after extraction so subsequent
+    runs can re-extract without re-downloading."""
+    cache_compiler(
+        start_time=START, end_time=END,
+        table_name="DISPATCHPRICE",
+        raw_data_location=str(nemosis_fixture),
+        rebuild=True,
+        keep_zip=True,
+    )
+    zip_files = list(nemosis_fixture.glob("*.zip"))
+    assert zip_files, "keep_zip=True should retain the downloaded zip"
+
+
+def test_cached_zip_extracts_without_network(nemosis_fixture, monkeypatch):
+    """The #56 benefit in action: with keep_zip=True on a first call,
+    a subsequent call that needs the same CSV but finds the feather
+    missing should re-extract from the cached zip locally without
+    hitting nemweb. Proves it by breaking the AEMO URL after the first
+    call — if the second call tries to fetch, it would 404 against the
+    bad URL."""
+    # First call — populate cache with zip retained
+    cache_compiler(
+        start_time=START, end_time=END,
+        table_name="DISPATCHPRICE",
+        raw_data_location=str(nemosis_fixture),
+        rebuild=True,
+        keep_zip=True,
+    )
+    feather_files = list(nemosis_fixture.glob("*.feather"))
+    zip_files = list(nemosis_fixture.glob("*.zip"))
+    assert feather_files and zip_files
+
+    # Delete the feather so the loop has to call _download_data again,
+    # but leave the zip in place so the lower-level download_to_path
+    # short-circuits on the cached file.
+    for f in feather_files:
+        f.unlink()
+
+    # Point the URL at a dead address — any actual network call would fail.
+    monkeypatch.setattr(defaults, "aemo_mms_url", "http://127.0.0.1:1/dead/{}/{}/{}/{}.zip")
+
+    # Should succeed using the cached zip, no network required.
+    cache_compiler(
+        start_time=START, end_time=END,
+        table_name="DISPATCHPRICE",
+        raw_data_location=str(nemosis_fixture),
+        rebuild=True,
+        keep_zip=True,
+    )
+
+    # Feather rebuilt from the cached zip
+    assert list(nemosis_fixture.glob("*.feather")), "cache should be rebuilt from cached zip"
 
 
 @pytest.mark.parametrize("fformat", ["feather", "parquet"])

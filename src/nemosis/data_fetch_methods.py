@@ -24,7 +24,8 @@ def dynamic_data_compiler(
     filter_cols=None,
     filter_values=None,
     fformat="feather",
-    keep_csv=True,
+    keep_csv=False,
+    keep_zip=False,
     parse_data_types=True,
     rebuild=False,
     **kwargs,
@@ -51,7 +52,14 @@ def dynamic_data_compiler(
                           Stored parquet and feather files will store columns
                           as object type (compatbile with GUI use). For
                           type inference for a cache, use cache_compiler.
-        keep_csv (bool): retains CSVs in cache.
+        keep_csv (bool): If True, raw CSVs from AEMO are retained in the
+                         cache directory after the typed feather/parquet
+                         is written. False by default — lean cache.
+        keep_zip (bool): If True, downloaded AEMO archive zips are
+                         retained in the cache directory after extraction.
+                         False by default. Set True on slow connections
+                         to avoid re-downloading on subsequent runs
+                         (see #56).
         data_merge (bool): concatenate DataFrames and return one DataFrame.
                            If False, will not return any data.
         parse_data_types (bool): infers data types of columns when reading
@@ -112,6 +120,7 @@ def dynamic_data_compiler(
         date_filter,
         fformat=fformat,
         keep_csv=keep_csv,
+        keep_zip=keep_zip,
         rebuild=rebuild,
         write_kwargs=kwargs,
     )
@@ -156,7 +165,8 @@ def cache_compiler(
     select_columns=None,
     fformat="feather",
     rebuild=False,
-    keep_csv=True,
+    keep_csv=False,
+    keep_zip=False,
     **kwargs,
 ):
     """
@@ -183,8 +193,14 @@ def cache_compiler(
                           type inference for a cache, use cache_compiler.
         rebuild (bool): If True then cache files are rebuilt
                         even if they exist already. False by default.
-        keep_csv (bool): If True raw CSVs from AEMO are not deleted after
-                         the cache is built. True by default
+        keep_csv (bool): If True, raw CSVs from AEMO are retained
+                         alongside the typed feather/parquet after the
+                         cache is built. False by default — lean cache.
+        keep_zip (bool): If True, downloaded AEMO archive zips are
+                         retained in the cache directory after
+                         extraction. False by default. Set True on
+                         slow connections to avoid re-downloading on
+                         subsequent runs (see #56).
         **kwargs: additional arguments passed to the pd.to_{fformat}() function
 
     Returns:
@@ -237,6 +253,7 @@ def cache_compiler(
         date_filter=None,
         fformat=fformat,
         keep_csv=keep_csv,
+        keep_zip=keep_zip,
         caching_mode=True,
         rebuild=rebuild,
         write_kwargs=kwargs,
@@ -544,7 +561,8 @@ def _dynamic_data_fetch_loop(
     select_columns,
     date_filter,
     fformat="feather",
-    keep_csv=True,
+    keep_csv=False,
+    keep_zip=False,
     caching_mode=False,
     rebuild=False,
     write_kwargs={},
@@ -595,6 +613,7 @@ def _dynamic_data_fetch_loop(
                     chunk,
                     index,
                     raw_data_location,
+                    keep_zip=keep_zip,
                 )
 
             if _glob.glob(full_filename) and fformat != "csv" and not rebuild:
@@ -795,7 +814,8 @@ def _write_to_format(data, fformat, full_filename, write_kwargs):
 
 
 def _download_data(
-    table_name, table_type, filename_stub, day, month, year, chunk, index, raw_data_location
+    table_name, table_type, filename_stub, day, month, year, chunk, index, raw_data_location,
+    keep_zip=False,
 ):
     """
     Dispatch table to downloader to be downloaded.
@@ -820,7 +840,8 @@ def _download_data(
             )
 
     _processing_info_maps.downloader[table_type](
-        year, month, day, chunk, index, filename_stub, raw_data_location
+        year, month, day, chunk, index, filename_stub, raw_data_location,
+        keep_zip=keep_zip,
     )
     return
 
