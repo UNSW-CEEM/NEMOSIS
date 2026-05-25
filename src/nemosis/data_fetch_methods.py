@@ -2,10 +2,11 @@ import logging
 import os as _os
 import glob as _glob
 import pandas as _pd
-from datetime import datetime as _datetime
+from datetime import datetime as _datetime, timedelta as _timedelta
 from nemosis import filters as _filters
 from nemosis import downloader as _downloader
 from nemosis import processing_info_maps as _processing_info_maps
+from nemosis import date_generators as _date_generators
 from nemosis import defaults as _defaults
 from nemosis import custom_tables as _custom_tables
 from nemosis import _infer_column_data_types
@@ -547,7 +548,15 @@ def _dynamic_data_fetch_loop(
     data_tables = []
 
     table_type = _defaults.table_types[table_name]
-    date_gen = _processing_info_maps.date_gen[table_type](start_search, end_time)
+    # Uniform 1-day buffer-back on the file-fetch side, so any rows whose
+    # timestamps lie just inside [start_time, end_time] but live in the prior
+    # file are loaded. The post-load filter is strict on the query window, so
+    # this affects fetches, not returns. FCAS uses per-interval files
+    # (timestamp-precise filenames), so it doesn't need the look-back.
+    date_gen_func = _processing_info_maps.date_gen[table_type]
+    if date_gen_func is not _date_generators.year_month_day_index_gen:
+        start_search = start_search - _timedelta(days=1)
+    date_gen = date_gen_func(start_search, end_time)
 
     for year, month, day, index in date_gen:
         check_for_next_data_chunk = True

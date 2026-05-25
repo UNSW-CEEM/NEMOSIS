@@ -1,7 +1,7 @@
 import os
 
 names = {
-    "FCAS Providers": "NEM Registration and Exemption List.xls",
+    "FCAS Providers": "NEM Registration and Exemption List.xlsx",
     "DISPATCHLOAD": "PUBLIC_DVD_DISPATCHLOAD",
     "NEXT_DAY_DISPATCHLOAD": "PUBLIC_NEXT_DAY_DISPATCHLOAD",
     "DUDETAILSUMMARY": "PUBLIC_DVD_DUDETAILSUMMARY",
@@ -22,7 +22,7 @@ names = {
     "FCAS_4_SECOND": "FCAS",
     "ELEMENTS_FCAS_4_SECOND": "Elements_FCAS.csv",
     "VARIABLES_FCAS_4_SECOND": "Ancillary Services Market Causer Pays Variables File.csv",
-    "Generators and Scheduled Loads": "NEM Registration and Exemption List.xls",
+    "Generators and Scheduled Loads": "NEM Registration and Exemption List.xlsx",
     "MNSP_INTERCONNECTOR": "PUBLIC_DVD_MNSP_INTERCONNECTOR",
     "MNSP_PEROFFER": "PUBLIC_DVD_MNSP_PEROFFER",
     "INTERCONNECTOR": "PUBLIC_DVD_INTERCONNECTOR",
@@ -133,8 +133,8 @@ nem_web_domain_url = "https://nemweb.com.au/"
 static_table_url = {
     "ELEMENTS_FCAS_4_SECOND": "https://www.nemweb.com.au/Reports/Current/Causer_Pays_Elements/",
     "VARIABLES_FCAS_4_SECOND": "https://aemo.com.au/-/media/files/electricity/nem/settlements_and_payments/settlements/auction-reports/archive/ancillary-services-market-causer-pays-variables-file.csv",
-    "Generators and Scheduled Loads": "https://www.aemo.com.au/-/media/Files/Electricity/NEM/Participant_Information/NEM-Registration-and-Exemption-List.xls",
-    "_downloader.download_xl": "https://www.aemo.com.au/-/media/Files/Electricity/NEM/Participant_Information/NEM-Registration-and-Exemption-List.xls",
+    "Generators and Scheduled Loads": "https://www.aemo.com.au/-/media/files/electricity/nem/Participant_Information/NEM-Registration-and-Exemption-List.xlsx",
+    "_downloader.download_xl": "https://www.aemo.com.au/-/media/files/electricity/nem/Participant_Information/NEM-Registration-and-Exemption-List.xlsx",
 }
 
 aemo_mms_url = "http://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/MMSDM/{}/MMSDM_{}_{}/MMSDM_Historical_Data_SQLLoader/DATA/{}.zip"

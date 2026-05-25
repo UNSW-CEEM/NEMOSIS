@@ -1,11 +1,44 @@
 name: Continuous Integration and Deployment
 
 on:
+  pull_request:
+  push:
+    branches: [master, offline-test-suite]   # TEMP: remove `offline-test-suite` before merge — used to bootstrap CI while the pull_request trigger isn't yet on master
   release:
     types: [created]
   workflow_dispatch:
 
 jobs:
+  # Offline test suite — runs on every PR and push to master.
+  # test_performance_stats.py covers `custom_tables` and still hits AEMO
+  # + references local files that aren't in CI. Parked until ported.
+  # Everything else runs against the in-process dummy server from
+  # tests/conftest.py and is fully offline.
+  test:
+    name: Tests (Python ${{ matrix.python-version }}, ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+      - name: Sync dependencies
+        run: uv sync --python ${{ matrix.python-version }}
+      - name: Run tests
+        run: >
+          uv run pytest tests/
+          --ignore=tests/test_performance_stats.py
+          -v
+
   # Publishes to PyPi if tests are passed and release is created
   publish:
     if: github.event_name == 'release' && github.event.action == 'created'
