@@ -789,8 +789,8 @@ def _write_to_format(data, fformat, full_filename, write_kwargs):
         return
     except Exception:
         # tidy up incomplete file
-        if os.path.exists(full_filename):
-            os.remove(full_filename)
+        if _os.path.isfile(full_filename):
+            _os.unlink(full_filename)
         raise
 
 
