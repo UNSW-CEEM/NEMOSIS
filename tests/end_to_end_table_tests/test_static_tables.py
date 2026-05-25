@@ -1,15 +1,23 @@
 """Tests for AEMO's static (time-independent) tables.
 
-These four tables share one test file because they have no date dimension —
-each is downloaded once as a snapshot and cached verbatim. The fixtures are
-frozen copies of what AEMO was serving when build.py last ran.
+These tables have no date dimension — each is downloaded once as a
+snapshot and cached verbatim. The fixtures are frozen copies of what
+AEMO was serving when build.py last ran.
 
   - ELEMENTS_FCAS_4_SECOND      — CSV, scraped from a directory index
   - VARIABLES_FCAS_4_SECOND     — CSV, direct download
   - Generators and Scheduled Loads — XLS workbook, direct download
-  - FCAS Providers              — different tab of the same XLS workbook
+
+"FCAS Providers" was a fourth static table sharing the registration XLS
+workbook with "Generators and Scheduled Loads". AEMO has since emptied
+the underlying sheet and migrated the data to a weekly archive on
+nemweb — see issue #92. The handler now raises early; coverage is the
+deprecation-error tests below.
 """
+import pytest
+
 from nemosis import static_table
+from nemosis.custom_errors import UserInputError
 
 
 def test_elements_fcas_returns_non_empty_frame(nemosis_fixture):
@@ -27,14 +35,24 @@ def test_generators_and_scheduled_loads_returns_non_empty_frame(nemosis_fixture)
     assert not data.empty
 
 
-def test_fcas_providers_returns_non_empty_frame(nemosis_fixture):
-    # "FCAS Providers" reads a different sheet of the same XLS workbook as
-    # "Generators and Scheduled Loads". NEMOSIS's static_downloader_map has
-    # no entry for "FCAS Providers", so the first fetch errors on an empty
-    # cache — prime it by fetching the sibling table.
-    static_table("Generators and Scheduled Loads", str(nemosis_fixture))
-    data = static_table("FCAS Providers", str(nemosis_fixture))
-    assert not data.empty
+def test_fcas_providers_raises_deprecation_error(nemosis_fixture):
+    """FCAS Providers was deprecated when AEMO migrated the data out of
+    the registration XLS workbook (issue #92). The handler raises
+    immediately, regardless of cache state, with a pointer to the new
+    nemweb endpoint."""
+    with pytest.raises(UserInputError, match="no longer available"):
+        static_table("FCAS Providers", str(nemosis_fixture))
+
+
+def test_fcas_providers_deprecation_message_points_to_new_endpoint(nemosis_fixture):
+    """The deprecation error must include the new AEMO endpoint URL so
+    users have somewhere to go. This test locks the URL into the
+    message; updating where the data lives requires updating this test."""
+    with pytest.raises(UserInputError) as excinfo:
+        static_table("FCAS Providers", str(nemosis_fixture))
+    msg = str(excinfo.value)
+    assert "ANCILLARY_SERVICES_REPORTS" in msg
+    assert "issue #92" in msg
 
 
 # ---------------------------------------------------------------------------
@@ -76,13 +94,6 @@ def test_generators_filter_narrows(nemosis_fixture):
     assert set(filtered["Region"]) == {"SA1"}
 
 
-def test_fcas_providers_filter_narrows(nemosis_fixture):
-    static_table("Generators and Scheduled Loads", str(nemosis_fixture))
-    cols = ["Participant", "Region", "DUID", "Bid Type"]
-    full = static_table("FCAS Providers", str(nemosis_fixture), select_columns=cols)
-    filtered = static_table(
-        "FCAS Providers", str(nemosis_fixture),
-        select_columns=cols, filter_cols=["Region"], filter_values=[["SA1"]],
-    )
-    assert 0 < len(filtered) < len(full)
-    assert set(filtered["Region"]) == {"SA1"}
+# FCAS Providers filter test removed — the table is deprecated (see
+# issue #92), so there's no longer a happy path to filter against.
+# The deprecation-error tests above cover the new behaviour.

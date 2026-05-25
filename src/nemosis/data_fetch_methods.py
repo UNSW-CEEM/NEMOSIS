@@ -299,6 +299,23 @@ def static_table(
     Returns:
         data (pd.Dataframe)
     """
+    if table_name == "FCAS Providers":
+        # Deprecated: AEMO emptied the `Ancillary Services` sheet of
+        # `NEM Registration and Exemption List.xlsx` and moved the data
+        # to a weekly archive on nemweb. The existing NEMOSIS handler
+        # reads the (now-empty) sheet and chokes on the dedup step.
+        # See issue #92.
+        raise UserInputError(
+            "The 'FCAS Providers' static table is no longer available "
+            "via NEMOSIS. AEMO migrated this data out of "
+            "'NEM Registration and Exemption List.xlsx' to a weekly "
+            "archive at "
+            "https://www.nemweb.com.au/REPORTS/CURRENT/ANCILLARY_SERVICES_REPORTS/ "
+            "(file pattern: PUBLIC_ANCILLARY_SERVICES_YYYYMMDD.zip). "
+            "See issue #92 for tracking. "
+            "The 'Generators and Scheduled Loads' table still works."
+        )
+
     if raw_data_location is None:
         raise UserInputError("The raw_data_location provided is None.")
 
