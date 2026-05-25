@@ -112,9 +112,9 @@ def dynamic_data_compiler(
     logger.info(f"Compiling data for table {table_name}")
 
     # cast from string to datetime, if not already datetime
-    start_time = _parse_datetime_py(start_time)
-    end_time = _parse_datetime_py(end_time)
-    start_search = _parse_datetime_py(start_search)
+    start_time = _parse_datetime_py(start_time, midnight='start')
+    end_time = _parse_datetime_py(end_time, midnight='end')
+    start_search = _parse_datetime_py(start_search, midnight='start')
     data_tables = _dynamic_data_fetch_loop(
         start_search,
         start_time,
@@ -248,9 +248,9 @@ def cache_compiler(
         _,
         start_search,
     ) = _set_up_dynamic_compilers(table_name, start_time, end_time, select_columns)
-    start_time = _parse_datetime_py(start_time)
-    end_time = _parse_datetime_py(end_time)
-    start_search = _parse_datetime_py(start_search)
+    start_time = _parse_datetime_py(start_time, midnight='start')
+    end_time = _parse_datetime_py(end_time, midnight='end')
+    start_search = _parse_datetime_py(start_search, midnight='start')
 
     _dynamic_data_fetch_loop(
         start_search,

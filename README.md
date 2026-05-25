@@ -114,7 +114,7 @@ Using the default settings of `dynamic_data_compiler` will download CSV data fro
 
 A number of options are available to configure filtering (i.e. what data NEMOSIS returns as a pandas DataFrame) and caching.
 
-For the `start_time` and `end_time`, for legacy reasons, you can also pass a string of the form "YYYY/MM/DD HH:MM:SS", e.g. `2017/01/01 00:00:00`
+For `start_time` and `end_time` you can pass a datetime (timezone unaware), a `date`, or a string of the form "YYYY/MM/DD HH:MM:SS", e.g. `2017/01/01 00:00:00`.
 
 ###### Filter options
 

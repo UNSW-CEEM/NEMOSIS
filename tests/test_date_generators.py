@@ -1,5 +1,5 @@
 import unittest
-from datetime import datetime
+from datetime import datetime, date
 
 import pytz
 
@@ -392,8 +392,18 @@ class TestParseDatetimePy(unittest.TestCase):
         with self.assertRaises((ValueError, TypeError, AssertionError)):
             date_generators.parse_datetime_py(dt_string_invalid)
 
-    def test_date(self):
-        # dates are not supported yet. (Which midnight do you choose?)
-        date_input = datetime(2023, 1, 1).date()
-        with self.assertRaises((ValueError, TypeError, AssertionError)):
-            date_generators.parse_datetime_py(date_input)
+    def test_date_to_dt(self):
+        d = date(2026, 1, 2)
+        expected_t_start = datetime(2026, 1, 2)
+        expected_t_end = datetime(2026, 1, 3)
+        
+        actual_t_start = date_generators.parse_datetime_py(d, midnight='start')
+        actual_t_end = date_generators.parse_datetime_py(d, midnight='end')
+
+        self.assertEqual(expected_t_start, actual_t_start)
+        self.assertEqual(expected_t_end, actual_t_end)
+
+        with self.assertRaises(ValueError):
+            actual_t_start = date_generators.parse_datetime_py(d, midnight='Start')
+
+        self.assertEqual(date_generators.parse_datetime_py(d, midnight='start'), date_generators.parse_datetime_py(d))

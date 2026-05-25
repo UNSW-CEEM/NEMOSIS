@@ -1,7 +1,7 @@
 import logging
 from nemosis import defaults
 from calendar import monthrange
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, date
 
 logger = logging.getLogger(__name__)
 
@@ -135,10 +135,13 @@ def current_gen(start_time, end_time):
                     continue
                 yield str(year), month, str(day).zfill(2), None
 
-def parse_datetime_py(t, midnight='end'):
+def parse_datetime_py(t, midnight='start'):
     """
-    Takes in a string of a datetime, or a native datetime
+    Takes in a string of a datetime, native datetime or date
     Returns a datetime.
+    If midnight='end', dates will be converted to the midnight at the end of the day.
+    If midnight='start', dates will be converted to the midnight at the start of the day.
+    If not a date, the midnight argument is ignored.
     This is not intended to be used for conversions within Pandas/CSV/Parquet etc.
     """
     if isinstance(t, str):
@@ -148,5 +151,17 @@ def parse_datetime_py(t, midnight='end'):
             raise ValueError(f"Conversion between timezones not implemented. (Even if it's market time.) "
                              f"For {t}, pass a timezone unaware version, which will be treated as market time.")
         return t
+    elif isinstance(t, date):
+        if midnight not in ['start', 'end']:
+            raise ValueError(f"midnight must be 'start' or 'end', got {midnight}")
+
+        elif midnight == 'end':
+            # end of this day
+            # is the start of the next day
+            t = t + timedelta(days=1)
+            midnight = 'start'
+
+        return datetime.combine(t, datetime.min.time())
+        
     else:
         raise ValueError(f"Unsure how to handle datetime {t} of unexpected type {type(t)}")

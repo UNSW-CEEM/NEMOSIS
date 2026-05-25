@@ -410,8 +410,8 @@ def plant_stats(
 ):
 
     ix = pd.date_range(
-        start=parse_datetime_py(start_time),
-        end=parse_datetime_py(end_time) - timedelta(minutes=5),
+        start=parse_datetime_py(start_time, midnight='start'),
+        end=parse_datetime_py(end_time, midnight='end') - timedelta(minutes=5),
         freq="5min",
     )
     timeseries_df = pd.DataFrame(index=ix)
