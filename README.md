@@ -110,7 +110,7 @@ raw_data_cache = 'C:/Users/your_data_storage'
 price_data = dynamic_data_compiler(start_time, end_time, table, raw_data_cache)
 ```
 
-Using the default settings of `dynamic_data_compiler` will download zip archives from AEMO's NEMWeb portal and save them to the `raw_data_cache` directory. It will then extract each CSV, create a feather file version (feather files have a faster read time), and delete the extracted CSV. The downloaded zip is retained by default so that subsequent runs that need to rebuild the feather/parquet (e.g. to add columns or switch format) do not have to re-download from AEMO. Subsequent `dynamic_data_compiler` calls will check if any data in `raw_data_cache` matches the query and load it from there. This means that subsequent `dynamic_data_compiler` calls will be faster so long as the cached data is available. See [Caching options](#caching-options) below to tune what stays on disk.
+Using the default settings of `dynamic_data_compiler` will download zip archives from AEMO's NEMWeb portal and save them to the `raw_data_cache` directory. It will then extract each CSV, create a parquet file version (parquet has excellent compression and good interop with downstream tools), and delete the extracted CSV. The downloaded zip is retained by default so that subsequent runs that need to rebuild the parquet (e.g. to add columns or switch format) do not have to re-download from AEMO. Subsequent `dynamic_data_compiler` calls will check if any data in `raw_data_cache` matches the query and load it from there. This means that subsequent `dynamic_data_compiler` calls will be faster so long as the cached data is available. See [Caching options](#caching-options) below to tune what stays on disk.
 
 A number of options are available to configure filtering (i.e. what data NEMOSIS returns as a pandas DataFrame) and caching.
 
@@ -162,41 +162,44 @@ unit_dispatch_data = dynamic_data_compiler(start_time, end_time, 'DISPATCHLOAD',
 
 ###### Caching options
 
-By default `dynamic_data_compiler` uses `fformat='feather'`, `keep_csv=False`, and `keep_zip=True`. That is:
+By default `dynamic_data_compiler` uses `fformat='parquet'`, `keep_csv=False`, and `keep_zip=True`. That is:
 
-- The original AEMO CSVs are extracted, converted to feather, and then **deleted** (lean cache).
+- The original AEMO CSVs are extracted, converted to parquet, and then **deleted** (lean cache). Parquet has excellent compression characteristics and good compatibility with packages for handling large on-memory/cluster datasets (e.g. Dask) — this helps with local storage (especially for Causer Pays data) and file size for version control.
 - The downloaded AEMO archive **zips are kept** on disk so that rebuilding the cache or switching format later does not require re-downloading from AEMO (see [#56](https://github.com/UNSW-CEEM/NEMOSIS/issues/56)).
 
 You can mix and match these two flags to control what is retained:
 
 | `keep_csv` | `keep_zip` | What stays in `raw_data_cache` |
 |---|---|---|
-| `False` (default) | `True` (default) | feather/parquet + zip |
-| `False` | `False` | feather/parquet only — leanest cache |
-| `True` | `False` | feather/parquet + CSV — for downstream CSV consumers / GUI |
-| `True` | `True` | feather/parquet + CSV + zip — full raw retention |
+| `False` (default) | `True` (default) | parquet/feather + zip |
+| `False` | `False` | parquet/feather only — leanest cache |
+| `True` | `False` | parquet/feather + CSV — for downstream CSV consumers / GUI |
+| `True` | `True` | parquet/feather + CSV + zip — full raw retention |
 
-For example, to keep neither the CSV nor the zip after the feather file is written:
+For example, to keep neither the CSV nor the zip after the parquet file is written:
 
 ```python
 price_data = dynamic_data_compiler(start_time, end_time, table, raw_data_cache,
                                    keep_csv=False, keep_zip=False)
 ```
 
-To keep the CSVs alongside the feather files (e.g. so the same cache can be read by the GUI, or by another application that consumes CSV):
+To keep the CSVs alongside the parquet files (e.g. so the same cache can be read by the GUI, or by another application that consumes CSV):
 
 ```python
 price_data = dynamic_data_compiler(start_time, end_time, table, raw_data_cache, keep_csv=True)
 ```
 
-If the option `fformat='csv'` is used then no feather files will be created, and all caching will be done using CSVs.
+If the option `fformat='csv'` is used then no parquet files will be created, and all caching will be done using CSVs.
 
 ```python
 price_data = dynamic_data_compiler(start_time, end_time, table, raw_data_cache, fformat='csv')
 ```
 
-If the option `fformat='parquet'` is provided then no feather files will be created, and a parquet file will be used instead.
-While feather might have faster read/write, parquet has excellent compression characteristics and good compatability with packages for handling large on-memory/cluster datasets (e.g. Dask). This helps with local storage (especially for Causer Pays data) and file size for version control.
+If the option `fformat='feather'` is provided then no parquet files will be created, and a feather file will be used instead. Feather may give faster read/write than parquet, at the cost of larger files on disk.
+
+```python
+price_data = dynamic_data_compiler(start_time, end_time, table, raw_data_cache, fformat='feather')
+```
 
 `keep_csv` and `keep_zip` are also accepted by `cache_compiler` with the same defaults and meaning.
 
@@ -205,14 +208,14 @@ While feather might have faster read/write, parquet has excellent compression ch
 This may be useful if you're using NEMOSIS to
 build a data cache, but then process the cache using other packages or applications. It is particularly useful because `cache_compiler` will infer the data types of the columns before saving to parquet or feather, thereby eliminating the need to type convert data that is obtained using `dynamic_data_compiler`.
 
-`cache_compiler` can be used to compile a cache of parquet or feather files. Parquet will likely be smaller, but feather can be read faster. `cache_compiler` will not run if it detects the appropriate files in the `raw_data_cache` directory. Otherwise, it will download zip archives from AEMO, extract the CSVs, convert them to the requested format, and then delete the CSVs. The downloaded zips are kept by default (`keep_zip=True`); pass `keep_zip=False` to delete them as well. `cache_compiler` does not return any data, unlike `dynamic_data_compiler`.
+`cache_compiler` can be used to compile a cache of parquet or feather files (parquet by default; pass `fformat='feather'` to switch). `cache_compiler` will not run if it detects the appropriate files in the `raw_data_cache` directory. Otherwise, it will download zip archives from AEMO, extract the CSVs, convert them to the requested format, and then delete the CSVs. The downloaded zips are kept by default (`keep_zip=True`); pass `keep_zip=False` to delete them as well. `cache_compiler` does not return any data, unlike `dynamic_data_compiler`.
 
 The example below downloads parquet data into the cache.
 
 ```python
 from nemosis import cache_compiler
 
-cache_compiler(start_time, end_time, table, raw_data_cache, fformat='parquet')
+cache_compiler(start_time, end_time, table, raw_data_cache)
 ```
 
 ##### Accessing additional table columns

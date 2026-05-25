@@ -72,13 +72,13 @@ def test_dynamic_data_compiler_accepts_date(nemosis_fixture):
 def test_cache_compiler_accepts_datetime(nemosis_fixture):
     """cache_compiler must accept the same input shapes as
     dynamic_data_compiler — just confirms no exception and that a
-    feather lands in the cache."""
+    parquet lands in the cache."""
     cache_compiler(
         start_time=START_DT, end_time=END_DT,
         table_name="DISPATCHPRICE",
         raw_data_location=str(nemosis_fixture),
     )
-    assert list(nemosis_fixture.glob("*DISPATCHPRICE*.feather")), (
+    assert list(nemosis_fixture.glob("*DISPATCHPRICE*.parquet")), (
         "cache should be populated when datetime inputs are supplied"
     )
 
@@ -90,7 +90,7 @@ def test_cache_compiler_accepts_date(nemosis_fixture):
         table_name="DISPATCHPRICE",
         raw_data_location=str(nemosis_fixture),
     )
-    assert list(nemosis_fixture.glob("*DISPATCHPRICE*.feather"))
+    assert list(nemosis_fixture.glob("*DISPATCHPRICE*.parquet"))
 
 
 # ---------------------------------------------------------------------------
