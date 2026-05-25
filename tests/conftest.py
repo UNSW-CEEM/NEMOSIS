@@ -16,13 +16,30 @@ from pathlib import Path
 
 import pytest
 
-from nemosis import defaults
+from nemosis import defaults, downloader
 
 
 # NEMOSIS's own INFO/DEBUG logs leak into test output and clutter failure
 # context. Silence anything below WARNING — genuinely surprising conditions
 # (e.g. a 404 on a file we expected to fixture) still surface.
 logging.getLogger("nemosis").setLevel(logging.WARNING)
+
+
+# ---------------------------------------------------------------------------
+# Cache hygiene
+# ---------------------------------------------------------------------------
+#
+# The downloader's parent-directory HTML cache is module-level state with
+# a 1-hour TTL — fine in production, a bug magnet in tests because results
+# leak across cases (test A fetches a real listing, test B monkeypatches
+# `_NEMWEB_HTML_PRECHECK_PREFIXES` and gets stale cached HTML from A).
+# Clear it at every test boundary so each test starts cold.
+
+@pytest.fixture(autouse=True)
+def _clear_downloader_html_cache():
+    downloader._html_cache.clear()
+    yield
+    downloader._html_cache.clear()
 
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "data"
 
