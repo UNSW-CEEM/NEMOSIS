@@ -156,7 +156,7 @@ def cache_compiler(
     select_columns=None,
     fformat="feather",
     rebuild=False,
-    keep_csv=False,
+    keep_csv=True,
     **kwargs,
 ):
     """
@@ -184,7 +184,7 @@ def cache_compiler(
         rebuild (bool): If True then cache files are rebuilt
                         even if they exist already. False by default.
         keep_csv (bool): If True raw CSVs from AEMO are not deleted after
-                         the cache is built. False by default
+                         the cache is built. True by default
         **kwargs: additional arguments passed to the pd.to_{fformat}() function
 
     Returns:
@@ -195,7 +195,10 @@ def cache_compiler(
         raise UserInputError("The raw_data_location provided is None.")
 
     if not _os.path.isdir(raw_data_location):
-        raise UserInputError("The raw_data_location provided does not exist.")
+        if _os.path.isfile(raw_data_location):
+            raise UserInputError(f"The raw_data_location {raw_data_location} provided exists as a file, not directory.")
+        else:
+            _os.makedirs(raw_data_location)
 
     if table_name not in _defaults.dynamic_tables:
         raise UserInputError("Table name provided is not a dynamic table.")
@@ -778,11 +781,17 @@ def _write_to_format(data, fformat, full_filename, write_kwargs):
     if _os.path.isfile(full_filename) and fformat != "csv":
         _os.unlink(full_filename)
     # Write to required format
-    if fformat == "feather":
-        write_function[fformat](full_filename, **write_kwargs)
-    elif fformat == "parquet":
-        write_function[fformat](full_filename, index=False, **write_kwargs)
-    return
+    try:
+        if fformat == "feather":
+            write_function[fformat](full_filename, **write_kwargs)
+        elif fformat == "parquet":
+            write_function[fformat](full_filename, index=False, **write_kwargs)
+        return
+    except Exception:
+        # tidy up incomplete file
+        if _os.path.isfile(full_filename):
+            _os.unlink(full_filename)
+        raise
 
 
 def _download_data(
