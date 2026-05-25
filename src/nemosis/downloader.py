@@ -100,7 +100,7 @@ def _pre_check_file_is_missing(file_url):
     return True
 
 
-def run(year, month, day, chunk, index, filename_stub, down_load_to, keep_zip=False):
+def run(year, month, day, chunk, index, filename_stub, down_load_to, keep_zip=True):
     """This function"""
 
     url = defaults.aemo_mms_url
@@ -115,7 +115,7 @@ def run(year, month, day, chunk, index, filename_stub, down_load_to, keep_zip=Fa
             logger.warning(f"{filename_stub} not downloaded ({e})")
 
 
-def run_bid_tables(year, month, day, chunk, index, filename_stub, down_load_to, keep_zip=False):
+def run_bid_tables(year, month, day, chunk, index, filename_stub, down_load_to, keep_zip=True):
     if day is None:
         run(year, month, day, chunk, index, filename_stub, down_load_to, keep_zip=keep_zip)
     else:
@@ -131,7 +131,7 @@ def run_bid_tables(year, month, day, chunk, index, filename_stub, down_load_to, 
             logger.warning(f"{filename_stub} not downloaded ({e})")
 
 
-def run_next_day_region_tables(year, month, day, chunk, index, filename_stub, down_load_to, keep_zip=False):
+def run_next_day_region_tables(year, month, day, chunk, index, filename_stub, down_load_to, keep_zip=True):
     try:
         filename_stub = "PUBLIC_DAILY_{year}{month}{day}".format(year=year, month=month, day=day)
         download_url = _get_current_url(
@@ -144,7 +144,7 @@ def run_next_day_region_tables(year, month, day, chunk, index, filename_stub, do
         logger.warning(f"{filename_stub} not downloaded ({e})")
 
 
-def run_next_dispatch_tables(year, month, day, chunk, index, filename_stub, down_load_to, keep_zip=False):
+def run_next_dispatch_tables(year, month, day, chunk, index, filename_stub, down_load_to, keep_zip=True):
     try:
         filename_stub = "PUBLIC_NEXT_DAY_DISPATCH_{year}{month}{day}".format(year=year, month=month, day=day)
         download_url = _get_current_url(
@@ -155,7 +155,7 @@ def run_next_dispatch_tables(year, month, day, chunk, index, filename_stub, down
         logger.warning(f"{filename_stub} not downloaded ({e})")
 
 
-def run_intermittent_gen_scada(year, month, day, chunk, index, filename_stub, down_load_to, keep_zip=False):
+def run_intermittent_gen_scada(year, month, day, chunk, index, filename_stub, down_load_to, keep_zip=True):
     try:
         download_url = _get_current_url(
             filename_stub,
@@ -173,7 +173,7 @@ def _get_current_url(filename_stub, current_page_url):
 
 
 def _download_and_unpack_bid_move_complete_files(
-    download_url, down_load_to, keep_zip=False
+    download_url, down_load_to, keep_zip=True
 ):
     zip_local_path, downloaded = download_to_dir(download_url, down_load_to)
     try:
@@ -213,7 +213,7 @@ def _download_and_unpack_bid_move_complete_files(
 
 
 def _download_and_unpack_next_region_tables(
-    download_url, down_load_to, keep_zip=False
+    download_url, down_load_to, keep_zip=True
 ):
     zip_local_path, downloaded = download_to_dir(download_url, down_load_to)
     try:
@@ -246,7 +246,7 @@ def _download_and_unpack_next_region_tables(
 
 
 def _download_and_unpack_next_dispatch_load_files_complete_files(
-    download_url, down_load_to, keep_zip=False
+    download_url, down_load_to, keep_zip=True
 ):
     zip_local_path, downloaded = download_to_dir(download_url, down_load_to)
     try:
@@ -275,7 +275,7 @@ def _download_and_unpack_next_dispatch_load_files_complete_files(
 
 
 def _download_and_unpack_intermittent_gen_scada_file(
-    download_url, down_load_to, keep_zip=False
+    download_url, down_load_to, keep_zip=True
 ):
     zip_local_path, downloaded = download_to_dir(download_url, down_load_to)
     try:
@@ -321,7 +321,7 @@ def _find_start_row_nth_table(sub_folder_zipfile, file_name, n):
 
 
 
-def run_fcas4s(year, month, day, chunk, index, filename_stub, down_load_to, keep_zip=False):
+def run_fcas4s(year, month, day, chunk, index, filename_stub, down_load_to, keep_zip=True):
     """This function"""
 
     # Add the year and month information to the generic AEMO data url
@@ -412,20 +412,21 @@ def download_to_path(url, path_and_name, force_redo=False):
     return True
 
 
-def download_unzip_csv(url, down_load_to, keep_zip=False):
+def download_unzip_csv(url, down_load_to, keep_zip=True):
     """
     Download a zipped csv from a URL, extract its contents into
     `down_load_to`, and (per `keep_zip`) retain the zip on disk.
 
-    `keep_zip=False` (default) cleans up the zip after extracting,
-    leaving only the extracted CSV in the cache directory. Cleanup
-    only touches zips this call actually downloaded — pre-existing
-    zips (from a previous call, or another concurrent process) are
-    left alone.
+    `keep_zip=True` (default) keeps the compressed archive on disk
+    after extraction, so subsequent calls (e.g. cache rebuilds,
+    format changes, slow connections per #56) can re-extract
+    without re-downloading.
 
-    `keep_zip=True` addresses #56: a cached zip on disk so subsequent
-    calls can re-extract without re-downloading (useful on slow
-    connections).
+    `keep_zip=False` cleans up the zip after extracting, leaving
+    only the extracted CSV in the cache directory. Cleanup only
+    touches zips this call actually downloaded — pre-existing zips
+    (from a previous call, or another concurrent process) are left
+    alone.
     """
     zip_local_path, downloaded = download_to_dir(url, down_load_to)
     try:

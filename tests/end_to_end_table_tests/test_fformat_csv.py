@@ -36,7 +36,8 @@ def test_keep_csv_false_removes_csv(nemosis_fixture):
     use case is slow internet, so caching the compressed archive
     avoids re-downloading on subsequent runs). Users who want a truly
     empty cache can pass keep_zip=False — covered by
-    test_keep_zip_false_removes_zip in tests/test_downloader.py.
+    test_keep_zip_false_removes_zip in
+    tests/end_to_end_table_tests/test_cache_compiler.py.
     """
     dynamic_data_compiler(
         start_time="2018/05/01 00:00:00",

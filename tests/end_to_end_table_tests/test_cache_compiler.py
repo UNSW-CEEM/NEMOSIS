@@ -155,10 +155,11 @@ def test_existing_feather_means_no_csv_is_fetched(nemosis_fixture):
     )
 
 
-def test_keep_zip_default_is_false(nemosis_fixture):
-    """Default behaviour — keep_zip=False removes the downloaded zip
-    after extracting the CSV. Lean cache; only the typed feather (and
-    optional CSV if keep_csv=True) remains."""
+def test_keep_zip_default_is_true(nemosis_fixture):
+    """Default behaviour — keep_zip=True retains the downloaded zip
+    after extracting the CSV, so subsequent runs (cache rebuilds,
+    format changes, slow connections per #56) can re-extract without
+    re-downloading."""
     cache_compiler(
         start_time=START, end_time=END,
         table_name="DISPATCHPRICE",
@@ -167,13 +168,14 @@ def test_keep_zip_default_is_false(nemosis_fixture):
         # no keep_zip kwarg — exercises the default
     )
     zip_files = list(nemosis_fixture.glob("*.zip"))
-    assert not zip_files, f"default keep_zip=False should remove zips; found: {zip_files}"
+    assert zip_files, "default keep_zip=True should retain the downloaded zip"
 
 
 def test_keep_zip_true_retains_zip(nemosis_fixture):
-    """keep_zip=True is the opt-in for #56's slow-internet use case —
-    the AEMO archive zip stays on disk after extraction so subsequent
-    runs can re-extract without re-downloading."""
+    """keep_zip=True (the default, per #56's slow-internet use case)
+    leaves the AEMO archive zip on disk after extraction so subsequent
+    runs can re-extract without re-downloading. Exercised here with
+    an explicit True to lock the contract independent of the default."""
     cache_compiler(
         start_time=START, end_time=END,
         table_name="DISPATCHPRICE",
@@ -183,6 +185,21 @@ def test_keep_zip_true_retains_zip(nemosis_fixture):
     )
     zip_files = list(nemosis_fixture.glob("*.zip"))
     assert zip_files, "keep_zip=True should retain the downloaded zip"
+
+
+def test_keep_zip_false_removes_zip(nemosis_fixture):
+    """keep_zip=False is the explicit opt-out for callers who want a
+    lean cache (no compressed archives on disk). The downloaded zip
+    must be cleaned up after extracting the CSV."""
+    cache_compiler(
+        start_time=START, end_time=END,
+        table_name="DISPATCHPRICE",
+        raw_data_location=str(nemosis_fixture),
+        rebuild=True,
+        keep_zip=False,
+    )
+    zip_files = list(nemosis_fixture.glob("*.zip"))
+    assert not zip_files, f"keep_zip=False should remove zips; found: {zip_files}"
 
 
 def test_cached_zip_extracts_without_network(nemosis_fixture, monkeypatch):
