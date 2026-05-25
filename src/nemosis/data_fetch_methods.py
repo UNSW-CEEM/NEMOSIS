@@ -63,6 +63,10 @@ def dynamic_data_compiler(
     Returns:
         all_data (pd.Dataframe): All data concatenated.
     """
+
+    if raw_data_location is None:
+        raise UserInputError("The raw_data_location provided is None.")
+
     if not _os.path.isdir(raw_data_location):
         raise UserInputError("The raw_data_location provided does not exist.")
 
@@ -186,6 +190,10 @@ def cache_compiler(
     Returns:
         Nothing
     """
+    
+    if raw_data_location is None:
+        raise UserInputError("The raw_data_location provided is None.")
+
     if not _os.path.isdir(raw_data_location):
         raise UserInputError("The raw_data_location provided does not exist.")
 
