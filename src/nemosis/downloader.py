@@ -352,7 +352,13 @@ def download_to_dir(url, down_load_to, force_redo=False):
 
     Streams the response so large files don't have to fit in memory.
     """
-    url = url.replace('#', '%23')
+    # Post-2024-07 AEMO archive files are stored on nemweb with literal
+    # `%23` in their on-disk filenames (not `#`). To match, the URL must
+    # contain `%2523` so nemweb decodes it once to `%23` and finds the
+    # file. A single `%23` would decode to `#` and 400. Pre-Aug-2024
+    # PUBLIC_DVD_* filenames don't contain `#`, so the replace is a
+    # no-op for the older path. See issue #74.
+    url = url.replace('#', '%2523')
     filename = url.split('/')[-1].split('?')[0]
     path = os.path.join(down_load_to, filename)
     downloaded = download_to_path(url, path, force_redo=force_redo)
@@ -370,7 +376,11 @@ def download_to_path(url, path_and_name, force_redo=False):
     mid-stream, the partial output file is removed before the
     exception propagates.
     """
-    url = url.replace('#', '%23')
+    # See `download_to_dir` for why this is `%2523` and not `%23`.
+    # Repeated here because `download_to_path` is also called directly
+    # (e.g. from `download_csv`); the replace is idempotent (`%2523`
+    # contains no `#`) so double-encoding via `download_to_dir` is safe.
+    url = url.replace('#', '%2523')
     if os.path.isfile(path_and_name) and not force_redo:
         return False
 

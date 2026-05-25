@@ -54,7 +54,12 @@ log = logging.getLogger("fixtures")
 
 def http_get(url: str) -> requests.Response:
     log.info("GET %s", url)
-    r = requests.get(url.replace("#", "%23"), headers=USR_AGENT, timeout=180)
+    # Post-2024-07 PUBLIC_ARCHIVE# files are stored on nemweb with literal
+    # `%23` in their on-disk filenames. The HTTP URL must contain `%2523`
+    # so nemweb decodes it once to `%23` and finds the file. A single
+    # `%23` would decode to `#` and 400. Mirrors the fix in
+    # nemosis.downloader.download_unzip_csv (issue #74).
+    r = requests.get(url.replace("#", "%2523"), headers=USR_AGENT, timeout=180)
     r.raise_for_status()
     return r
 
@@ -140,13 +145,20 @@ def mms_filename(table: str, era_date: date, chunk: int) -> str:
 
 def mms_fixture_path(table: str, era_date: date, chunk: int) -> Path:
     year, month = era_date.year, f"{era_date.month:02d}"
+    # Post-2024-07 archives are stored on nemweb with literal `%23` in
+    # the filename (not `#`). Mirror that on disk so the offline mock
+    # server serves files under the same name the real server uses —
+    # otherwise NEMOSIS's now-`%2523`-encoded URLs won't match. Pre-Aug-2024
+    # PUBLIC_DVD_* filenames don't contain `#`, so the replace is a no-op
+    # there. See issue #74.
+    on_disk_name = mms_filename(table, era_date, chunk).replace("#", "%23")
     return (
         FIXTURE_ROOT
         / "Data_Archive/Wholesale_Electricity/MMSDM"
         / str(year)
         / f"MMSDM_{year}_{month}"
         / "MMSDM_Historical_Data_SQLLoader/DATA"
-        / mms_filename(table, era_date, chunk)
+        / on_disk_name
     )
 
 
