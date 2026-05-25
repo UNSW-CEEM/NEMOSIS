@@ -136,7 +136,7 @@ static_table_url = {
     "Generators and Scheduled Loads": "https://www.aemo.com.au/-/media/files/electricity/nem/Participant_Information/NEM-Registration-and-Exemption-List.xlsx",
 }
 
-aemo_mms_url = "http://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/MMSDM/{}/MMSDM_{}_{}/MMSDM_Historical_Data_SQLLoader/DATA/{}.zip"
+aemo_mms_url = "https://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/MMSDM/{}/MMSDM_{}_{}/MMSDM_Historical_Data_SQLLoader/DATA/{}.zip"
 
 current_data_page_urls = {
     "BIDDING": "Reports/Current/Bidmove_Complete/",
@@ -145,9 +145,9 @@ current_data_page_urls = {
     "INTERMITTENT_GEN_SCADA": "/Reports/Current/Next_Day_Intermittent_Gen_Scada/"
 }
 
-fcas_4_url = "http://www.nemweb.com.au/Reports/Current/Causer_Pays/FCAS_{}{}{}{}.zip"
+fcas_4_url = "https://www.nemweb.com.au/Reports/Current/Causer_Pays/FCAS_{}{}{}{}.zip"
 
-fcas_4_url_hist = "http://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/FCAS_Causer_Pays/{}/FCAS_Causer_Pays_{}_{}/FCAS_{}{}{}{}.zip"
+fcas_4_url_hist = "https://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/FCAS_Causer_Pays/{}/FCAS_Causer_Pays_{}_{}/FCAS_{}{}{}{}.zip"
 
 data_url = {
     "DISPATCHLOAD": "aemo_data_url",

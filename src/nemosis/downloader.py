@@ -10,14 +10,21 @@ from . import defaults, custom_errors
 
 logger = logging.getLogger(__name__)
 
-# Windows Chrome for User-Agent request headers
-USR_AGENT_HEADER = {
+# Module-level requests.Session for connection reuse across the many
+# small downloads NEMOSIS makes when scanning monthly archives. The
+# session also centralises the User-Agent so every request looks like a
+# current Windows Chrome — AEMO's `aemo.com.au` host filters out older
+# UAs as suspected scrapers, and `nemweb.com.au` is happy either way.
+# Chrome 130 was the current stable when this was written; bump
+# periodically to stay plausible.
+session = requests.Session()
+session.headers.update({
     "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-        + " AppleWebKit/537.36 (KHTML, like Gecko) "
-        + "Chrome/80.0.3987.87 Safari/537.36"
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/130.0.0.0 Safari/537.36"
     )
-}
+})
 
 
 def run(year, month, day, chunk, index, filename_stub, down_load_to):
@@ -95,7 +102,8 @@ def _get_current_url(filename_stub, current_page_url):
 def _download_and_unpack_bid_move_complete_files(
     download_url, down_load_to
 ):
-    r = requests.get(download_url, headers=USR_AGENT_HEADER)
+    r = session.get(download_url)
+    r.raise_for_status()
     zipped_file = zipfile.ZipFile(io.BytesIO(r.content))
 
     file_name = zipped_file.namelist()[
@@ -131,7 +139,8 @@ def _download_and_unpack_bid_move_complete_files(
 def _download_and_unpack_next_region_tables(
     download_url, down_load_to
 ):
-    r = requests.get(download_url, headers=USR_AGENT_HEADER)
+    r = session.get(download_url)
+    r.raise_for_status()
     zipped_file = zipfile.ZipFile(io.BytesIO(r.content))
 
     file_name = zipped_file.namelist()[
@@ -160,7 +169,8 @@ def _download_and_unpack_next_region_tables(
 def _download_and_unpack_next_dispatch_load_files_complete_files(
     download_url, down_load_to
 ):
-    r = requests.get(download_url, headers=USR_AGENT_HEADER)
+    r = session.get(download_url)
+    r.raise_for_status()
     zipped_file = zipfile.ZipFile(io.BytesIO(r.content))
 
     file_name = zipped_file.namelist()[
@@ -185,7 +195,8 @@ def _download_and_unpack_next_dispatch_load_files_complete_files(
 def _download_and_unpack_intermittent_gen_scada_file(
     download_url, down_load_to
 ):
-    r = requests.get(download_url, headers=USR_AGENT_HEADER)
+    r = session.get(download_url)
+    r.raise_for_status()
     zipped_file = zipfile.ZipFile(io.BytesIO(r.content))
 
     file_name = zipped_file.namelist()[
@@ -253,7 +264,8 @@ def download_unzip_csv(url, down_load_to):
     extracts the csv and saves it a specified location
     """
     url = url.replace('#', '%23')
-    r = requests.get(url, headers=USR_AGENT_HEADER)
+    r = session.get(url)
+    r.raise_for_status()
     z = zipfile.ZipFile(io.BytesIO(r.content))
     z.extractall(down_load_to)
 
@@ -263,19 +275,21 @@ def download_csv(url, path_and_name):
     This function downloads a zipped csv using a url,
     extracts the csv and saves it a specified location
     """
-    r = requests.get(url, headers=USR_AGENT_HEADER)
+    r = session.get(url)
+    r.raise_for_status()
     with open(path_and_name, "wb") as f:
         f.write(r.content)
 
 
 def download_elements_file(url, path_and_name):
-    page = requests.get(url)
-    text = page.text
-    soup = BeautifulSoup(text, "html.parser")
+    page = session.get(url)
+    page.raise_for_status()
+    soup = BeautifulSoup(page.text, "html.parser")
     links = soup.find_all("a")
     last_file_name = links[-1].text
     link = url + last_file_name
-    r = requests.get(link, headers=USR_AGENT_HEADER)
+    r = session.get(link)
+    r.raise_for_status()
     with open(path_and_name, "wb") as f:
         f.write(r.content)
 
@@ -285,7 +299,8 @@ def download_xlsx(url, path_and_name):
     Download an Excel (.xlsx) file from a URL and save it to the
     specified path. Used for AEMO's NEM Registration and Exemption List.
     """
-    r = requests.get(url, headers=USR_AGENT_HEADER)
+    r = session.get(url)
+    r.raise_for_status()
     with open(path_and_name, "wb") as f:
         f.write(r.content)
 
@@ -301,12 +316,13 @@ def format_aemo_url(url, year, month, filename_stub):
 
 
 def status_code_return(url):
-    r = requests.get(url, headers=USR_AGENT_HEADER)
+    r = session.get(url)
     return r.status_code
 
 
 def _get_matching_link(url, stub_link):
-    r = requests.get(url, headers=USR_AGENT_HEADER)
+    r = session.get(url)
+    r.raise_for_status()
     soup = BeautifulSoup(r.content, "html.parser")
     links = [link.get("href") for link in soup.find_all("a")]
     for link in links:
