@@ -28,11 +28,16 @@ def test_csv_fformat_round_trip(nemosis_fixture):
     assert not all(data.dtypes == "object")
 
 
-def test_keep_csv_false_leaves_cache_empty(nemosis_fixture):
+def test_keep_csv_false_removes_csv(nemosis_fixture):
     """With `fformat="csv"` and `keep_csv=False`, the raw CSV is fetched,
-    used to produce the return frame, and then deleted — the cache dir
-    should be empty afterwards. This is the opt-out path for users who
-    don't want NEMOSIS accumulating files on disk."""
+    used to produce the return frame, and then deleted.
+
+    Note: the downloaded .zip is retained by default (see #56 — Matt's
+    use case is slow internet, so caching the compressed archive
+    avoids re-downloading on subsequent runs). Users who want a truly
+    empty cache can pass keep_zip=False — covered by
+    test_keep_zip_false_removes_zip in tests/test_downloader.py.
+    """
     dynamic_data_compiler(
         start_time="2018/05/01 00:00:00",
         end_time="2018/05/01 00:30:00",
@@ -42,4 +47,5 @@ def test_keep_csv_false_leaves_cache_empty(nemosis_fixture):
         keep_csv=False,
         select_columns=["SETTLEMENTDATE", "REGIONID", "RRP"],
     )
-    assert list(nemosis_fixture.iterdir()) == []
+    csv_files = list(nemosis_fixture.glob("*.[Cc][Ss][Vv]"))
+    assert csv_files == [], f"keep_csv=False should remove the CSV; found: {csv_files}"
