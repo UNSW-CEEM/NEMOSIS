@@ -469,7 +469,7 @@ class TestMergeTables(unittest.TestCase):
             start=datetime.strptime("2015/01/01 00:00:00", "%Y/%m/%d %H:%M:%S"),
             end=datetime.strptime("2015/01/01 00:10:00", "%Y/%m/%d %H:%M:%S")
             - timedelta(minutes=5),
-            freq="5T",
+            freq="5min",
         )
         self.timeseries_df = pd.DataFrame(index=ix)
         self.timeseries_df.reset_index(inplace=True)
