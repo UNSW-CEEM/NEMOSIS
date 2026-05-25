@@ -25,7 +25,7 @@ def dynamic_data_compiler(
     filter_values=None,
     fformat="feather",
     keep_csv=False,
-    keep_zip=False,
+    keep_zip=True,
     parse_data_types=True,
     rebuild=False,
     **kwargs,
@@ -61,9 +61,11 @@ def dynamic_data_compiler(
                          is written. False by default — lean cache.
         keep_zip (bool): If True, downloaded AEMO archive zips are
                          retained in the cache directory after extraction.
-                         False by default. Set True on slow connections
-                         to avoid re-downloading on subsequent runs
-                         (see #56).
+                         True by default — keeps the compressed archive so
+                         subsequent runs (e.g. cache rebuilds, format
+                         changes) don't have to re-download from AEMO
+                         (see #56). Set False for a leaner cache when
+                         re-download cost is not a concern.
         data_merge (bool): concatenate DataFrames and return one DataFrame.
                            If False, will not return any data.
         parse_data_types (bool): infers data types of columns when reading
@@ -174,7 +176,7 @@ def cache_compiler(
     fformat="feather",
     rebuild=False,
     keep_csv=False,
-    keep_zip=False,
+    keep_zip=True,
     **kwargs,
 ):
     """
@@ -211,9 +213,12 @@ def cache_compiler(
                          cache is built. False by default — lean cache.
         keep_zip (bool): If True, downloaded AEMO archive zips are
                          retained in the cache directory after
-                         extraction. False by default. Set True on
-                         slow connections to avoid re-downloading on
-                         subsequent runs (see #56).
+                         extraction. True by default — keeps the
+                         compressed archive so subsequent runs (e.g.
+                         cache rebuilds, format changes) don't have to
+                         re-download from AEMO (see #56). Set False
+                         for a leaner cache when re-download cost is
+                         not a concern.
         **kwargs: additional arguments passed to the pd.to_{fformat}() function
 
     Returns:
@@ -593,7 +598,7 @@ def _dynamic_data_fetch_loop(
     date_filter,
     fformat="feather",
     keep_csv=False,
-    keep_zip=False,
+    keep_zip=True,
     caching_mode=False,
     rebuild=False,
     write_kwargs={},
@@ -846,7 +851,7 @@ def _write_to_format(data, fformat, full_filename, write_kwargs):
 
 def _download_data(
     table_name, table_type, filename_stub, day, month, year, chunk, index, raw_data_location,
-    keep_zip=False,
+    keep_zip=True,
 ):
     """
     Dispatch table to downloader to be downloaded.
