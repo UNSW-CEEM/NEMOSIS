@@ -4,7 +4,10 @@ import requests
 from bs4 import BeautifulSoup
 import zipfile
 import io
+from urllib.parse import urljoin, urldefrag
+
 import pandas as pd
+from cachetools import cached, TTLCache
 
 from . import defaults, custom_errors
 
@@ -25,6 +28,76 @@ session.headers.update({
         "Chrome/130.0.0.0 Safari/537.36"
     )
 })
+
+
+# ---------------------------------------------------------------------------
+# Parent-directory HTML cache (powers the missing-file pre-check below)
+# ---------------------------------------------------------------------------
+#
+# Scanning historical NEMOSIS data hits many monthly archive paths that
+# don't yet exist — each one normally costs a ~200-500ms 404 round-trip
+# to nemweb. Nemweb serves a browsable HTML index for each archive
+# directory, so we can fetch the parent listing once and answer many
+# missing-file questions from it without further network traffic.
+#
+# 1-hour TTL is long enough to amortise across a multi-year scan, short
+# enough that re-running an hour later sees fresh state. The cache is
+# exposed at module scope so tests can clear it between cases — see the
+# autouse `_clear_downloader_html_cache` fixture in tests/conftest.py.
+_html_cache: TTLCache = TTLCache(maxsize=2**10, ttl=60 * 60)
+
+# Nemweb's directory-listed archive trees. Other AEMO endpoints (e.g.
+# the hashed PUBLIC_ARCHIVE# files under aemo_mms_url) don't have a
+# browsable parent, so the pre-check sits this out for them.
+_NEMWEB_HTML_PRECHECK_PREFIXES = (
+    "https://www.nemweb.com.au/Data_Archive/",
+    "https://www.nemweb.com.au/Reports/",
+)
+
+
+@cached(_html_cache)
+def download_html(url):
+    """Fetch `url` and return its body as text. Cached at module scope
+    for ~1 hour — see `_html_cache` for the rationale."""
+    r = session.get(url)
+    r.raise_for_status()
+    return r.text
+
+
+def download_html_as_soup(url):
+    """BeautifulSoup-parsed view of `url`'s HTML body. Backed by the
+    same TTL cache as `download_html`."""
+    return BeautifulSoup(download_html(url), "html.parser")
+
+
+def _pre_check_file_is_missing(file_url):
+    """Return True if `file_url`'s parent directory listing is reachable
+    and the file is NOT linked from it, False if it IS linked, or None
+    when no parent listing is available (non-nemweb URL, non-archive
+    file extension, parent fetch failed, etc).
+
+    A True answer lets the caller skip a guaranteed-404 round-trip.
+    A None answer means the caller should fall through to a real
+    request and let any 404 surface the normal way.
+    """
+    if not any(file_url.startswith(prefix) for prefix in _NEMWEB_HTML_PRECHECK_PREFIXES):
+        return None
+    if not (file_url.upper().endswith(".ZIP") or file_url.upper().endswith(".CSV")):
+        return None
+
+    parent_url = urljoin(file_url, "./")
+    try:
+        soup = download_html_as_soup(parent_url)
+    except Exception:
+        # Parent listing unreachable — fall through to a real request.
+        return None
+
+    target = urldefrag(file_url)[0]
+    for a_tag in soup.find_all("a", href=True):
+        absolute = urljoin(parent_url, a_tag["href"])
+        if urldefrag(absolute)[0] == target:
+            return False
+    return True
 
 
 def run(year, month, day, chunk, index, filename_stub, down_load_to, keep_zip=False):
@@ -301,6 +374,20 @@ def download_to_path(url, path_and_name, force_redo=False):
     if os.path.isfile(path_and_name) and not force_redo:
         return False
 
+    if _pre_check_file_is_missing(url):
+        # The parent directory's HTML listing told us this file doesn't
+        # exist. Synthesise a 404 HTTPError so the caller's existing 404
+        # handling (added in PR #85) fires uniformly whether the answer
+        # came from the cache or the wire.
+        synthetic = requests.Response()
+        synthetic.status_code = 404
+        synthetic.reason = "Not Found (cached parent directory listing)"
+        synthetic.url = url
+        raise requests.HTTPError(
+            f"404 Client Error: {synthetic.reason} for url: {url}",
+            response=synthetic,
+        )
+
     with session.get(url, stream=True) as response:
         response.raise_for_status()
         try:
@@ -348,9 +435,7 @@ def download_csv(url, path_and_name):
 
 
 def download_elements_file(url, path_and_name):
-    page = session.get(url)
-    page.raise_for_status()
-    soup = BeautifulSoup(page.text, "html.parser")
+    soup = download_html_as_soup(url)
     links = soup.find_all("a")
     last_file_name = links[-1].text
     link = url + last_file_name
@@ -381,9 +466,7 @@ def status_code_return(url):
 
 
 def _get_matching_link(url, stub_link):
-    r = session.get(url)
-    r.raise_for_status()
-    soup = BeautifulSoup(r.content, "html.parser")
+    soup = download_html_as_soup(url)
     links = [link.get("href") for link in soup.find_all("a")]
     for link in links:
         if stub_link in link:
