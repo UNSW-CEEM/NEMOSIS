@@ -82,6 +82,26 @@ def test_dynamic_raw_data_location_is_none():
         )
 
 
+def test_dynamic_raw_data_location_missing_includes_path_in_error(tmp_path):
+    """The "does not exist" error must include the offending path so the
+    caller can see exactly what they passed (helps diagnose typos and
+    cwd mistakes). Regression test for the improvement that landed via
+    the doc-strings-and-error-messages cleanup."""
+    bogus = str(tmp_path / "subdir-that-does-not-exist")
+    with pytest.raises(UserInputError, match="subdir-that-does-not-exist"):
+        dynamic_data_compiler(
+            "2018/05/01 00:00:00", "2018/05/01 01:00:00",
+            "DISPATCHPRICE", raw_data_location=bogus,
+        )
+
+
+def test_static_raw_data_location_missing_includes_path_in_error(tmp_path):
+    """Same regression contract for static_table."""
+    bogus = str(tmp_path / "another-missing-dir")
+    with pytest.raises(UserInputError, match="another-missing-dir"):
+        static_table("VARIABLES_FCAS_4_SECOND", raw_data_location=bogus)
+
+
 # ---------------------------------------------------------------------------
 # Argument-validation: cache_compiler
 # ---------------------------------------------------------------------------
