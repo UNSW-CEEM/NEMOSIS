@@ -125,7 +125,10 @@ static_tables = [
     "ELEMENTS_FCAS_4_SECOND",
     "VARIABLES_FCAS_4_SECOND",
     "Generators and Scheduled Loads",
-    "FCAS Providers",
+    # "FCAS Providers" was deprecated when AEMO migrated the underlying
+    # data out of the registration XLS workbook. See issue #92.
+    # static_table() raises UserInputError early with a pointer to the
+    # new endpoint, so calls to it never reach this list anyway.
 ]
 
 nem_web_domain_url = "https://nemweb.com.au/"

@@ -230,8 +230,16 @@ You can view the static tables available by printing the tables in NEMOSIS' defa
 from nemosis import defaults
 
 print(defaults.static_tables)
-# ['ELEMENTS_FCAS_4_SECOND', 'VARIABLES_FCAS_4_SECOND', 'Generators and Scheduled Loads', 'FCAS Providers']
+# ['ELEMENTS_FCAS_4_SECOND', 'VARIABLES_FCAS_4_SECOND', 'Generators and Scheduled Loads']
 ```
+
+Note: `'FCAS Providers'` was previously listed here but has been
+deprecated — AEMO migrated the underlying data out of the
+`NEM Registration and Exemption List.xlsx` workbook to a weekly archive
+at <https://www.nemweb.com.au/REPORTS/CURRENT/ANCILLARY_SERVICES_REPORTS/>.
+See issue [#92](https://github.com/UNSW-CEEM/NEMOSIS/issues/92) for
+status. Calls to `static_table("FCAS Providers", ...)` now raise a
+`UserInputError` pointing at the new endpoint.
 
 #### static_table
 
