@@ -69,6 +69,7 @@ def dynamic_data_compiler(
         parse_data_types (bool): infers data types of columns when reading
                                  data. default True for API use.
         rebuild (bool): If True then cache files are rebuilt
+                        (redownload, re-unzip, re-convert)
                         even if they exist already. False by default.
         **kwargs: additional arguments passed to the pd.to_{fformat}() function
 
@@ -80,7 +81,9 @@ def dynamic_data_compiler(
         raise UserInputError("The raw_data_location provided is None.")
 
     if not _os.path.isdir(raw_data_location):
-        raise UserInputError("The raw_data_location provided does not exist.")
+        raise UserInputError(
+            f"The raw_data_location {raw_data_location} provided does not exist."
+        )
 
     if table_name not in _defaults.dynamic_tables:
         raise UserInputError("Table name provided is not a dynamic table.")
@@ -201,6 +204,7 @@ def cache_compiler(
                           as object type (compatbile with GUI use). For
                           type inference for a cache, use cache_compiler.
         rebuild (bool): If True then cache files are rebuilt
+                        (redownload, re-unzip, re-convert)
                         even if they exist already. False by default.
         keep_csv (bool): If True, raw CSVs from AEMO are retained
                          alongside the typed feather/parquet after the
@@ -303,7 +307,9 @@ def static_table(
         raise UserInputError("The raw_data_location provided is None.")
 
     if not _os.path.isdir(raw_data_location):
-        raise UserInputError("The raw_data_location provided does not exist.")
+        raise UserInputError(
+            f"The raw_data_location {raw_data_location} provided does not exist."
+        )
 
     if table_name not in _defaults.static_tables:
         raise UserInputError("Table name provided is not a static table.")
@@ -801,7 +807,7 @@ def _determine_columns_and_read_csv(
 def _write_to_format(data, fformat, full_filename, write_kwargs):
     """
     Used by read_data_and_create_file
-    Writes the DataFrame to a non-CSV format is a non_CSV format is specified.
+    Writes the DataFrame to a non-CSV format if a non-CSV format is specified.
     """
     write_function = {"feather": data.to_feather, "parquet": data.to_parquet}
     # Remove files of the same name - deals with case of corrupted files.

@@ -428,8 +428,8 @@ def download_unzip_csv(url, down_load_to, keep_zip=False):
 
 def download_csv(url, path_and_name):
     """
-    This function downloads a zipped csv using a url,
-    extracts the csv and saves it a specified location
+    This function downloads a csv using a url,
+    and saves it to a specified location.
     """
     download_to_path(url, path_and_name)
 
