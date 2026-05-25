@@ -92,18 +92,67 @@ def test_raises_when_cache_path_is_a_file(nemosis_fixture):
         )
 
 
-def test_keep_csv_true_by_default(nemosis_fixture):
-    """The default behaviour is to retain the raw AEMO CSVs alongside the
-    typed feather file so downstream consumers can re-read them without
-    re-fetching from AEMO."""
+def test_keep_csv_true_by_default_keeps_fetched_csv(nemosis_fixture):
+    """When cache_compiler actually has to fetch (no existing feather, so
+    the code path that downloads + extracts a CSV runs), the default
+    keep_csv=True must leave the extracted CSV on disk alongside the
+    feather. rebuild=True forces the fetch path so this test isn't
+    dependent on tmp_path being empty at start.
+
+    AEMO zips contain CSV files with an uppercase .CSV extension —
+    NEMOSIS handles this internally with [cC][sS][vV] globs and the
+    test does the same."""
     cache_compiler(
         start_time=START, end_time=END,
         table_name="DISPATCHPRICE",
         raw_data_location=str(nemosis_fixture),
-        # no keep_csv kwarg — use the default
+        rebuild=True,
+        # no keep_csv kwarg — exercises the default
     )
-    csv_files = list(nemosis_fixture.glob("*DISPATCHPRICE*.csv"))
-    assert csv_files, "default keep_csv=True should retain raw CSVs"
+    csv_files = list(nemosis_fixture.glob("*DISPATCHPRICE*.[Cc][Ss][Vv]"))
+    assert csv_files, "default keep_csv=True should retain the fetched CSV"
+
+
+def test_keep_csv_false_removes_fetched_csv(nemosis_fixture):
+    """Mirror of the above with the override — verifies the opt-out
+    path still works (the source-side delete in _dynamic_data_fetch_loop
+    fires only when keep_csv is False)."""
+    cache_compiler(
+        start_time=START, end_time=END,
+        table_name="DISPATCHPRICE",
+        raw_data_location=str(nemosis_fixture),
+        rebuild=True,
+        keep_csv=False,
+    )
+    csv_files = list(nemosis_fixture.glob("*DISPATCHPRICE*.[Cc][Ss][Vv]"))
+    assert not csv_files, "keep_csv=False should remove the fetched CSV"
+
+
+def test_existing_feather_means_no_csv_is_fetched(nemosis_fixture):
+    """If the feather is already in the cache, cache_compiler must take
+    the "already compiled" short-circuit and not fetch a CSV — keep_csv
+    is only about retaining a CSV we actually downloaded, not about
+    creating one out of thin air. Pre-populate empty feather files at
+    the expected filenames (in caching_mode the existence check skips
+    the read), call cache_compiler without rebuild, and verify no CSV
+    appeared."""
+    # April + May because NEMOSIS uses a 1-day buffer-back, so a query
+    # starting 2018-05-01 also scans the 2018-04 archive.
+    for month in ("201804", "201805"):
+        (nemosis_fixture / f"PUBLIC_DVD_DISPATCHPRICE_{month}010000.feather").touch()
+
+    cache_compiler(
+        start_time=START, end_time=END,
+        table_name="DISPATCHPRICE",
+        raw_data_location=str(nemosis_fixture),
+        # default keep_csv=True — would matter if a CSV was fetched
+    )
+
+    csv_files = list(nemosis_fixture.glob("*DISPATCHPRICE*.[Cc][Ss][Vv]"))
+    assert not csv_files, (
+        "keep_csv=True should NOT cause a CSV to be created when the "
+        "feather already exists — the CSV branch must not run at all"
+    )
 
 
 @pytest.mark.parametrize("fformat", ["feather", "parquet"])
