@@ -5,7 +5,6 @@ from bs4 import BeautifulSoup
 import zipfile
 import io
 import pandas as pd
-from urllib.parse import urlparse
 
 from . import defaults, custom_errors
 
@@ -38,8 +37,6 @@ def run(year, month, day, chunk, index, filename_stub, down_load_to):
     # Perform the download, unzipping saving of the file
     try:
         download_unzip_csv(url_formatted, down_load_to)
-    except KeyboardInterrupt:
-        raise
     except Exception as e:
         if chunk == 1:
             logger.warning(f"{filename_stub} not downloaded ({e})")
@@ -57,8 +54,6 @@ def run_bid_tables(year, month, day, chunk, index, filename_stub, down_load_to):
             _download_and_unpack_bid_move_complete_files(
                 download_url, down_load_to
             )
-        except KeyboardInterrupt:
-            raise
         except Exception as e:
             logger.warning(f"{filename_stub} not downloaded ({e})")
 
@@ -72,8 +67,6 @@ def run_next_day_region_tables(year, month, day, chunk, index, filename_stub, do
         _download_and_unpack_next_region_tables(
             download_url, down_load_to
         )
-    except KeyboardInterrupt:
-        raise
     except Exception as e:
         logger.warning(f"{filename_stub} not downloaded ({e})")
 
@@ -85,8 +78,6 @@ def run_next_dispatch_tables(year, month, day, chunk, index, filename_stub, down
             filename_stub,
             defaults.current_data_page_urls["NEXT_DAY_DISPATCHLOAD"])
         _download_and_unpack_next_dispatch_load_files_complete_files(download_url, down_load_to)
-    except KeyboardInterrupt:
-        raise
     except Exception as e:
         logger.warning(f"{filename_stub} not downloaded ({e})")
 
@@ -97,8 +88,6 @@ def run_intermittent_gen_scada(year, month, day, chunk, index, filename_stub, do
             filename_stub,
             defaults.current_data_page_urls["INTERMITTENT_GEN_SCADA"])
         _download_and_unpack_intermittent_gen_scada_file(download_url, down_load_to)
-    except KeyboardInterrupt:
-        raise
     except Exception as e:
         logger.warning(f"{filename_stub} not downloaded ({e})")
 
@@ -254,13 +243,9 @@ def run_fcas4s(year, month, day, chunk, index, filename_stub, down_load_to):
     # Perform the download, unzipping saving of the file
     try:
         download_unzip_csv(url_formatted_latest, down_load_to)
-    except KeyboardInterrupt:
-        raise
     except Exception:
         try:
             download_unzip_csv(url_formatted_hist, down_load_to)
-        except KeyboardInterrupt:
-            raise
         except Exception as e:
             # FCAS csvs are bundled in 30 minute bundles
             # Check if the csv exists before warning
@@ -274,61 +259,39 @@ def download_to_dir(url, down_load_to, force_redo=False):
     It streams it, so that large files do not fill up memory.
     An exception is thrown if the url does not exist.
     """
-
     url = url.replace('#', '%23')
     filename = url.split('/')[-1].split('?')[0]
     path = os.path.join(down_load_to, filename)
-    download_to_path(url, path)
+    download_to_path(url, path, force_redo=force_redo)
     return path
+
 
 def download_to_path(url, path_and_name, force_redo=False):
     """
     This function downloads a file from a url to a specific path.
     It streams it, so that large files do not fill up memory.
-    An exception is thrown if the url does not exist.
+
+    Idempotent — if the destination already exists, the function
+    returns without re-downloading unless `force_redo=True`. On a
+    write failure mid-stream, the partial output file is removed
+    before the exception propagates.
     """
     url = url.replace('#', '%23')
-    filename = url.split('/')[-1].split('?')[0]
-    if (not os.path.exists(path_and_name)) or force_redo:
+    if os.path.isfile(path_and_name) and not force_redo:
+        return
 
-        # Most headers should be set via the session
-        # This is just for per-request variation
-        headers = {}
+    with session.get(url, stream=True) as response:
+        response.raise_for_status()
+        try:
+            with open(path_and_name, 'wb') as file:
+                for chunk in response.iter_content(chunk_size=2**13):
+                    file.write(chunk)
+        except Exception as e:
+            logger.error(f"Failed to write file to {path_and_name}: {e}")
+            if os.path.isfile(path_and_name):
+                os.unlink(path_and_name)
+            raise
 
-        # For the few files that are hosted outside the usual dataset,
-        # AEMO discriminates based on user agent, blocking scrapers.
-        # So let's pretend we're a normal web browser.
-        # AEMO, if you see this and don't like it,
-        # then just move the participant registration spreadsheet
-        # into the usual MMS nemweb dataset, 
-        # at https://nemweb.com.au/ instead of https://www.aemo.com.au
-        # ideally as the same CSV format everything else is.
-        # That would make life easier for both of us.
-        # https://github.com/UNSW-CEEM/NEMOSIS/issues/60
-        domain = urlparse(url).netloc
-        if domain.endswith("aemo.com.au"):
-            chrome_user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-            headers["User-Agent"] = chrome_user_agent
-
-        with session.get(url, stream=True, headers=headers) as response:
-            if response.status_code not in [200, 404]:
-                logger.debug(f"URL {url} gave status {response.status_code}: {response.text[:1000]}")
-            response.raise_for_status()
-            try:
-                with open(path_and_name, 'wb') as file:
-                    for chunk in response.iter_content(chunk_size=2**13):
-                        file.write(chunk)
-            except KeyboardInterrupt:
-                raise
-            except Exception as e:
-                logger.error(f"Failed to write file to {path_and_name}: {e}")
-                if os.path.exists(path_and_name):
-                    os.remove(path_and_name)
-                raise
-
-        # temporary debugging
-        if url.lower().endswith('.zip'):
-            logger.info(f"Zip downloaded to {path_and_name}")
 
 def download_unzip_csv(url, down_load_to):
     """

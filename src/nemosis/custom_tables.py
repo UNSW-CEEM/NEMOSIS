@@ -200,7 +200,7 @@ def performance_at_nodal_peak(capacity_and_scada_grouped):
     index_max = capacity_and_scada_grouped["TOTALDEMAND"].idxmax()
     try:
         output_at_peak = capacity_and_scada_grouped["SCADAVALUE"][index_max]
-    except:
+    except Exception:
         x = 1
     if np.isnan(output_at_peak):
         output_at_peak = 0

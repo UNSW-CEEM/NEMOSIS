@@ -298,7 +298,7 @@ def static_table(
             static_downloader_map[table_name](
                 _defaults.static_table_url[table_name], path_and_name
             )
-        except:
+        except Exception:
             raise NoDataToReturn(
                 (
                     f"Compiling data for table {table_name} failed. "
