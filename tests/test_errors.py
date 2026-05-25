@@ -71,6 +71,17 @@ def test_dynamic_select_columns_all_requires_csv(nemosis_fixture):
         )
 
 
+def test_dynamic_raw_data_location_is_none():
+    """Passing None as the cache path is a common caller mistake (forgot
+    to set it, config returned None). Reject with UserInputError rather
+    than the cryptic TypeError that os.path.isdir(None) would raise."""
+    with pytest.raises(UserInputError, match="is None"):
+        dynamic_data_compiler(
+            "2018/05/01 00:00:00", "2018/05/01 01:00:00",
+            "DISPATCHPRICE", raw_data_location=None,
+        )
+
+
 # ---------------------------------------------------------------------------
 # Argument-validation: cache_compiler
 # ---------------------------------------------------------------------------
@@ -102,6 +113,14 @@ def test_cache_select_columns_requires_rebuild(nemosis_fixture):
         )
 
 
+def test_cache_raw_data_location_is_none():
+    with pytest.raises(UserInputError, match="is None"):
+        cache_compiler(
+            "2018/05/01 00:00:00", "2018/05/01 01:00:00",
+            "DISPATCHPRICE", raw_data_location=None,
+        )
+
+
 # ---------------------------------------------------------------------------
 # Argument-validation: static_table
 # ---------------------------------------------------------------------------
@@ -119,6 +138,11 @@ def test_static_filter_col_not_in_select_columns(nemosis_fixture):
             filter_cols=["VARIABLETYPE"],
             filter_values=(["MW"],),
         )
+
+
+def test_static_raw_data_location_is_none():
+    with pytest.raises(UserInputError, match="is None"):
+        static_table("VARIABLES_FCAS_4_SECOND", raw_data_location=None)
 
 
 # ---------------------------------------------------------------------------

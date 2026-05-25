@@ -270,6 +270,9 @@ def static_table(
     Returns:
         data (pd.Dataframe)
     """
+    if raw_data_location is None:
+        raise UserInputError("The raw_data_location provided is None.")
+
     if not _os.path.isdir(raw_data_location):
         raise UserInputError("The raw_data_location provided does not exist.")
 
