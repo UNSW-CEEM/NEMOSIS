@@ -289,7 +289,7 @@ SCRAPE_FILES = {
         "stub_template": "PUBLIC_DAILY_{ymd}",
         "sections_to_keep": {1: {"REGIONID": spec.REGIONS}},
     },
-    "Reports/Current/NEXT_DAY_DISPATCH/": {
+    "Reports/Current/Next_Day_Dispatch/": {
         "stub_template": "PUBLIC_NEXT_DAY_DISPATCH_{ymd}",
         "sections_to_keep": {0: {"DUID": spec.DUIDS}},
     },
@@ -302,7 +302,7 @@ SCRAPE_FILES = {
 # Which NEMOSIS table maps to which scrape file.
 TABLE_SCRAPE_FILE = {
     "DAILY_REGION_SUMMARY":  "Reports/Current/Daily_Reports/",
-    "NEXT_DAY_DISPATCHLOAD": "Reports/Current/NEXT_DAY_DISPATCH/",
+    "NEXT_DAY_DISPATCHLOAD": "Reports/Current/Next_Day_Dispatch/",
     "INTERMITTENT_GEN_SCADA": "Reports/Current/Next_Day_Intermittent_Gen_Scada/",
 }
 

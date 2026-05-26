@@ -28,7 +28,7 @@ ERAS = {
     "2024-09": date(2024, 9, 1),   # first safely-past-cutover month; used by bidding tables (see note)
     "2025-01": date(2025, 1, 1),   # year boundary, PUBLIC_ARCHIVE# format, post-bidding-gap
     "2026-04": date(2026, 4, 1),   # general recent-month coverage in PUBLIC_ARCHIVE# format
-    "recent":  date(2026, 3, 15),  # inside AEMO's current-data scrape window (see note)
+    "recent":  date(2026, 5, 15),  # inside AEMO's current-data scrape window (see note)
 }
 # Year-boundary eras (2020-01, 2022-01, 2025-01) exist for the boundary test
 # matrix in tests/end_to_end_table_tests/_boundaries.py — they exercise
