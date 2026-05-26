@@ -16,6 +16,7 @@ A Python package for downloading historical data published by the Australian Ene
   - [Data from dynamic tables](#data-from-dynamic-tables)
     - [Workflows](#workflows)
       - [Dynamic data compiler](#dynamic-data-compiler)
+        - [Start and end time](#start-and-end-time)
         - [Filter options](#filter-options)
         - [Caching options](#caching-options)
       - [Cache compiler](#cache-compiler)
@@ -100,10 +101,9 @@ Your workflow may determine how you use NEMOSIS. Because the GUI relies on data 
 
 ```python
 from nemosis import dynamic_data_compiler
-from datetime import datetime
 
-start_time = datetime(2017, 1, 1, 0, 0)
-end_time = datetime(2017, 1, 1, 0, 5)
+start_time = '2017/01/01 00:00:00'
+end_time = '2017/01/01 00:05:00'
 table = 'DISPATCHPRICE'
 raw_data_cache = 'C:/Users/your_data_storage'
 
@@ -114,7 +114,29 @@ Using the default settings of `dynamic_data_compiler` will download zip archives
 
 A number of options are available to configure filtering (i.e. what data NEMOSIS returns as a pandas DataFrame) and caching.
 
-For `start_time` and `end_time` you can pass a datetime (timezone unaware), a `date`, or a string of the form "YYYY/MM/DD HH:MM:SS", e.g. `2017/01/01 00:00:00`.
+###### Start and end time
+
+`start_time` and `end_time` accept three forms:
+
+- A string in `"YYYY/MM/DD HH:MM:SS"` form, e.g. `"2017/01/01 00:00:00"`.
+- A `datetime.datetime` (timezone unaware). Timezone-aware datetimes are rejected — NEMOSIS treats all timestamps as AEMO market time.
+- A `datetime.date`. As `start_time` it expands to 00:00:00 of that day; as `end_time` it expands to 00:00:00 of the next day (so `end_time=date(2018, 5, 1)` is inclusive of all of 2018-05-01).
+
+```python
+from datetime import date, datetime
+from nemosis import dynamic_data_compiler
+
+# string
+data = dynamic_data_compiler('2017/01/01 00:00:00', '2017/01/01 00:05:00', table, raw_data_cache)
+
+# datetime
+data = dynamic_data_compiler(datetime(2017, 1, 1, 0, 0), datetime(2017, 1, 1, 0, 5), table, raw_data_cache)
+
+# date (covers all of 2017-01-01)
+data = dynamic_data_compiler(date(2017, 1, 1), date(2017, 1, 1), table, raw_data_cache)
+```
+
+The same forms are accepted by `cache_compiler`.
 
 ###### Filter options
 
@@ -234,8 +256,8 @@ from nemosis import defaults
 
 defaults.table_columns['BIDPEROFFER_D'] += ['PASAAVAILABILITY']
 
-start_time = datetime(2017, 1, 1, 0, 0)
-end_time = datetime(2017, 1, 1, 0, 5)
+start_time = '2017/01/01 00:00:00'
+end_time = '2017/01/01 00:05:00'
 table = 'BIDPEROFFER_D'
 raw_data_cache = 'C:/Users/your_data_storage'
 
