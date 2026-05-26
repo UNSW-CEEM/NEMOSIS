@@ -173,7 +173,7 @@ You can mix and match these two flags to control what is retained:
 |---|---|---|
 | `False` (default) | `True` (default) | parquet/feather + zip |
 | `False` | `False` | parquet/feather only — leanest cache |
-| `True` | `False` | parquet/feather + CSV — for downstream CSV consumers / GUI |
+| `True` | `False` | parquet/feather + CSV — for downstream tools that consume the raw CSV |
 | `True` | `True` | parquet/feather + CSV + zip — full raw retention |
 
 For example, to keep neither the CSV nor the zip after the parquet file is written:
@@ -183,7 +183,7 @@ price_data = dynamic_data_compiler(start_time, end_time, table, raw_data_cache,
                                    keep_csv=False, keep_zip=False)
 ```
 
-To keep the CSVs alongside the parquet files (e.g. so the same cache can be read by the GUI, or by another application that consumes CSV):
+To keep the raw AEMO CSVs alongside the parquet files (e.g. for an external tool that consumes the original CSV directly):
 
 ```python
 price_data = dynamic_data_compiler(start_time, end_time, table, raw_data_cache, keep_csv=True)
