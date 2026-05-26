@@ -16,7 +16,7 @@ def test_interconnector_constraint_returns_fixtured_rows(nemosis_fixture, monkey
         end_time="2021/05/01 01:00:00",
         table_name="INTERCONNECTORCONSTRAINT",
         raw_data_location=str(nemosis_fixture),
-        select_columns=["INTERCONNECTORID", "EFFECTIVEDATE", "VERSIONNO", "IMPORTLIMIT", "EXPORTLIMIT"],
+        select_columns=["INTERCONNECTORID", "EFFECTIVEDATE", "VERSIONNO"],
     )
 
     assert not data.empty
