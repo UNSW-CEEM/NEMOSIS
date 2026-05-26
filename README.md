@@ -173,7 +173,7 @@ You can mix and match these two flags to control what is retained:
 |---|---|---|
 | `False` (default) | `True` (default) | parquet/feather + zip |
 | `False` | `False` | parquet/feather only — leanest cache |
-| `True` | `False` | parquet/feather + CSV — for downstream tools that consume the raw CSV |
+| `True` | `False` | parquet/feather + CSV |
 | `True` | `True` | parquet/feather + CSV + zip — full raw retention |
 
 For example, to keep neither the CSV nor the zip after the parquet file is written:
