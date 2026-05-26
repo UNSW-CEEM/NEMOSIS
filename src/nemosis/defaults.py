@@ -144,7 +144,7 @@ aemo_mms_url = "https://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/MMS
 current_data_page_urls = {
     "BIDDING": "Reports/Current/Bidmove_Complete/",
     "DAILY_REGION_SUMMARY": "/Reports/Current/Daily_Reports/",
-    "NEXT_DAY_DISPATCHLOAD": "/Reports/Current/NEXT_DAY_DISPATCH/",
+    "NEXT_DAY_DISPATCHLOAD": "/Reports/Current/Next_Day_Dispatch/",
     "INTERMITTENT_GEN_SCADA": "/Reports/Current/Next_Day_Intermittent_Gen_Scada/"
 }
 

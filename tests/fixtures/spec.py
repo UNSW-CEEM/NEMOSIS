@@ -27,7 +27,8 @@ ERAS = {
     "2024-08": date(2024, 8, 1),   # PUBLIC_DVD_ → PUBLIC_ARCHIVE# cutover; `into` straddles the format change
     "2024-09": date(2024, 9, 1),   # first safely-past-cutover month; used by bidding tables (see note)
     "2025-01": date(2025, 1, 1),   # year boundary, PUBLIC_ARCHIVE# format, post-bidding-gap
-    "recent":  date(2026, 3, 15),  # inside AEMO's current-data scrape window (see note)
+    "2026-04": date(2026, 4, 1),   # general recent-month coverage in PUBLIC_ARCHIVE# format
+    "recent":  date(2026, 5, 15),  # inside AEMO's current-data scrape window (see note)
 }
 # Year-boundary eras (2020-01, 2022-01, 2025-01) exist for the boundary test
 # matrix in tests/end_to_end_table_tests/_boundaries.py — they exercise
@@ -65,12 +66,12 @@ MNSP_LINKS = ["BLNKTAS", "BLNKVIC"]         # Basslink, both directions
 # More tables get added as each one lands end-to-end.
 DYNAMIC_TABLES = {
     # Five-minute dispatch tables — the workhorse set.
-    "DISPATCHPRICE":             {"eras": ["2018-05", "2020-01", "2021-05", "2022-01", "2024-08", "2025-01"], "filter": {"REGIONID": REGIONS}},
-    "DISPATCHLOAD":              {"eras": ["2018-05", "2020-01", "2021-05", "2022-01", "2024-08", "2025-01"], "filter": {"DUID": DUIDS}},
-    "DISPATCH_UNIT_SCADA":       {"eras": ["2018-05", "2020-01", "2021-05", "2022-01", "2024-08", "2025-01"], "filter": {"DUID": DUIDS}},
-    "DISPATCHREGIONSUM":         {"eras": ["2018-05", "2020-01", "2021-05", "2022-01", "2024-08", "2025-01"], "filter": {"REGIONID": REGIONS}},
-    "DISPATCHINTERCONNECTORRES": {"eras": ["2018-05", "2020-01", "2021-05", "2022-01", "2024-08", "2025-01"], "filter": {"INTERCONNECTORID": INTERCONNECTORS}},
-    "DISPATCHCONSTRAINT":        {"eras": ["2018-05", "2020-01", "2021-05", "2022-01", "2024-08", "2025-01"], "filter": {"CONSTRAINTID": CONSTRAINTS}},
+    "DISPATCHPRICE":             {"eras": ["2018-05", "2020-01", "2021-05", "2022-01", "2024-08", "2025-01", "2026-04"], "filter": {"REGIONID": REGIONS}},
+    "DISPATCHLOAD":              {"eras": ["2018-05", "2020-01", "2021-05", "2022-01", "2024-08", "2025-01", "2026-04"], "filter": {"DUID": DUIDS}},
+    "DISPATCH_UNIT_SCADA":       {"eras": ["2018-05", "2020-01", "2021-05", "2022-01", "2024-08", "2025-01", "2026-04"], "filter": {"DUID": DUIDS}},
+    "DISPATCHREGIONSUM":         {"eras": ["2018-05", "2020-01", "2021-05", "2022-01", "2024-08", "2025-01", "2026-04"], "filter": {"REGIONID": REGIONS}},
+    "DISPATCHINTERCONNECTORRES": {"eras": ["2018-05", "2020-01", "2021-05", "2022-01", "2024-08", "2025-01", "2026-04"], "filter": {"INTERCONNECTORID": INTERCONNECTORS}},
+    "DISPATCHCONSTRAINT":        {"eras": ["2018-05", "2020-01", "2021-05", "2022-01", "2024-08", "2025-01", "2026-04"], "filter": {"CONSTRAINTID": CONSTRAINTS}},
 
     # Trading tables. TRADINGPRICE/TRADINGINTERCONNECT switched from 30-min to
     # 5-min at 2021-10-01 (the 5MS reform cutover); TRADINGLOAD/TRADINGREGIONSUM
@@ -80,8 +81,8 @@ DYNAMIC_TABLES = {
     # dedicated stride-transition test in test_trading_price.py. It is not
     # listed in `eras`, so the boundary tests skip it — the 5MS cutover
     # month is covered by that dedicated test instead.
-    "TRADINGPRICE":        {"eras": ["2018-05", "2020-01", "2021-05", "2022-01", "2022-06", "2024-08", "2025-01"], "extra_eras": ["2021-10"], "filter": {"REGIONID": REGIONS}},
-    "TRADINGINTERCONNECT": {"eras": ["2018-05", "2020-01", "2021-05", "2022-01", "2022-06", "2024-08", "2025-01"], "extra_eras": ["2021-10"], "filter": {"INTERCONNECTORID": INTERCONNECTORS}},
+    "TRADINGPRICE":        {"eras": ["2018-05", "2020-01", "2021-05", "2022-01", "2022-06", "2024-08", "2025-01", "2026-04"], "extra_eras": ["2021-10"], "filter": {"REGIONID": REGIONS}},
+    "TRADINGINTERCONNECT": {"eras": ["2018-05", "2020-01", "2021-05", "2022-01", "2022-06", "2024-08", "2025-01", "2026-04"], "extra_eras": ["2021-10"], "filter": {"INTERCONNECTORID": INTERCONNECTORS}},
     # TRADINGLOAD/TRADINGREGIONSUM were discontinued before 2022 — 2022-01 returns 404.
     "TRADINGLOAD":         {"eras": ["2018-05", "2020-01", "2021-05"], "filter": {"DUID": DUIDS}},
     "TRADINGREGIONSUM":    {"eras": ["2018-05", "2020-01", "2021-05"], "filter": {"REGIONID": REGIONS}},
@@ -94,8 +95,8 @@ DYNAMIC_TABLES = {
     # filename cutover. Bidding tables stay on 2024-09: 2024-07's bid archive
     # sits inside the publishing gap and a 2024-08-era prev-month buffer would
     # 404 at test time.
-    "BIDPEROFFER_D": {"eras": ["2018-05", "2020-01", "2021-02", "2024-09", "2025-01"], "filter": {"DUID": DUIDS}},
-    "BIDDAYOFFER_D": {"eras": ["2018-05", "2020-01", "2021-02", "2024-09", "2025-01"], "filter": {"DUID": DUIDS}},
+    "BIDPEROFFER_D": {"eras": ["2018-05", "2020-01", "2021-02", "2024-09", "2025-01", "2026-04"], "filter": {"DUID": DUIDS}},
+    "BIDDAYOFFER_D": {"eras": ["2018-05", "2020-01", "2021-02", "2024-09", "2025-01", "2026-04"], "filter": {"DUID": DUIDS}},
 
     # MNSP bidding — same shape as BIDPEROFFER_D / BIDDAYOFFER_D but keyed on
     # LINKID (MNSP interconnectors bid as directional links).
@@ -114,7 +115,7 @@ DYNAMIC_TABLES = {
     # standard bidding era set applies — same bidding-gap shape as BIDPEROFFER_D
     # / BIDDAYOFFER_D above (no 2022-01, recovery at 2024-09).
     "MNSP_PEROFFER": {"eras": ["2018-05", "2020-01", "2021-02"],                       "filter": {"LINKID": MNSP_LINKS}},
-    "MNSP_DAYOFFER": {"eras": ["2018-05", "2020-01", "2021-05", "2024-09", "2025-01"], "filter": {"LINKID": MNSP_LINKS}},
+    "MNSP_DAYOFFER": {"eras": ["2018-05", "2020-01", "2021-05", "2024-09", "2025-01", "2026-04"], "filter": {"LINKID": MNSP_LINKS}},
 
     # Scrape-only tables — all live on AEMO's rolling current-data pages.
     "DAILY_REGION_SUMMARY":   {"eras": ["recent"], "filter": {"REGIONID": REGIONS}},
@@ -122,7 +123,7 @@ DYNAMIC_TABLES = {
     "INTERMITTENT_GEN_SCADA": {"eras": ["recent"], "filter": {"DUID": DUIDS}},
 
     # Rooftop PV — introduced mid-2019.
-    "ROOFTOP_PV_ACTUAL": {"eras": ["2020-01", "2021-05", "2022-01", "2024-08", "2025-01"], "filter": {"REGIONID": REGIONS}},
+    "ROOFTOP_PV_ACTUAL": {"eras": ["2020-01", "2021-05", "2022-01", "2024-08", "2025-01", "2026-04"], "filter": {"REGIONID": REGIONS}},
 
     # Effective-date config tables. These publish sparsely — records are
     # configuration changes, not time-series observations — and NEMOSIS's

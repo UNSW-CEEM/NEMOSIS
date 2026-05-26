@@ -17,8 +17,8 @@ import pandas as pd
 
 def test_recent_day_returns_rows_for_filtered_regions(nemosis_fixture):
     data = dynamic_data_compiler(
-        start_time="2026/03/15 00:00:00",
-        end_time="2026/03/15 01:00:00",
+        start_time="2026/05/15 00:00:00",
+        end_time="2026/05/15 01:00:00",
         table_name="DAILY_REGION_SUMMARY",
         raw_data_location=str(nemosis_fixture),
         select_columns=["SETTLEMENTDATE", "REGIONID", "TOTALDEMAND"],
@@ -38,31 +38,31 @@ def test_recent_day_returns_rows_for_filtered_regions(nemosis_fixture):
 
 def test_end_market_day_returns_0400_row_from_previous_file(nemosis_fixture):
     """[03:55, 04:00]: filter is start-exclusive end-inclusive, so only
-    the 04:00 row qualifies — and it lives in the `20260314` daily file,
-    not `20260315`. Non-empty proves buffer-back fired correctly."""
+    the 04:00 row qualifies — and it lives in the `20260514` daily file,
+    not `20260515`. Non-empty proves buffer-back fired correctly."""
     data = dynamic_data_compiler(
-        start_time="2026/03/15 03:55:00",
-        end_time="2026/03/15 04:00:00",
+        start_time="2026/05/15 03:55:00",
+        end_time="2026/05/15 04:00:00",
         table_name="DAILY_REGION_SUMMARY",
         raw_data_location=str(nemosis_fixture),
         select_columns=["SETTLEMENTDATE", "REGIONID", "TOTALDEMAND"],
     )
-    assert set(data["SETTLEMENTDATE"].unique()) == {pd.Timestamp("2026-03-15 04:00:00")}
+    assert set(data["SETTLEMENTDATE"].unique()) == {pd.Timestamp("2026-05-15 04:00:00")}
     assert set(data["REGIONID"]) == {"SA1", "NSW1"}
     assert not data.duplicated(["SETTLEMENTDATE", "REGIONID"]).any()
 
 
 def test_start_market_day_returns_0405_row_from_current_file(nemosis_fixture):
     """[04:00, 04:05]: start-exclusive means 04:00 is dropped; 04:05 is
-    the first row of the `20260315` daily file. Tests the stitch from
+    the first row of the `20260515` daily file. Tests the stitch from
     the consumer side — the current day's file must be fetched."""
     data = dynamic_data_compiler(
-        start_time="2026/03/15 04:00:00",
-        end_time="2026/03/15 04:05:00",
+        start_time="2026/05/15 04:00:00",
+        end_time="2026/05/15 04:05:00",
         table_name="DAILY_REGION_SUMMARY",
         raw_data_location=str(nemosis_fixture),
         select_columns=["SETTLEMENTDATE", "REGIONID", "TOTALDEMAND"],
     )
-    assert set(data["SETTLEMENTDATE"].unique()) == {pd.Timestamp("2026-03-15 04:05:00")}
+    assert set(data["SETTLEMENTDATE"].unique()) == {pd.Timestamp("2026-05-15 04:05:00")}
     assert set(data["REGIONID"]) == {"SA1", "NSW1"}
     assert not data.duplicated(["SETTLEMENTDATE", "REGIONID"]).any()

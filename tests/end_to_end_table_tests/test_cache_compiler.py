@@ -75,7 +75,7 @@ def test_creates_cache_directory_when_missing(nemosis_fixture):
     )
 
     assert target.is_dir()
-    assert list(target.glob("*.feather")), "cache should be populated"
+    assert list(target.glob("*.parquet")), "cache should be populated"
 
 
 def test_raises_when_cache_path_is_a_file(nemosis_fixture):
@@ -93,9 +93,9 @@ def test_raises_when_cache_path_is_a_file(nemosis_fixture):
 
 
 def test_keep_csv_true_retains_csv(nemosis_fixture):
-    """When cache_compiler actually has to fetch (no existing feather, so
+    """When cache_compiler actually has to fetch (no existing parquet, so
     the code path that downloads + extracts a CSV runs), `keep_csv=True`
-    must leave the extracted CSV on disk alongside the feather.
+    must leave the extracted CSV on disk alongside the parquet.
     rebuild=True forces the fetch path so this test isn't dependent on
     tmp_path being empty at start.
 
@@ -115,7 +115,7 @@ def test_keep_csv_true_retains_csv(nemosis_fixture):
 
 def test_keep_csv_default_is_false(nemosis_fixture):
     """Default behaviour — keep_csv=False removes the extracted CSV
-    after the typed feather is written, leaving only the feather in
+    after the typed parquet is written, leaving only the parquet in
     the cache. Users who want raw retention opt in via keep_csv=True."""
     cache_compiler(
         start_time=START, end_time=END,
@@ -128,18 +128,18 @@ def test_keep_csv_default_is_false(nemosis_fixture):
     assert not csv_files, f"default keep_csv=False should remove CSV; found: {csv_files}"
 
 
-def test_existing_feather_means_no_csv_is_fetched(nemosis_fixture):
-    """If the feather is already in the cache, cache_compiler must take
+def test_existing_parquet_means_no_csv_is_fetched(nemosis_fixture):
+    """If the parquet is already in the cache, cache_compiler must take
     the "already compiled" short-circuit and not fetch a CSV — keep_csv
     is only about retaining a CSV we actually downloaded, not about
-    creating one out of thin air. Pre-populate empty feather files at
+    creating one out of thin air. Pre-populate empty parquet files at
     the expected filenames (in caching_mode the existence check skips
     the read), call cache_compiler without rebuild, and verify no CSV
     appeared."""
     # April + May because NEMOSIS uses a 1-day buffer-back, so a query
     # starting 2018-05-01 also scans the 2018-04 archive.
     for month in ("201804", "201805"):
-        (nemosis_fixture / f"PUBLIC_DVD_DISPATCHPRICE_{month}010000.feather").touch()
+        (nemosis_fixture / f"PUBLIC_DVD_DISPATCHPRICE_{month}010000.parquet").touch()
 
     cache_compiler(
         start_time=START, end_time=END,
@@ -151,7 +151,7 @@ def test_existing_feather_means_no_csv_is_fetched(nemosis_fixture):
     csv_files = list(nemosis_fixture.glob("*DISPATCHPRICE*.[Cc][Ss][Vv]"))
     assert not csv_files, (
         "keep_csv=True should NOT cause a CSV to be created when the "
-        "feather already exists — the CSV branch must not run at all"
+        "parquet already exists — the CSV branch must not run at all"
     )
 
 
@@ -204,7 +204,7 @@ def test_keep_zip_false_removes_zip(nemosis_fixture):
 
 def test_cached_zip_extracts_without_network(nemosis_fixture, monkeypatch):
     """The #56 benefit in action: with keep_zip=True on a first call,
-    a subsequent call that needs the same CSV but finds the feather
+    a subsequent call that needs the same CSV but finds the parquet
     missing should re-extract from the cached zip locally without
     hitting nemweb. Proves it by breaking the AEMO URL after the first
     call — if the second call tries to fetch, it would 404 against the
@@ -217,14 +217,14 @@ def test_cached_zip_extracts_without_network(nemosis_fixture, monkeypatch):
         rebuild=True,
         keep_zip=True,
     )
-    feather_files = list(nemosis_fixture.glob("*.feather"))
+    parquet_files = list(nemosis_fixture.glob("*.parquet"))
     zip_files = list(nemosis_fixture.glob("*.zip"))
-    assert feather_files and zip_files
+    assert parquet_files and zip_files
 
-    # Delete the feather so the loop has to call _download_data again,
+    # Delete the parquet so the loop has to call _download_data again,
     # but leave the zip in place so the lower-level download_to_path
     # short-circuits on the cached file.
-    for f in feather_files:
+    for f in parquet_files:
         f.unlink()
 
     # Point the URL at a dead address — any actual network call would fail.
@@ -239,8 +239,8 @@ def test_cached_zip_extracts_without_network(nemosis_fixture, monkeypatch):
         keep_zip=True,
     )
 
-    # Feather rebuilt from the cached zip
-    assert list(nemosis_fixture.glob("*.feather")), "cache should be rebuilt from cached zip"
+    # Parquet rebuilt from the cached zip
+    assert list(nemosis_fixture.glob("*.parquet")), "cache should be rebuilt from cached zip"
 
 
 @pytest.mark.parametrize("fformat", ["feather", "parquet"])
