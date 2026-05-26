@@ -857,28 +857,42 @@ def _download_data(
     Dispatch table to downloader to be downloaded.
 
     Returns: nothing
+
+    Logging is honest about whether we actually contacted AEMO: the
+    `run*` functions return True if a network fetch occurred, False if
+    a previously-downloaded zip on disk was reused, or None if the
+    attempt failed (in which case a warning has already been emitted
+    downstream). Both branches also extract the zip; the verb on a real
+    fetch is "Downloading and extracting" to make that explicit, so the
+    "Extracting cached zip" message reads as a proper subset (skipped
+    the network) rather than something different. Users aren't misled
+    into thinking every call hammers AEMO when in fact only the extract
+    step is being repeated (see #TBD discussion in user-testing
+    exploration).
     """
-    if chunk == 1:
+    fetched = _processing_info_maps.downloader[table_type](
+        year, month, day, chunk, index, filename_stub, raw_data_location,
+        keep_zip=keep_zip,
+    )
+
+    if chunk == 1 and fetched is not None:
+        verb = "Downloading and extracting data" if fetched else "Extracting cached zip"
         if day is None:
             logger.info(
-                f"Downloading data for table {table_name}, " + f"year {year}, month {month}"
+                f"{verb} for table {table_name}, "
+                + f"year {year}, month {month}"
             )
         elif index is None:
             logger.info(
-                f"Downloading data for table {table_name}, "
+                f"{verb} for table {table_name}, "
                 + f"year {year}, month {month}, day {day}"
             )
         else:
             logger.info(
-                f"Downloading data for table {table_name}, "
+                f"{verb} for table {table_name}, "
                 + f"year {year}, month {month}, day {day},"
                 + f"time {index}."
             )
-
-    _processing_info_maps.downloader[table_type](
-        year, month, day, chunk, index, filename_stub, raw_data_location,
-        keep_zip=keep_zip,
-    )
     return
 
   

@@ -101,7 +101,12 @@ def _pre_check_file_is_missing(file_url):
 
 
 def run(year, month, day, chunk, index, filename_stub, down_load_to, keep_zip=True):
-    """This function"""
+    """
+    Returns True if a network fetch occurred, False if a cached zip
+    was reused, or None if the attempt failed (in which case a warning
+    has already been emitted). Callers use this to log honestly about
+    whether AEMO was contacted (see _download_data).
+    """
 
     url = defaults.aemo_mms_url
     # Add the year and month information to the generic AEMO data url
@@ -109,26 +114,28 @@ def run(year, month, day, chunk, index, filename_stub, down_load_to, keep_zip=Tr
 
     # Perform the download, unzipping saving of the file
     try:
-        download_unzip_csv(url_formatted, down_load_to, keep_zip=keep_zip)
+        return download_unzip_csv(url_formatted, down_load_to, keep_zip=keep_zip)
     except Exception as e:
         if chunk == 1:
             logger.warning(f"{filename_stub} not downloaded ({e})")
+        return None
 
 
 def run_bid_tables(year, month, day, chunk, index, filename_stub, down_load_to, keep_zip=True):
     if day is None:
-        run(year, month, day, chunk, index, filename_stub, down_load_to, keep_zip=keep_zip)
+        return run(year, month, day, chunk, index, filename_stub, down_load_to, keep_zip=keep_zip)
     else:
         try:
             filename_stub = "BIDMOVE_COMPLETE_{year}{month}{day}".format(year=year, month=month, day=day)
             download_url = _get_current_url(
                 filename_stub,
                 defaults.current_data_page_urls["BIDDING"])
-            _download_and_unpack_bid_move_complete_files(
+            return _download_and_unpack_bid_move_complete_files(
                 download_url, down_load_to, keep_zip=keep_zip
             )
         except Exception as e:
             logger.warning(f"{filename_stub} not downloaded ({e})")
+            return None
 
 
 def run_next_day_region_tables(year, month, day, chunk, index, filename_stub, down_load_to, keep_zip=True):
@@ -137,11 +144,12 @@ def run_next_day_region_tables(year, month, day, chunk, index, filename_stub, do
         download_url = _get_current_url(
             filename_stub,
             defaults.current_data_page_urls["DAILY_REGION_SUMMARY"])
-        _download_and_unpack_next_region_tables(
+        return _download_and_unpack_next_region_tables(
             download_url, down_load_to, keep_zip=keep_zip
         )
     except Exception as e:
         logger.warning(f"{filename_stub} not downloaded ({e})")
+        return None
 
 
 def run_next_dispatch_tables(year, month, day, chunk, index, filename_stub, down_load_to, keep_zip=True):
@@ -150,9 +158,10 @@ def run_next_dispatch_tables(year, month, day, chunk, index, filename_stub, down
         download_url = _get_current_url(
             filename_stub,
             defaults.current_data_page_urls["NEXT_DAY_DISPATCHLOAD"])
-        _download_and_unpack_next_dispatch_load_files_complete_files(download_url, down_load_to, keep_zip=keep_zip)
+        return _download_and_unpack_next_dispatch_load_files_complete_files(download_url, down_load_to, keep_zip=keep_zip)
     except Exception as e:
         logger.warning(f"{filename_stub} not downloaded ({e})")
+        return None
 
 
 def run_intermittent_gen_scada(year, month, day, chunk, index, filename_stub, down_load_to, keep_zip=True):
@@ -160,9 +169,10 @@ def run_intermittent_gen_scada(year, month, day, chunk, index, filename_stub, do
         download_url = _get_current_url(
             filename_stub,
             defaults.current_data_page_urls["INTERMITTENT_GEN_SCADA"])
-        _download_and_unpack_intermittent_gen_scada_file(download_url, down_load_to, keep_zip=keep_zip)
+        return _download_and_unpack_intermittent_gen_scada_file(download_url, down_load_to, keep_zip=keep_zip)
     except Exception as e:
         logger.warning(f"{filename_stub} not downloaded ({e})")
+        return None
 
 
 def _get_current_url(filename_stub, current_page_url):
@@ -210,6 +220,7 @@ def _download_and_unpack_bid_move_complete_files(
     finally:
         if downloaded and not keep_zip and os.path.isfile(zip_local_path):
             os.unlink(zip_local_path)
+    return downloaded
 
 
 def _download_and_unpack_next_region_tables(
@@ -243,6 +254,7 @@ def _download_and_unpack_next_region_tables(
     finally:
         if downloaded and not keep_zip and os.path.isfile(zip_local_path):
             os.unlink(zip_local_path)
+    return downloaded
 
 
 def _download_and_unpack_next_dispatch_load_files_complete_files(
@@ -272,6 +284,7 @@ def _download_and_unpack_next_dispatch_load_files_complete_files(
     finally:
         if downloaded and not keep_zip and os.path.isfile(zip_local_path):
             os.unlink(zip_local_path)
+    return downloaded
 
 
 def _download_and_unpack_intermittent_gen_scada_file(
@@ -301,6 +314,7 @@ def _download_and_unpack_intermittent_gen_scada_file(
     finally:
         if downloaded and not keep_zip and os.path.isfile(zip_local_path):
             os.unlink(zip_local_path)
+    return downloaded
 
 
 def _find_start_row_nth_table(sub_folder_zipfile, file_name, n):
@@ -322,7 +336,12 @@ def _find_start_row_nth_table(sub_folder_zipfile, file_name, n):
 
 
 def run_fcas4s(year, month, day, chunk, index, filename_stub, down_load_to, keep_zip=True):
-    """This function"""
+    """
+    Returns True if a network fetch occurred, False if a cached zip
+    was reused, or None if both fallback URLs failed (in which case a
+    warning has already been emitted unless the CSV was already on
+    disk from a prior call).
+    """
 
     # Add the year and month information to the generic AEMO data url
     url_formatted_latest = defaults.fcas_4_url.format(year, month, day, index)
@@ -331,16 +350,17 @@ def run_fcas4s(year, month, day, chunk, index, filename_stub, down_load_to, keep
     )
     # Perform the download, unzipping saving of the file
     try:
-        download_unzip_csv(url_formatted_latest, down_load_to, keep_zip=keep_zip)
+        return download_unzip_csv(url_formatted_latest, down_load_to, keep_zip=keep_zip)
     except Exception:
         try:
-            download_unzip_csv(url_formatted_hist, down_load_to, keep_zip=keep_zip)
+            return download_unzip_csv(url_formatted_hist, down_load_to, keep_zip=keep_zip)
         except Exception as e:
             # FCAS csvs are bundled in 30 minute bundles
             # Check if the csv exists before warning
             file_check = os.path.join(down_load_to, filename_stub + ".csv")
             if not os.path.isfile(file_check):
                 logger.warning(f"{filename_stub} not downloaded {(e)}")
+            return None
 
 def download_to_dir(url, down_load_to, force_redo=False):
     """
@@ -427,6 +447,10 @@ def download_unzip_csv(url, down_load_to, keep_zip=True):
     touches zips this call actually downloaded — pre-existing zips
     (from a previous call, or another concurrent process) are left
     alone.
+
+    Returns True if a network fetch occurred, False if a cached zip
+    already on disk was reused. Callers use this to log honestly
+    about whether AEMO was contacted.
     """
     zip_local_path, downloaded = download_to_dir(url, down_load_to)
     try:
@@ -435,6 +459,7 @@ def download_unzip_csv(url, down_load_to, keep_zip=True):
     finally:
         if downloaded and not keep_zip and os.path.isfile(zip_local_path):
             os.unlink(zip_local_path)
+    return downloaded
 
 
 def download_csv(url, path_and_name):
