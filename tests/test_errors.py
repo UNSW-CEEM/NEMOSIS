@@ -61,6 +61,34 @@ def test_dynamic_filter_col_not_a_real_column(nemosis_fixture):
         )
 
 
+def test_dynamic_select_columns_must_include_pk_for_dedup_tables(nemosis_fixture):
+    """For tables whose finalise pipeline includes
+    `drop_duplicates_by_primary_key`, omitting a PK column used to
+    crash with a bare pandas `KeyError: Index(['VERSIONNO'], ...)` from
+    inside finalise — opaque to users. Catch it up-front with a clear
+    UserInputError naming the missing PK column(s)."""
+    with pytest.raises(UserInputError, match="primary-key"):
+        dynamic_data_compiler(
+            "2021/05/01 00:00:00", "2021/05/01 01:00:00",
+            "LOSSFACTORMODEL", str(nemosis_fixture),
+            # LOSSFACTORMODEL PK = [EFFECTIVEDATE, INTERCONNECTORID,
+            # REGIONID, VERSIONNO]. Deliberately omit VERSIONNO.
+            select_columns=["EFFECTIVEDATE", "INTERCONNECTORID", "REGIONID",
+                            "DEMANDCOEFFICIENT"],
+        )
+
+
+def test_static_select_columns_must_include_pk_for_dedup_tables(nemosis_fixture):
+    """`_finalise_excel_data` calls `data.drop_duplicates(primary_keys)`,
+    so static_table has the same PK-omission crash as dynamic_data_compiler.
+    Generators and Scheduled Loads PK = ['DUID']."""
+    with pytest.raises(UserInputError, match="primary-key"):
+        static_table(
+            "Generators and Scheduled Loads", str(nemosis_fixture),
+            select_columns=["Participant", "Station Name", "Region"],
+        )
+
+
 def test_dynamic_select_columns_all_requires_csv(nemosis_fixture):
     with pytest.raises(UserInputError, match="select_columns='all'"):
         dynamic_data_compiler(

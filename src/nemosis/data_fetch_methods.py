@@ -8,6 +8,7 @@ from nemosis.filters import filter_on_column_value as _filter_on_column_value
 from nemosis import processing_info_maps as _processing_info_maps
 from nemosis import date_generators as _date_generators
 from nemosis import defaults as _defaults
+from nemosis import query_wrappers as _query_wrappers
 from nemosis.value_parser import _infer_column_data_types
 from nemosis.date_generators import parse_datetime_py as _parse_datetime_py
 from nemosis.custom_errors import UserInputError, NoDataToReturn, DataMismatchError
@@ -99,6 +100,7 @@ def dynamic_data_compiler(
         )
 
     _validate_user_select_columns(select_columns, table_name)
+    _validate_user_select_columns_includes_pk(select_columns, table_name)
     _validate_filter_args(filter_cols, filter_values)
     _validate_time_window(start_time, end_time)
 
@@ -265,6 +267,7 @@ def cache_compiler(
         )
 
     _validate_user_select_columns(select_columns, table_name)
+    _validate_user_select_columns_includes_pk(select_columns, table_name)
     _validate_time_window(start_time, end_time)
 
     user_select_columns = select_columns
@@ -359,6 +362,7 @@ def static_table(
         raise UserInputError("Table name provided is not a static table.")
 
     _validate_user_select_columns(select_columns, table_name)
+    _validate_user_select_columns_includes_pk(select_columns, table_name)
     _validate_filter_args(filter_cols, filter_values)
 
     if filter_cols and not set(filter_cols).issubset(set(select_columns)):
@@ -848,6 +852,54 @@ def _validate_user_select_columns(select_columns, table_name):
         raise UserInputError(
             f"select_columns must be a list or the string 'all', "
             f"got {type(select_columns).__name__}."
+        )
+
+
+def _validate_user_select_columns_includes_pk(select_columns, table_name):
+    """Ensure user-supplied select_columns contains every primary-key
+    column for tables whose processing pipeline dedupes on PK.
+
+    Without this, the dedup step inside finalise (`drop_duplicates_by_primary_key`
+    for dynamic tables, or `_finalise_excel_data` for the Generators
+    static table) raises a bare pandas `KeyError: Index([...], dtype='str')`
+    that points at pandas internals rather than the user's actual
+    mistake — they omitted a column NEMOSIS needs internally for
+    correct dedup semantics.
+
+    Defaults always include the PK columns (by construction of
+    `defaults.table_columns`), so this check only fires when the user
+    explicitly types a select_columns subset that's missing one. Pass
+    `select_columns=None` to fall back to defaults.
+    """
+    if select_columns is None or select_columns == "all":
+        return
+    pk = _defaults.table_primary_keys.get(table_name)
+    if not pk:
+        return
+    # Dynamic-table dedup runs `drop_duplicates_by_primary_key` from the
+    # finalise pipeline.
+    finalise = _processing_info_maps.finalise.get(table_name)
+    is_dynamic_pk_dedup = bool(
+        finalise and any(
+            fn is _query_wrappers.drop_duplicates_by_primary_key for fn in finalise
+        )
+    )
+    # Static-table dedup runs `_finalise_excel_data`, which does
+    # `data.drop_duplicates(primary_keys)` if the table is in
+    # `defaults.table_primary_keys`.
+    static_finalisers = static_data_finaliser_map.get(table_name, [])
+    is_static_pk_dedup = _finalise_excel_data in static_finalisers
+    if not (is_dynamic_pk_dedup or is_static_pk_dedup):
+        return
+    missing = [c for c in pk if c not in select_columns]
+    if missing:
+        raise UserInputError(
+            f"select_columns for {table_name} must include the table's "
+            f"primary-key columns so NEMOSIS can dedupe correctly. "
+            f"Missing: {missing}. Full primary key: {pk}. Either add the "
+            f"missing column(s) to select_columns, or pass "
+            f"select_columns=None to use the table defaults (which "
+            f"already include the primary key)."
         )
 
 
