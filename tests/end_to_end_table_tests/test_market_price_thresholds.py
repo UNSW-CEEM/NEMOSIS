@@ -21,3 +21,17 @@ def test_market_price_thresholds_returns_fixtured_rows(nemosis_fixture, monkeypa
     )
 
     assert not data.empty
+
+    # PK invariant: every (EFFECTIVEDATE, VERSIONNO) pair appears at
+    # most once. Pre-fix, MARKET_PRICE_THRESHOLDS had `finalise=None` in
+    # processing_info_maps, so every monthly archive's copy of every
+    # effective date passed through — a 5-month query returned ~75×
+    # duplicates per row. Even on this 2-month fixture, the bug yields
+    # 2 copies of every row.
+    pk = ["EFFECTIVEDATE", "VERSIONNO"]
+    pair_counts = data.groupby(pk).size()
+    assert pair_counts.max() == 1, (
+        f"MARKET_PRICE_THRESHOLDS PK invariant broken: max rows per "
+        f"(EFFECTIVEDATE, VERSIONNO) = {int(pair_counts.max())}, "
+        f"expected 1. Likely regression in processing_info_maps."
+    )

@@ -231,7 +231,19 @@ finalise = {
         query_wrappers.most_recent_records_before_start_time,
         query_wrappers.drop_duplicates_by_primary_key,
     ],
-    "MARKET_PRICE_THRESHOLDS": None,
+    "MARKET_PRICE_THRESHOLDS": [
+        # `effective_date_group_col` for this table is `[]`, which sends
+        # `most_recent_records_before_start_time` down the `.tail(1)`
+        # branch — exactly one "as-of" row from before start_time. The
+        # subsequent dedup-by-PK then collapses the many-monthly-archives
+        # duplicates of every effective date `>= start_time` down to one
+        # row per (EFFECTIVEDATE, VERSIONNO). Previously `None` here,
+        # which left every monthly archive's copy of every effective
+        # date in the returned DataFrame — e.g. a 5-month query returned
+        # ~75× duplicates per row.
+        query_wrappers.most_recent_records_before_start_time,
+        query_wrappers.drop_duplicates_by_primary_key,
+    ],
     "DAILY_REGION_SUMMARY": None,
     "ROOFTOP_PV_ACTUAL": [
         query_wrappers.drop_duplicates_by_primary_key
