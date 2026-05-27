@@ -61,6 +61,34 @@ def test_dynamic_filter_col_not_a_real_column(nemosis_fixture):
         )
 
 
+def test_dynamic_select_columns_must_include_pk_for_dedup_tables(nemosis_fixture):
+    """For tables whose finalise pipeline includes
+    `drop_duplicates_by_primary_key`, omitting a PK column used to
+    crash with a bare pandas `KeyError: Index(['VERSIONNO'], ...)` from
+    inside finalise — opaque to users. Catch it up-front with a clear
+    UserInputError naming the missing PK column(s)."""
+    with pytest.raises(UserInputError, match="primary-key"):
+        dynamic_data_compiler(
+            "2021/05/01 00:00:00", "2021/05/01 01:00:00",
+            "LOSSFACTORMODEL", str(nemosis_fixture),
+            # LOSSFACTORMODEL PK = [EFFECTIVEDATE, INTERCONNECTORID,
+            # REGIONID, VERSIONNO]. Deliberately omit VERSIONNO.
+            select_columns=["EFFECTIVEDATE", "INTERCONNECTORID", "REGIONID",
+                            "DEMANDCOEFFICIENT"],
+        )
+
+
+def test_static_select_columns_must_include_pk_for_dedup_tables(nemosis_fixture):
+    """`_finalise_excel_data` calls `data.drop_duplicates(primary_keys)`,
+    so static_table has the same PK-omission crash as dynamic_data_compiler.
+    Generators and Scheduled Loads PK = ['DUID']."""
+    with pytest.raises(UserInputError, match="primary-key"):
+        static_table(
+            "Generators and Scheduled Loads", str(nemosis_fixture),
+            select_columns=["Participant", "Station Name", "Region"],
+        )
+
+
 def test_dynamic_select_columns_all_requires_csv(nemosis_fixture):
     with pytest.raises(UserInputError, match="select_columns='all'"):
         dynamic_data_compiler(
@@ -160,6 +188,39 @@ def test_static_filter_col_not_in_select_columns(nemosis_fixture):
         )
 
 
+def test_static_select_columns_typo_raises(nemosis_fixture):
+    """A typo in user-typed select_columns (e.g. 'duid' instead of
+    'DUID') used to silently return a stub DataFrame with whatever
+    columns *did* match, plus a WARNING. Now raises UserInputError
+    with the available columns listed — mirrors the
+    dynamic_data_compiler contract."""
+    with pytest.raises(UserInputError, match="not present in the data"):
+        static_table(
+            "Generators and Scheduled Loads", str(nemosis_fixture),
+            select_columns=["Participant", "Station Name", "DUID",
+                            "totally_not_a_real_column"],
+        )
+
+
+def test_static_filter_col_not_in_loaded_data_raises(nemosis_fixture):
+    """Defence-in-depth: the missing-`raise` bug in the post-load
+    filter_cols check used to silently no-op filters whose column had
+    survived the early select_columns validator but didn't make it
+    into the loaded file (defaults-but-vintage-missing case). Now
+    raises."""
+    # First confirm that the user-typed-col path raises early (via
+    # _check_loaded_select_columns) — the filter_cols-not-in-data path
+    # below would also raise, but earlier.
+    with pytest.raises(UserInputError):
+        static_table(
+            "Generators and Scheduled Loads", str(nemosis_fixture),
+            select_columns=["Participant", "Station Name", "DUID",
+                            "totally_not_a_real_column"],
+            filter_cols=["totally_not_a_real_column"],
+            filter_values=(["whatever"],),
+        )
+
+
 def test_static_raw_data_location_is_none():
     with pytest.raises(UserInputError, match="is None"):
         static_table("VARIABLES_FCAS_4_SECOND", raw_data_location=None)
@@ -177,6 +238,85 @@ def test_dynamic_no_data_raises(nemosis_fixture):
             "2000/01/01 00:00:00", "2000/02/01 00:00:00",
             "DISPATCHPRICE", str(nemosis_fixture),
         )
+
+
+def test_dynamic_partial_coverage_emits_summary_warning(nemosis_fixture, caplog):
+    """When a multi-period query partly succeeds and partly 404s, emit
+    a single summary WARNING about coverage at the end of the fetch
+    loop. Without it, a user aggregating across the range silently
+    operates on a subset (e.g. asking for 16 months of a current/
+    scraped table whose retention is ~6-7 weeks).
+
+    Fixture covers DISPATCHPRICE for 2018-04 and 2018-05 (plus other
+    discrete months). Querying 2018-04-01 → 2018-12-01 spans 9 months
+    of which only 2 are fixtured; coverage is well below the 90%
+    threshold."""
+    import logging
+    caplog.set_level(logging.WARNING, logger="nemosis")
+    dynamic_data_compiler(
+        "2018/04/01 00:00:00", "2018/12/01 00:00:00",
+        "DISPATCHPRICE", str(nemosis_fixture),
+        select_columns=["SETTLEMENTDATE", "REGIONID", "RRP"],
+    )
+    summary = [r for r in caplog.records
+               if "Partial coverage" in r.getMessage()]
+    assert len(summary) == 1, (
+        f"expected exactly one Partial-coverage WARNING; got "
+        f"{[r.getMessage() for r in summary]}"
+    )
+    msg = summary[0].getMessage()
+    assert "DISPATCHPRICE" in msg
+    assert "retention" in msg.lower() or "MMSDM" in msg
+
+
+def test_dynamic_full_coverage_emits_no_summary_warning(nemosis_fixture, caplog):
+    """The partial-coverage warning must NOT fire on a single-month
+    query that fully succeeds. Without this, the warning would spam on
+    every well-formed query and lose its signal."""
+    import logging
+    caplog.set_level(logging.WARNING, logger="nemosis")
+    dynamic_data_compiler(
+        "2018/05/01 00:00:00", "2018/05/01 01:00:00",
+        "DISPATCHPRICE", str(nemosis_fixture),
+        select_columns=["SETTLEMENTDATE", "REGIONID", "RRP"],
+    )
+    summary = [r for r in caplog.records
+               if "Partial coverage" in r.getMessage()]
+    assert not summary, (
+        f"unexpected Partial-coverage WARNING on a fully-fixtured "
+        f"query: {[r.getMessage() for r in summary]}"
+    )
+
+
+def test_dynamic_partial_coverage_ignores_out_of_window_iterations(
+    nemosis_fixture, caplog, monkeypatch
+):
+    """The partial-coverage check counts only periods that overlap the
+    user's [start_time, end_time) window. For a `search_type='all'`
+    table, the fetch loop scans many historical months to compute the
+    "snapshot as of start_time" — those months are NOT what the user
+    asked for, so a 404 on any of them must not raise the gap signal.
+
+    This test queries MARKET_PRICE_THRESHOLDS for just 2021-05 with
+    `nem_data_model_start_time` monkeypatched to 2021-02. date_gen
+    then yields 2021-01 (buffer-back), 2021-02, 03, 04, 05. The
+    fixture only has 2021-04 and 2021-05; the earlier months 404. But
+    only 2021-05 is in the user's window, so coverage should read as
+    1/1 — no partial-coverage warning."""
+    import logging
+    monkeypatch.setattr(defaults, "nem_data_model_start_time",
+                        "2021/02/01 00:00:00")
+    caplog.set_level(logging.WARNING, logger="nemosis")
+    dynamic_data_compiler(
+        "2021/05/01 00:00:00", "2021/05/01 01:00:00",
+        "MARKET_PRICE_THRESHOLDS", str(nemosis_fixture),
+    )
+    summary = [r for r in caplog.records
+               if "Partial coverage" in r.getMessage()]
+    assert not summary, (
+        f"out-of-user-window 404s falsely triggered the partial-"
+        f"coverage warning: {[r.getMessage() for r in summary]}"
+    )
 
 
 def test_static_no_data_raises(nemosis_fixture, monkeypatch):
