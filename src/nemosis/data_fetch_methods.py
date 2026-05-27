@@ -161,7 +161,19 @@ def dynamic_data_compiler(
                 missing_columns = [
                     col for col in filter_cols if col not in all_data.columns
                 ]
-                UserInputError(f"Filter columns {missing_columns} not in data.")
+                # Was previously `UserInputError(...)` (no `raise`) — a
+                # silent no-op that returned unfiltered data. Now
+                # properly raised; mostly unreachable thanks to
+                # `_check_loaded_select_columns` below, but kept as
+                # defence in depth (e.g. filter_cols came from defaults
+                # because user passed select_columns=None, and the
+                # default filter column isn't in this AEMO file
+                # vintage).
+                raise UserInputError(
+                    f"Filter columns {missing_columns} not in data for "
+                    f"table {table_name}. Available columns: "
+                    f"{sorted(all_data.columns)}."
+                )
             else:
                 all_data = _filter_on_column_value(
                     all_data, filter_cols, filter_values
@@ -365,6 +377,15 @@ def static_table(
     _validate_user_select_columns_includes_pk(select_columns, table_name)
     _validate_filter_args(filter_cols, filter_values)
 
+    # Remember whether the user explicitly asked for columns, so we can
+    # enforce strict membership after the file is loaded. Defaults-
+    # inherited columns are allowed to silently be missing from the
+    # static file (e.g. AEMO drops a column from the registration
+    # workbook); user-typed columns should not be — that's almost always
+    # a typo, and silently returning a stub DataFrame is worse than
+    # raising. Mirrors the dynamic_data_compiler contract.
+    user_select_columns = select_columns
+
     if filter_cols and not set(filter_cols).issubset(set(select_columns)):
         raise UserInputError(
             (
@@ -416,10 +437,28 @@ def static_table(
     for column in table.select_dtypes(["object"]).columns:
         table[column] = table[column].map(lambda x: _strip_if_string(x))
 
+    # Reject before filtering: catches the silent-stub bug where a typo
+    # in user-typed select_columns (e.g. 'duid' instead of 'DUID') used
+    # to ship a DataFrame missing the requested column with only a
+    # WARNING. Mirrors `_check_loaded_select_columns` in
+    # dynamic_data_compiler.
+    _check_loaded_select_columns(table, user_select_columns, table_name)
+
     if filter_cols is not None:
         if not set(filter_cols).issubset(set(table.columns)):
             missing_columns = [col for col in filter_cols if col not in table.columns]
-            UserInputError(f"Filter columns {missing_columns} not in data.")
+            # Was previously `UserInputError(...)` (no `raise`) — a
+            # silent no-op that returned unfiltered data. Now properly
+            # raised; this path is mostly unreachable thanks to the
+            # post-load select_columns check above, but kept as a
+            # defence in depth (e.g. filter_cols came from defaults
+            # because user passed select_columns=None, and the default
+            # filter column isn't in this AEMO file vintage).
+            raise UserInputError(
+                f"Filter columns {missing_columns} not in data for "
+                f"table {table_name}. Available columns: "
+                f"{sorted(table.columns)}."
+            )
         else:
             table = _filter_on_column_value(table, filter_cols, filter_values)
 

@@ -188,6 +188,39 @@ def test_static_filter_col_not_in_select_columns(nemosis_fixture):
         )
 
 
+def test_static_select_columns_typo_raises(nemosis_fixture):
+    """A typo in user-typed select_columns (e.g. 'duid' instead of
+    'DUID') used to silently return a stub DataFrame with whatever
+    columns *did* match, plus a WARNING. Now raises UserInputError
+    with the available columns listed — mirrors the
+    dynamic_data_compiler contract."""
+    with pytest.raises(UserInputError, match="not present in the data"):
+        static_table(
+            "Generators and Scheduled Loads", str(nemosis_fixture),
+            select_columns=["Participant", "Station Name", "DUID",
+                            "totally_not_a_real_column"],
+        )
+
+
+def test_static_filter_col_not_in_loaded_data_raises(nemosis_fixture):
+    """Defence-in-depth: the missing-`raise` bug in the post-load
+    filter_cols check used to silently no-op filters whose column had
+    survived the early select_columns validator but didn't make it
+    into the loaded file (defaults-but-vintage-missing case). Now
+    raises."""
+    # First confirm that the user-typed-col path raises early (via
+    # _check_loaded_select_columns) — the filter_cols-not-in-data path
+    # below would also raise, but earlier.
+    with pytest.raises(UserInputError):
+        static_table(
+            "Generators and Scheduled Loads", str(nemosis_fixture),
+            select_columns=["Participant", "Station Name", "DUID",
+                            "totally_not_a_real_column"],
+            filter_cols=["totally_not_a_real_column"],
+            filter_values=(["whatever"],),
+        )
+
+
 def test_static_raw_data_location_is_none():
     with pytest.raises(UserInputError, match="is None"):
         static_table("VARIABLES_FCAS_4_SECOND", raw_data_location=None)
