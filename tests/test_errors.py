@@ -240,6 +240,85 @@ def test_dynamic_no_data_raises(nemosis_fixture):
         )
 
 
+def test_dynamic_partial_coverage_emits_summary_warning(nemosis_fixture, caplog):
+    """When a multi-period query partly succeeds and partly 404s, emit
+    a single summary WARNING about coverage at the end of the fetch
+    loop. Without it, a user aggregating across the range silently
+    operates on a subset (e.g. asking for 16 months of a current/
+    scraped table whose retention is ~6-7 weeks).
+
+    Fixture covers DISPATCHPRICE for 2018-04 and 2018-05 (plus other
+    discrete months). Querying 2018-04-01 → 2018-12-01 spans 9 months
+    of which only 2 are fixtured; coverage is well below the 90%
+    threshold."""
+    import logging
+    caplog.set_level(logging.WARNING, logger="nemosis")
+    dynamic_data_compiler(
+        "2018/04/01 00:00:00", "2018/12/01 00:00:00",
+        "DISPATCHPRICE", str(nemosis_fixture),
+        select_columns=["SETTLEMENTDATE", "REGIONID", "RRP"],
+    )
+    summary = [r for r in caplog.records
+               if "Partial coverage" in r.getMessage()]
+    assert len(summary) == 1, (
+        f"expected exactly one Partial-coverage WARNING; got "
+        f"{[r.getMessage() for r in summary]}"
+    )
+    msg = summary[0].getMessage()
+    assert "DISPATCHPRICE" in msg
+    assert "retention" in msg.lower() or "MMSDM" in msg
+
+
+def test_dynamic_full_coverage_emits_no_summary_warning(nemosis_fixture, caplog):
+    """The partial-coverage warning must NOT fire on a single-month
+    query that fully succeeds. Without this, the warning would spam on
+    every well-formed query and lose its signal."""
+    import logging
+    caplog.set_level(logging.WARNING, logger="nemosis")
+    dynamic_data_compiler(
+        "2018/05/01 00:00:00", "2018/05/01 01:00:00",
+        "DISPATCHPRICE", str(nemosis_fixture),
+        select_columns=["SETTLEMENTDATE", "REGIONID", "RRP"],
+    )
+    summary = [r for r in caplog.records
+               if "Partial coverage" in r.getMessage()]
+    assert not summary, (
+        f"unexpected Partial-coverage WARNING on a fully-fixtured "
+        f"query: {[r.getMessage() for r in summary]}"
+    )
+
+
+def test_dynamic_partial_coverage_ignores_out_of_window_iterations(
+    nemosis_fixture, caplog, monkeypatch
+):
+    """The partial-coverage check counts only periods that overlap the
+    user's [start_time, end_time) window. For a `search_type='all'`
+    table, the fetch loop scans many historical months to compute the
+    "snapshot as of start_time" — those months are NOT what the user
+    asked for, so a 404 on any of them must not raise the gap signal.
+
+    This test queries MARKET_PRICE_THRESHOLDS for just 2021-05 with
+    `nem_data_model_start_time` monkeypatched to 2021-02. date_gen
+    then yields 2021-01 (buffer-back), 2021-02, 03, 04, 05. The
+    fixture only has 2021-04 and 2021-05; the earlier months 404. But
+    only 2021-05 is in the user's window, so coverage should read as
+    1/1 — no partial-coverage warning."""
+    import logging
+    monkeypatch.setattr(defaults, "nem_data_model_start_time",
+                        "2021/02/01 00:00:00")
+    caplog.set_level(logging.WARNING, logger="nemosis")
+    dynamic_data_compiler(
+        "2021/05/01 00:00:00", "2021/05/01 01:00:00",
+        "MARKET_PRICE_THRESHOLDS", str(nemosis_fixture),
+    )
+    summary = [r for r in caplog.records
+               if "Partial coverage" in r.getMessage()]
+    assert not summary, (
+        f"out-of-user-window 404s falsely triggered the partial-"
+        f"coverage warning: {[r.getMessage() for r in summary]}"
+    )
+
+
 def test_static_no_data_raises(nemosis_fixture, monkeypatch):
     """Redirect a static-table URL to a path the dummy server doesn't
     serve — NEMOSIS should raise NoDataToReturn, not crash cryptically."""

@@ -660,6 +660,49 @@ def _set_up_dynamic_compilers(table_name, start_time, end_time, select_columns):
     return start_time, end_time, select_columns, date_filter, start_search
 
 
+def _iteration_overlaps_window(year, month, day, index, user_start, user_end):
+    """Does this date_gen iteration's data period overlap the user's
+    [user_start, user_end) window?
+
+    Used to distinguish iterations the user actually asked for from
+    book-keeping iterations the fetch loop makes:
+      - the 1-day buffer-back month before `start_time`,
+      - the ~120 historical months a `search_type='all'` table scans
+        to compute "snapshot as of start_time".
+
+    A user asking for 16 months of an effective-date table should not
+    be warned that we didn't get data for 1997-11; they didn't ask for
+    1997-11. A user asking for 16 months of a current/scraped table
+    against AEMO's 6-week retention SHOULD be warned that ~450 days of
+    their request had no data.
+
+    Period extents (right-open, matching AEMO's end-of-interval
+    convention):
+      - (year, month, day=None, index=None): one calendar month
+      - (year, month, day, index=None):       one calendar day
+      - (year, month, day, index="HHMM"):     one 5-minute FCAS slot
+    """
+    year_i = int(year)
+    month_i = int(month)
+    if day is None:
+        period_start = _datetime(year_i, month_i, 1)
+        if month_i == 12:
+            period_end = _datetime(year_i + 1, 1, 1)
+        else:
+            period_end = _datetime(year_i, month_i + 1, 1)
+    elif index is None:
+        day_i = int(day)
+        period_start = _datetime(year_i, month_i, day_i)
+        period_end = period_start + _timedelta(days=1)
+    else:
+        day_i = int(day)
+        hour_i = int(index[:2])
+        minute_i = int(index[2:])
+        period_start = _datetime(year_i, month_i, day_i, hour_i, minute_i)
+        period_end = period_start + _timedelta(minutes=5)
+    return period_start < user_end and period_end > user_start
+
+
 def _dynamic_data_fetch_loop(
     start_search,
     start_time,
@@ -699,7 +742,29 @@ def _dynamic_data_fetch_loop(
         start_search = start_search - _timedelta(days=1)
     date_gen = date_gen_func(start_search, end_time)
 
+    # Track per-period success across the user's requested window so we
+    # can emit a single coverage-gap summary at the end. Without it, a
+    # multi-day query against e.g. INTERMITTENT_GEN_SCADA whose range
+    # mostly falls outside AEMO's Reports/Current/ retention window
+    # silently returns just the in-window days — the only signal is N
+    # separate per-file warnings that an aggregating user is unlikely
+    # to read.
+    #
+    # We count only iterations whose period overlaps the user's
+    # [start_time, end_time) window — so the buffer-back month (always
+    # one month before start_time) and the historical scan months for
+    # `search_type='all'` tables are excluded from the denominator.
+    # Any gap that remains is a gap in the user's actual request.
+    requested_periods = 0
+    successful_requested_periods = 0
+
     for year, month, day, index in date_gen:
+        in_user_window = _iteration_overlaps_window(
+            year, month, day, index, start_time, end_time
+        )
+        if in_user_window:
+            requested_periods += 1
+        period_has_data = False
         check_for_next_data_chunk = True
         chunk = 0
         while check_for_next_data_chunk:
@@ -784,6 +849,7 @@ def _dynamic_data_fetch_loop(
                 )
 
                 data_tables.append(data)
+                period_has_data = True
             elif not caching_mode and chunk == 1:
                 # Demoted from WARNING to DEBUG: when we reach here, the
                 # cache file doesn't exist on disk — which means the
@@ -797,6 +863,30 @@ def _dynamic_data_fetch_loop(
 
             if data is None or '#' not in filename_stub:
                 check_for_next_data_chunk = False
+        if period_has_data and in_user_window:
+            successful_requested_periods += 1
+
+    # Warn iff the user's requested window has a gap, AND we did get at
+    # least some data (zero-data is already covered by NoDataToReturn
+    # in the caller — a duplicate WARNING here would be noise).
+    if (
+        not caching_mode
+        and 0 < successful_requested_periods < requested_periods
+    ):
+        missing = requested_periods - successful_requested_periods
+        coverage = successful_requested_periods / requested_periods
+        logger.warning(
+            f"Partial coverage for {table_name}: only "
+            f"{successful_requested_periods}/{requested_periods} "
+            f"periods in the requested window returned data "
+            f"({coverage:.0%}). {missing} period(s) missing — see "
+            f"per-period WARNINGs above for the specific files. "
+            f"Common causes: requested range extends beyond AEMO's "
+            f"Reports/Current/ retention window (typically ~6-7 weeks "
+            f"for the current/scraped tables); requested month not "
+            f"yet published in the MMSDM archive; requested range "
+            f"pre-dates AEMO data."
+        )
 
     return data_tables
 
