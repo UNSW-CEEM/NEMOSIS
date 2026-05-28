@@ -16,6 +16,26 @@ from nemosis.custom_errors import UserInputError, NoDataToReturn, DataMismatchEr
 logger = logging.getLogger(__name__)
 
 
+def _validate_raw_data_location(raw_data_location):
+    """Validate (and create-if-needed) the user's raw_data_location.
+
+    Common to dynamic_data_compiler, cache_compiler, and static_table.
+    Rejects None (typo / unset config) and paths that exist as files
+    (clearer than the downstream 'not a directory' error). If the path
+    doesn't yet exist as a directory, create it — first-run UX is
+    smoother than forcing every caller to mkdir up front.
+    """
+    if raw_data_location is None:
+        raise UserInputError("The raw_data_location provided is None.")
+    if _os.path.isfile(raw_data_location):
+        raise UserInputError(
+            f"The raw_data_location {raw_data_location} provided "
+            f"exists as a file, not a directory."
+        )
+    if not _os.path.isdir(raw_data_location):
+        _os.makedirs(raw_data_location)
+
+
 def dynamic_data_compiler(
     start_time,
     end_time,
@@ -80,13 +100,7 @@ def dynamic_data_compiler(
         all_data (pd.Dataframe): All data concatenated.
     """
 
-    if raw_data_location is None:
-        raise UserInputError("The raw_data_location provided is None.")
-
-    if not _os.path.isdir(raw_data_location):
-        raise UserInputError(
-            f"The raw_data_location {raw_data_location} provided does not exist."
-        )
+    _validate_raw_data_location(raw_data_location)
 
     if table_name not in _defaults.dynamic_tables:
         raise UserInputError("Table name provided is not a dynamic table.")
@@ -255,14 +269,7 @@ def cache_compiler(
         Nothing
     """
     
-    if raw_data_location is None:
-        raise UserInputError("The raw_data_location provided is None.")
-
-    if not _os.path.isdir(raw_data_location):
-        if _os.path.isfile(raw_data_location):
-            raise UserInputError(f"The raw_data_location {raw_data_location} provided exists as a file, not directory.")
-        else:
-            _os.makedirs(raw_data_location)
+    _validate_raw_data_location(raw_data_location)
 
     if table_name not in _defaults.dynamic_tables:
         raise UserInputError("Table name provided is not a dynamic table.")
@@ -362,13 +369,7 @@ def static_table(
             "The 'Generators and Scheduled Loads' table still works."
         )
 
-    if raw_data_location is None:
-        raise UserInputError("The raw_data_location provided is None.")
-
-    if not _os.path.isdir(raw_data_location):
-        raise UserInputError(
-            f"The raw_data_location {raw_data_location} provided does not exist."
-        )
+    _validate_raw_data_location(raw_data_location)
 
     if table_name not in _defaults.static_tables:
         raise UserInputError("Table name provided is not a static table.")

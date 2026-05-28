@@ -110,24 +110,34 @@ def test_dynamic_raw_data_location_is_none():
         )
 
 
-def test_dynamic_raw_data_location_missing_includes_path_in_error(tmp_path):
-    """The "does not exist" error must include the offending path so the
-    caller can see exactly what they passed (helps diagnose typos and
-    cwd mistakes). Regression test for the improvement that landed via
-    the doc-strings-and-error-messages cleanup."""
-    bogus = str(tmp_path / "subdir-that-does-not-exist")
-    with pytest.raises(UserInputError, match="subdir-that-does-not-exist"):
+def test_dynamic_raw_data_location_is_a_file(tmp_path):
+    """If the caller hands us a path that already exists as a file (typo
+    pointing at a script, or a regular file shadowing the intended dir
+    name), raise a clear UserInputError naming the path and the cause
+    rather than the downstream "not a directory" OSError. Contract is
+    consistent across all three entry points."""
+    file_path = tmp_path / "not-a-dir.txt"
+    file_path.write_text("hello")
+    with pytest.raises(UserInputError, match="exists as a file"):
         dynamic_data_compiler(
             "2018/05/01 00:00:00", "2018/05/01 01:00:00",
-            "DISPATCHPRICE", raw_data_location=bogus,
+            "DISPATCHPRICE", raw_data_location=str(file_path),
         )
 
 
-def test_static_raw_data_location_missing_includes_path_in_error(tmp_path):
-    """Same regression contract for static_table."""
-    bogus = str(tmp_path / "another-missing-dir")
-    with pytest.raises(UserInputError, match="another-missing-dir"):
-        static_table("VARIABLES_FCAS_4_SECOND", raw_data_location=bogus)
+def test_dynamic_raw_data_location_missing_is_auto_created(nemosis_fixture):
+    """A missing raw_data_location is auto-created so first-run callers
+    don't need a separate `mkdir` step. Previously dynamic_data_compiler
+    raised UserInputError here; now it matches cache_compiler's
+    longstanding behaviour."""
+    new_dir = nemosis_fixture / "fresh-cache-subdir"
+    assert not new_dir.exists()
+    df = dynamic_data_compiler(
+        "2018/05/01 00:00:00", "2018/05/01 01:00:00",
+        "DISPATCHPRICE", raw_data_location=str(new_dir),
+    )
+    assert new_dir.is_dir()
+    assert not df.empty
 
 
 # ---------------------------------------------------------------------------
@@ -167,6 +177,31 @@ def test_cache_raw_data_location_is_none():
             "2018/05/01 00:00:00", "2018/05/01 01:00:00",
             "DISPATCHPRICE", raw_data_location=None,
         )
+
+
+def test_cache_raw_data_location_is_a_file(tmp_path):
+    file_path = tmp_path / "not-a-dir.txt"
+    file_path.write_text("hello")
+    with pytest.raises(UserInputError, match="exists as a file"):
+        cache_compiler(
+            "2018/05/01 00:00:00", "2018/05/01 01:00:00",
+            "DISPATCHPRICE", raw_data_location=str(file_path),
+        )
+
+
+def test_cache_raw_data_location_missing_is_auto_created(nemosis_fixture):
+    """cache_compiler has auto-created the cache dir for a while; this
+    test pins that behaviour so the shared validator can't accidentally
+    regress it."""
+    new_dir = nemosis_fixture / "fresh-cache-subdir"
+    assert not new_dir.exists()
+    cache_compiler(
+        "2018/05/01 00:00:00", "2018/05/01 01:00:00",
+        "DISPATCHPRICE", raw_data_location=str(new_dir),
+    )
+    assert new_dir.is_dir()
+    # And cache_compiler actually wrote something into it.
+    assert any(new_dir.iterdir())
 
 
 # ---------------------------------------------------------------------------
@@ -224,6 +259,23 @@ def test_static_filter_col_not_in_loaded_data_raises(nemosis_fixture):
 def test_static_raw_data_location_is_none():
     with pytest.raises(UserInputError, match="is None"):
         static_table("VARIABLES_FCAS_4_SECOND", raw_data_location=None)
+
+
+def test_static_raw_data_location_is_a_file(tmp_path):
+    file_path = tmp_path / "not-a-dir.txt"
+    file_path.write_text("hello")
+    with pytest.raises(UserInputError, match="exists as a file"):
+        static_table("VARIABLES_FCAS_4_SECOND", raw_data_location=str(file_path))
+
+
+def test_static_raw_data_location_missing_is_auto_created(nemosis_fixture):
+    """Same contract as the dynamic/cache entry points — first-run
+    callers shouldn't need a separate mkdir."""
+    new_dir = nemosis_fixture / "fresh-cache-subdir"
+    assert not new_dir.exists()
+    df = static_table("VARIABLES_FCAS_4_SECOND", raw_data_location=str(new_dir))
+    assert new_dir.is_dir()
+    assert not df.empty
 
 
 # ---------------------------------------------------------------------------
