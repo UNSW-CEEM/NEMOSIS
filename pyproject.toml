@@ -7,6 +7,7 @@ authors = [
     { name = "prakaa", email = "abiprakash007@gmail.com" }
 ]
 dependencies = [
+    # If updating these, also apply the same update to ./conda/meta.yaml
     "requests>=2.32.3",
     "pyarrow>=22.0.0",
     "feather-format>=0.4.1",
