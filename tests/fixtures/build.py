@@ -139,6 +139,8 @@ def _keep_first_and_last_days(df: pd.DataFrame, col: str, era_date: date) -> pd.
 def mms_filename(table: str, era_date: date, chunk: int) -> str:
     year, month = era_date.year, f"{era_date.month:02d}"
     if era_date >= MMS_ARCHIVE_CUTOVER:
+        if defaults.table_types[table] == "P5MIN":
+            return f"PUBLIC_ARCHIVE#{table}#ALL#FILE{chunk:02d}#{year}{month}010000.zip"
         return f"PUBLIC_ARCHIVE#{table}#FILE{chunk:02d}#{year}{month}010000.zip"
     return f"{defaults.names[table]}_{year}{month}010000.zip"
 
@@ -151,24 +153,30 @@ def mms_fixture_path(table: str, era_date: date, chunk: int) -> Path:
     # otherwise NEMOSIS's now-`%2523`-encoded URLs won't match. Pre-Aug-2024
     # PUBLIC_DVD_* filenames don't contain `#`, so the replace is a no-op
     # there. See issue #74.
-    on_disk_name = mms_filename(table, era_date, chunk).replace("#", "%23")
+    p5min = defaults.table_types[table] == "P5MIN"
+    filename = mms_filename(table, era_date, chunk)
+    on_disk_name = filename if p5min else filename.replace("#", "%23")
+    directory = "P5MIN_ALL_DATA" if p5min else "DATA"
     return (
         FIXTURE_ROOT
         / "Data_Archive/Wholesale_Electricity/MMSDM"
         / str(year)
         / f"MMSDM_{year}_{month}"
-        / "MMSDM_Historical_Data_SQLLoader/DATA"
+        / f"MMSDM_Historical_Data_SQLLoader/{directory}"
         / on_disk_name
     )
 
 
 def mms_source_url(table: str, era_date: date, chunk: int) -> str:
-    return defaults.aemo_mms_url.format(
+    p5min = defaults.table_types[table] == "P5MIN"
+    template = defaults.aemo_p5min_url if p5min else defaults.aemo_mms_url
+    url = template.format(
         era_date.year,
         era_date.year,
         f"{era_date.month:02d}",
         mms_filename(table, era_date, chunk).removesuffix(".zip"),
     )
+    return url.replace("#", "%23") if p5min else url
 
 
 # ---------------------------------------------------------------------------

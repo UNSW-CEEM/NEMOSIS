@@ -65,6 +65,8 @@ MNSP_LINKS = ["BLNKTAS", "BLNKVIC"]         # Basslink, both directions
 #   - DAILY_REGION_SUMMARY: scrape-pattern, current-data page only
 # More tables get added as each one lands end-to-end.
 DYNAMIC_TABLES = {
+    # Every forecast vintage, with RUN_DATETIME used for the fixture time trim.
+    "P5MIN_REGIONSOLUTION": {"eras": ["2024-08", "2025-01"], "filter": {"REGIONID": REGIONS}},
     # Five-minute dispatch tables — the workhorse set.
     "DISPATCHPRICE":             {"eras": ["2018-05", "2020-01", "2021-05", "2022-01", "2024-08", "2025-01", "2026-04"], "filter": {"REGIONID": REGIONS}},
     "DISPATCHLOAD":              {"eras": ["2018-05", "2020-01", "2021-05", "2022-01", "2024-08", "2025-01", "2026-04"], "filter": {"DUID": DUIDS}},

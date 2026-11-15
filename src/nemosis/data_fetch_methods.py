@@ -486,7 +486,7 @@ def _get_read_function(fformat, table_type, day):
     elif fformat == "parquet":
         func = _pd.read_parquet
     elif fformat == "csv":
-        if table_type == "MMS":
+        if table_type in ["MMS", "P5MIN"]:
             func = _read_mms_csv
         elif table_type == "FCAS":
             func = _read_fcas_causer_pays_csv
@@ -1168,7 +1168,7 @@ def _determine_columns_and_read_csv(
     else:
         type = str
     if (
-        _defaults.table_types[table_name] in ["MMS", "BIDDING", "DAILY_REGION_SUMMARY", "NEXT_DAY_DISPATCHLOAD",
+        _defaults.table_types[table_name] in ["MMS", "P5MIN", "BIDDING", "DAILY_REGION_SUMMARY", "NEXT_DAY_DISPATCHLOAD",
                                               "INTERMITTENT_GEN_SCADA"]
         and not read_all_columns
     ):
@@ -1180,13 +1180,17 @@ def _determine_columns_and_read_csv(
         ]
         data = read_csv_func(csv_file, usecols=columns, dtype=type)
     elif (
-        _defaults.table_types[table_name] in ["MMS", "BIDDING", "DAILY_REGION_SUMMARY", "NEXT_DAY_DISPATCHLOAD"]
+        _defaults.table_types[table_name] in ["MMS", "P5MIN", "BIDDING", "DAILY_REGION_SUMMARY", "NEXT_DAY_DISPATCHLOAD"]
         and read_all_columns
     ):
         data = read_csv_func(csv_file, dtype=type)
     else:
         columns = _defaults.table_columns[table_name]
         data = read_csv_func(csv_file, names=columns, dtype=type)
+    if dtypes == "all" and _defaults.table_types[table_name] == "P5MIN":
+        # Preserve both forecast time dimensions in typed caches, including
+        # the target time which is not used by the run-time range filter.
+        data = _infer_column_data_types(data)
     return data
 
 

@@ -264,6 +264,40 @@ raw_data_cache = 'C:/Users/your_data_storage'
 volume_bid_data = dynamic_data_compiler(start_time, end_time, table, raw_data_cache, rebuild=True)
 ```
 
+### Five-minute predispatch regional prices
+
+`P5MIN_REGIONSOLUTION` provides historical regional forecast prices through the
+same `dynamic_data_compiler` and `cache_compiler` APIs as other dynamic tables:
+
+```python
+from nemosis import dynamic_data_compiler
+
+prices = dynamic_data_compiler(
+    start_time="2025/01/01 00:00:00",
+    end_time="2025/01/01 01:00:00",
+    table_name="P5MIN_REGIONSOLUTION",
+    raw_data_location="./raw_data_cache",
+    select_columns=["RUN_DATETIME", "INTERVAL_DATETIME", "REGIONID", "RRP"],
+    filter_cols=["REGIONID"],
+    filter_values=(["NSW1"],),
+)
+```
+
+The query window applies to **`RUN_DATETIME`**, with
+`start_time < RUN_DATETIME <= end_time`, in timezone-naive NEM time (UTC+10).
+`INTERVAL_DATETIME` identifies the forecast target; target intervals beyond
+`end_time` are retained. Every forecast vintage is preserved, including multiple
+runs forecasting the same target interval. The default columns are
+`RUN_DATETIME`, `INTERVAL_DATETIME`, `REGIONID`, `INTERVENTION`, `RRP`, `ROP` and
+`LASTCHANGED`. To retrieve every source column, use `select_columns="all"` with
+`fformat="csv"`, as for other MMS tables.
+
+Downloads use the monthly `P5MIN_ALL_DATA` archives, including the pre-August-2024
+`PUBLIC_DVD_..._ALL_...` and subsequent `PUBLIC_ARCHIVE#...#ALL#FILE...` names.
+These archives are published retrospectively; this table does not download live
+P5 reports. For point-in-time research, verify the run's actual publication time
+or apply a justified availability lag before using its forecast path.
+
 ### Data from static tables
 
 Static tables do not include a time column and cannot be filtered by start and end time.

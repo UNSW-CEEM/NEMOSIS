@@ -225,6 +225,21 @@ These have bitten contributors before. Worth a read before adding a test.
   renamed the archive stub outright in Aug-2024. NEMOSIS's defaults know neither transition.
   Pre-existing bug, tracked in the test file and `spec.py`. `MNSP_DAYOFFER` is unaffected.
 
+## P5MIN regional forecast prices
+
+`P5MIN_REGIONSOLUTION` has a separate `P5MIN` download type because its monthly
+all-runs archives live under `P5MIN_ALL_DATA`, not `DATA`. From August 2024 the
+filenames include `#ALL#FILEnn#`. This directory uses literal `#` filenames,
+encoded once as `%23` in URLs; the standard `DATA` directory uses a different
+encoding convention. Keep this distinction in the downloader and fixture builder.
+
+The regional-price fixtures cover August 2024 and January 2025, including their
+previous months. Tests exercise CSV, Parquet and Feather, forecast-vintage
+preservation, run-time boundaries, region/intervention filters, full-column CSV
+reads, cache reuse, typed-cache rebuilds and multipart iteration. The shared
+single-timestamp boundary helper excludes this table because each run has twelve
+target intervals per region; its dedicated test verifies both time dimensions.
+
 ## Parked tables
 
 - **FCAS_4_SECOND** — AEMO's Causer Pays archive is empty at every URL NEMOSIS tries (existing

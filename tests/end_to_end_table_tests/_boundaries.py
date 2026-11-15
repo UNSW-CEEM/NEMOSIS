@@ -70,6 +70,7 @@ _HELPER_DOES_NOT_COVER = {
     "MNSP_DAYOFFER",
     "BIDPEROFFER_D",
     "MNSP_PEROFFER",
+    "P5MIN_REGIONSOLUTION",  # Twelve target intervals per region per run.
 }
 
 FLAVOURS = ("at", "before")

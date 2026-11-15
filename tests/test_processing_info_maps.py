@@ -69,6 +69,13 @@ def _mms_zip_path(table: str, year: int, month: int) -> Path | None:
     pre-2024-08 `PUBLIC_DVD_` filename and the post-cutover `PUBLIC_ARCHIVE#`
     one. Returns None if neither exists."""
     base = FIXTURE_ROOT / MMS_DATA_DIR.format(year=year, month=month)
+    if defaults.table_types[table] == "P5MIN":
+        base = base.parent / "P5MIN_ALL_DATA"
+        names = (
+            f"PUBLIC_DVD_{table}_ALL_{year}{month:02d}010000.zip",
+            f"PUBLIC_ARCHIVE#{table}#ALL#FILE01#{year}{month:02d}010000.zip",
+        )
+        return next((base / name for name in names if (base / name).exists()), None)
     for name in (
         f"PUBLIC_DVD_{table}_{year}{month:02d}010000.zip",
         f"PUBLIC_ARCHIVE#{table}#FILE01#{year}{month:02d}010000.zip",

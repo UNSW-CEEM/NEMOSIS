@@ -100,6 +100,7 @@ def nemosis_fixture(aemo_mock_server, tmp_path, monkeypatch) -> Path:
 
     monkeypatch.setattr(defaults, "nem_web_domain_url", base + "/")
     monkeypatch.setattr(defaults, "aemo_mms_url", _redirect_url(defaults.aemo_mms_url, base))
+    monkeypatch.setattr(defaults, "aemo_p5min_url", _redirect_url(defaults.aemo_p5min_url, base))
     monkeypatch.setattr(defaults, "fcas_4_url", _redirect_url(defaults.fcas_4_url, base))
     monkeypatch.setattr(defaults, "fcas_4_url_hist", _redirect_url(defaults.fcas_4_url_hist, base))
     monkeypatch.setattr(

@@ -39,6 +39,7 @@ names = {
     "MARKET_PRICE_THRESHOLDS": "PUBLIC_DVD_MARKET_PRICE_THRESHOLDS",
     "DAILY_REGION_SUMMARY": "PUBLIC_DAILY_REGION_SUMMARY",
     "ROOFTOP_PV_ACTUAL": "PUBLIC_DVD_ROOFTOP_PV_ACTUAL",
+    "P5MIN_REGIONSOLUTION": "PUBLIC_DVD_P5MIN_REGIONSOLUTION_ALL",
 }
 
 table_types = {
@@ -79,12 +80,13 @@ table_types = {
     "MARKET_PRICE_THRESHOLDS": "MMS",
     "DAILY_REGION_SUMMARY": "DAILY_REGION_SUMMARY",
     "ROOFTOP_PV_ACTUAL": "MMS",
+    "P5MIN_REGIONSOLUTION": "P5MIN",
 }
 
 dynamic_tables = [
     table
     for table, type in table_types.items()
-    if type in ["MMS", "BIDDING", "DAILY_REGION_SUMMARY", "NEXT_DAY_DISPATCHLOAD", "INTERMITTENT_GEN_SCADA", "FCAS"]
+    if type in ["MMS", "P5MIN", "BIDDING", "DAILY_REGION_SUMMARY", "NEXT_DAY_DISPATCHLOAD", "INTERMITTENT_GEN_SCADA", "FCAS"]
 ]
 
 return_tables = list(names.keys())
@@ -117,6 +119,7 @@ display_as_AMEO = [
     "TRADINGREGIONSUM",
     "TRADINGINTERCONNECT",
     "ROOFTOP_PV_ACTUAL",
+    "P5MIN_REGIONSOLUTION",
 ]
 
 display_as_Custom = ["FCAS_4s_SCADA_MAP", "PLANTSTATS"]
@@ -140,6 +143,8 @@ static_table_url = {
 }
 
 aemo_mms_url = "https://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/MMSDM/{}/MMSDM_{}_{}/MMSDM_Historical_Data_SQLLoader/DATA/{}.zip"
+
+aemo_p5min_url = "https://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/MMSDM/{}/MMSDM_{}_{}/MMSDM_Historical_Data_SQLLoader/P5MIN_ALL_DATA/{}.zip"
 
 current_data_page_urls = {
     "BIDDING": "Reports/Current/Bidmove_Complete/",
@@ -183,6 +188,7 @@ data_url = {
     "TRADINGINTERCONNECT": "aemo_data_url",
     "MARKET_PRICE_THRESHOLDS": "aemo_data_url",
     "ROOFTOP_PV_ACTUAL": "aemo_data_url",
+    "P5MIN_REGIONSOLUTION": "aemo_p5min_url",
 }
 
 filterable_cols = [
@@ -230,6 +236,15 @@ filterable_cols = [
 ]
 
 table_columns = {
+    "P5MIN_REGIONSOLUTION": [
+        "RUN_DATETIME",
+        "INTERVAL_DATETIME",
+        "REGIONID",
+        "INTERVENTION",
+        "RRP",
+        "ROP",
+        "LASTCHANGED",
+    ],
     "DISPATCHLOAD": [
         "SETTLEMENTDATE",
         "DUID",
@@ -719,6 +734,7 @@ table_columns = {
 }
 
 table_primary_keys = {
+    "P5MIN_REGIONSOLUTION": ["INTERVAL_DATETIME", "REGIONID", "RUN_DATETIME"],
     "DISPATCHCONSTRAINT": [
         "CONSTRAINTID",
         "GENCONID_EFFECTIVEDATE",
@@ -844,6 +860,7 @@ effective_date_group_col = {
 }
 
 primary_date_columns = {
+    "P5MIN_REGIONSOLUTION": "RUN_DATETIME",
     "DISPATCHLOAD": "SETTLEMENTDATE",
     "NEXT_DAY_DISPATCHLOAD": "SETTLEMENTDATE",
     "INTERMITTENT_GEN_SCADA": "RUN_DATETIME",

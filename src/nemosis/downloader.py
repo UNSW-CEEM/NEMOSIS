@@ -121,6 +121,21 @@ def run(year, month, day, chunk, index, filename_stub, down_load_to, keep_zip=Tr
         return None
 
 
+def run_p5min(year, month, day, chunk, index, filename_stub, down_load_to, keep_zip=True):
+    """Download an all-runs P5MIN archive from its separate monthly directory."""
+    url = format_aemo_url(defaults.aemo_p5min_url, year, month, filename_stub)
+    # P5MIN_ALL_DATA uses literal '#' filenames, unlike the DATA directory's
+    # literal '%23' names. Encode here before the generic downloader applies
+    # DATA's double-encoding convention.
+    url = url.replace('#', '%23')
+    try:
+        return download_unzip_csv(url, down_load_to, keep_zip=keep_zip)
+    except Exception as e:
+        if chunk == 1:
+            logger.warning(f"{filename_stub} not downloaded ({e})")
+        return None
+
+
 def run_bid_tables(year, month, day, chunk, index, filename_stub, down_load_to, keep_zip=True):
     if day is None:
         return run(year, month, day, chunk, index, filename_stub, down_load_to, keep_zip=keep_zip)

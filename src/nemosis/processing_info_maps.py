@@ -1,6 +1,7 @@
 from nemosis import query_wrappers, downloader, date_generators, write_file_names, filters
 
 setup = {
+    "P5MIN_REGIONSOLUTION": None,
     "DISPATCHLOAD": None,
     "NEXT_DAY_DISPATCHLOAD": None,
     "INTERMITTENT_GEN_SCADA": None,
@@ -40,6 +41,7 @@ setup = {
 }
 
 search_type = {
+    "P5MIN_REGIONSOLUTION": "start_to_end",
     "DISPATCHLOAD": "start_to_end",
     "NEXT_DAY_DISPATCHLOAD": "start_to_end",
     "INTERMITTENT_GEN_SCADA": "start_to_end",
@@ -79,6 +81,7 @@ search_type = {
 }
 
 date_cols = {
+    "P5MIN_REGIONSOLUTION": ["RUN_DATETIME", "INTERVAL_DATETIME"],
     "DISPATCHLOAD": ["SETTLEMENTDATE"],
     "NEXT_DAY_DISPATCHLOAD": ["SETTLEMENTDATE"],
     "INTERMITTENT_GEN_SCADA": ["RUN_DATETIME"],
@@ -118,6 +121,7 @@ date_cols = {
 }
 
 filter = {
+    "P5MIN_REGIONSOLUTION": filters.filter_on_run_datetime,
     "DISPATCHLOAD": filters.filter_on_settlementdate,
     "NEXT_DAY_DISPATCHLOAD": filters.filter_on_settlementdate,
     "INTERMITTENT_GEN_SCADA": filters.filter_on_run_datetime,
@@ -157,6 +161,7 @@ filter = {
 }
 
 finalise = {
+    "P5MIN_REGIONSOLUTION": None,
     "DISPATCHLOAD": None,
     "NEXT_DAY_DISPATCHLOAD": None,
     "INTERMITTENT_GEN_SCADA": None,
@@ -251,6 +256,7 @@ finalise = {
 }
 
 date_gen = {
+    "P5MIN": date_generators.year_and_month_gen,
     "MMS": date_generators.year_and_month_gen,
     "NEXT_DAY_DISPATCHLOAD": date_generators.current_gen,
     "INTERMITTENT_GEN_SCADA": date_generators.current_gen,
@@ -260,6 +266,7 @@ date_gen = {
 }
 
 write_filename = {
+    "P5MIN": write_file_names.write_p5min_file_names,
     "MMS": write_file_names.write_mms_file_names,
     "NEXT_DAY_DISPATCHLOAD": write_file_names.write_file_names_current,
     "INTERMITTENT_GEN_SCADA": write_file_names.write_file_names_current,
@@ -269,6 +276,7 @@ write_filename = {
 }
 
 downloader = {
+    "P5MIN": downloader.run_p5min,
     "MMS": downloader.run,
     "NEXT_DAY_DISPATCHLOAD": downloader.run_next_dispatch_tables,
     "INTERMITTENT_GEN_SCADA": downloader.run_intermittent_gen_scada,
