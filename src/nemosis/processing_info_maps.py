@@ -2,6 +2,7 @@ from nemosis import query_wrappers, downloader, date_generators, write_file_name
 
 setup = {
     "P5MIN_REGIONSOLUTION": None,
+    "P5MIN_INTERCONNECTORSOLN": None,
     "DISPATCHLOAD": None,
     "NEXT_DAY_DISPATCHLOAD": None,
     "INTERMITTENT_GEN_SCADA": None,
@@ -42,6 +43,7 @@ setup = {
 
 search_type = {
     "P5MIN_REGIONSOLUTION": "start_to_end",
+    "P5MIN_INTERCONNECTORSOLN": "start_to_end",
     "DISPATCHLOAD": "start_to_end",
     "NEXT_DAY_DISPATCHLOAD": "start_to_end",
     "INTERMITTENT_GEN_SCADA": "start_to_end",
@@ -82,6 +84,7 @@ search_type = {
 
 date_cols = {
     "P5MIN_REGIONSOLUTION": ["RUN_DATETIME", "INTERVAL_DATETIME"],
+    "P5MIN_INTERCONNECTORSOLN": ["RUN_DATETIME", "INTERVAL_DATETIME"],
     "DISPATCHLOAD": ["SETTLEMENTDATE"],
     "NEXT_DAY_DISPATCHLOAD": ["SETTLEMENTDATE"],
     "INTERMITTENT_GEN_SCADA": ["RUN_DATETIME"],
@@ -122,6 +125,7 @@ date_cols = {
 
 filter = {
     "P5MIN_REGIONSOLUTION": filters.filter_on_run_datetime,
+    "P5MIN_INTERCONNECTORSOLN": filters.filter_on_run_datetime,
     "DISPATCHLOAD": filters.filter_on_settlementdate,
     "NEXT_DAY_DISPATCHLOAD": filters.filter_on_settlementdate,
     "INTERMITTENT_GEN_SCADA": filters.filter_on_run_datetime,
@@ -162,6 +166,7 @@ filter = {
 
 finalise = {
     "P5MIN_REGIONSOLUTION": None,
+    "P5MIN_INTERCONNECTORSOLN": None,
     "DISPATCHLOAD": None,
     "NEXT_DAY_DISPATCHLOAD": None,
     "INTERMITTENT_GEN_SCADA": None,

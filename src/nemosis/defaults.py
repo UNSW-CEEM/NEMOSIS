@@ -40,6 +40,7 @@ names = {
     "DAILY_REGION_SUMMARY": "PUBLIC_DAILY_REGION_SUMMARY",
     "ROOFTOP_PV_ACTUAL": "PUBLIC_DVD_ROOFTOP_PV_ACTUAL",
     "P5MIN_REGIONSOLUTION": "PUBLIC_DVD_P5MIN_REGIONSOLUTION_ALL",
+    "P5MIN_INTERCONNECTORSOLN": "PUBLIC_DVD_P5MIN_INTERCONNECTORSOLN_ALL",
 }
 
 table_types = {
@@ -81,6 +82,7 @@ table_types = {
     "DAILY_REGION_SUMMARY": "DAILY_REGION_SUMMARY",
     "ROOFTOP_PV_ACTUAL": "MMS",
     "P5MIN_REGIONSOLUTION": "P5MIN",
+    "P5MIN_INTERCONNECTORSOLN": "P5MIN",
 }
 
 dynamic_tables = [
@@ -120,6 +122,7 @@ display_as_AMEO = [
     "TRADINGINTERCONNECT",
     "ROOFTOP_PV_ACTUAL",
     "P5MIN_REGIONSOLUTION",
+    "P5MIN_INTERCONNECTORSOLN",
 ]
 
 display_as_Custom = ["FCAS_4s_SCADA_MAP", "PLANTSTATS"]
@@ -189,6 +192,7 @@ data_url = {
     "MARKET_PRICE_THRESHOLDS": "aemo_data_url",
     "ROOFTOP_PV_ACTUAL": "aemo_data_url",
     "P5MIN_REGIONSOLUTION": "aemo_p5min_url",
+    "P5MIN_INTERCONNECTORSOLN": "aemo_p5min_url",
 }
 
 filterable_cols = [
@@ -243,6 +247,57 @@ table_columns = {
         "INTERVENTION",
         "RRP",
         "ROP",
+        # Forecast demand, supply and regional interchange (MW).
+        "TOTALDEMAND",
+        "AVAILABLEGENERATION",
+        "AVAILABLELOAD",
+        "DEMANDFORECAST",
+        "DISPATCHABLEGENERATION",
+        "DISPATCHABLELOAD",
+        "NETINTERCHANGE",
+        # Renewable forecasts and cleared targets (MW).
+        "TOTALINTERMITTENTGENERATION",
+        "DEMAND_AND_NONSCHEDGEN",
+        "UIGF",
+        "SEMISCHEDULE_CLEAREDMW",
+        "SEMISCHEDULE_COMPLIANCEMW",
+        "SS_SOLAR_UIGF",
+        "SS_WIND_UIGF",
+        "SS_SOLAR_CLEAREDMW",
+        "SS_WIND_CLEAREDMW",
+        "SS_SOLAR_AVAILABILITY",
+        "SS_WIND_AVAILABILITY",
+        # P5MIN raise FCAS prices, separate from real-time DISPATCHPRICE.
+        # Newer services/fields are absent from some historical archives.
+        "RAISE6SECRRP",
+        "RAISE60SECRRP",
+        "RAISE5MINRRP",
+        "RAISEREGRRP",
+        "RAISE1SECRRP",
+        "LASTCHANGED",
+    ],
+    "P5MIN_INTERCONNECTORSOLN": [
+        "RUN_DATETIME",
+        "INTERVAL_DATETIME",
+        "INTERCONNECTORID",
+        "INTERVENTION",
+        "METEREDMWFLOW",
+        "MWFLOW",
+        "MWLOSSES",
+        "MARGINALVALUE",
+        "VIOLATIONDEGREE",
+        "MNSP",
+        "EXPORTLIMIT",
+        "IMPORTLIMIT",
+        "MARGINALLOSS",
+        "EXPORTGENCONID",
+        "IMPORTGENCONID",
+        "FCASEXPORTLIMIT",
+        "FCASIMPORTLIMIT",
+        "LOCAL_PRICE_ADJUSTMENT_EXPORT",
+        "LOCALLY_CONSTRAINED_EXPORT",
+        "LOCAL_PRICE_ADJUSTMENT_IMPORT",
+        "LOCALLY_CONSTRAINED_IMPORT",
         "LASTCHANGED",
     ],
     "DISPATCHLOAD": [
@@ -735,6 +790,7 @@ table_columns = {
 
 table_primary_keys = {
     "P5MIN_REGIONSOLUTION": ["INTERVAL_DATETIME", "REGIONID", "RUN_DATETIME"],
+    "P5MIN_INTERCONNECTORSOLN": ["INTERCONNECTORID", "INTERVAL_DATETIME", "RUN_DATETIME"],
     "DISPATCHCONSTRAINT": [
         "CONSTRAINTID",
         "GENCONID_EFFECTIVEDATE",
@@ -861,6 +917,7 @@ effective_date_group_col = {
 
 primary_date_columns = {
     "P5MIN_REGIONSOLUTION": "RUN_DATETIME",
+    "P5MIN_INTERCONNECTORSOLN": "RUN_DATETIME",
     "DISPATCHLOAD": "SETTLEMENTDATE",
     "NEXT_DAY_DISPATCHLOAD": "SETTLEMENTDATE",
     "INTERMITTENT_GEN_SCADA": "RUN_DATETIME",

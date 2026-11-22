@@ -67,6 +67,7 @@ MNSP_LINKS = ["BLNKTAS", "BLNKVIC"]         # Basslink, both directions
 DYNAMIC_TABLES = {
     # Every forecast vintage, with RUN_DATETIME used for the fixture time trim.
     "P5MIN_REGIONSOLUTION": {"eras": ["2024-08", "2025-01"], "filter": {"REGIONID": REGIONS}},
+    "P5MIN_INTERCONNECTORSOLN": {"eras": ["2024-08", "2025-01"], "filter": {"INTERCONNECTORID": ["VIC1-NSW1", "V-SA"]}},
     # Five-minute dispatch tables — the workhorse set.
     "DISPATCHPRICE":             {"eras": ["2018-05", "2020-01", "2021-05", "2022-01", "2024-08", "2025-01", "2026-04"], "filter": {"REGIONID": REGIONS}},
     "DISPATCHLOAD":              {"eras": ["2018-05", "2020-01", "2021-05", "2022-01", "2024-08", "2025-01", "2026-04"], "filter": {"DUID": DUIDS}},

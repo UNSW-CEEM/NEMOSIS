@@ -225,20 +225,18 @@ These have bitten contributors before. Worth a read before adding a test.
   renamed the archive stub outright in Aug-2024. NEMOSIS's defaults know neither transition.
   Pre-existing bug, tracked in the test file and `spec.py`. `MNSP_DAYOFFER` is unaffected.
 
-## P5MIN regional forecast prices
+## P5MIN forecasts
 
-`P5MIN_REGIONSOLUTION` has a separate `P5MIN` download type because its monthly
-all-runs archives live under `P5MIN_ALL_DATA`, not `DATA`. From August 2024 the
-filenames include `#ALL#FILEnn#`. This directory uses literal `#` filenames,
-encoded once as `%23` in URLs; the standard `DATA` directory uses a different
-encoding convention. Keep this distinction in the downloader and fixture builder.
+`P5MIN_REGIONSOLUTION` and `P5MIN_INTERCONNECTORSOLN` use the `P5MIN` download
+type and `P5MIN_ALL_DATA` directory. From August 2024, filenames include
+`#ALL#FILEnn#`; encode literal `#` once as `%23`, unlike the `DATA` directory.
 
-The regional-price fixtures cover August 2024 and January 2025, including their
-previous months. Tests exercise CSV, Parquet and Feather, forecast-vintage
-preservation, run-time boundaries, region/intervention filters, full-column CSV
-reads, cache reuse, typed-cache rebuilds and multipart iteration. The shared
-single-timestamp boundary helper excludes this table because each run has twelve
-target intervals per region; its dedicated test verifies both time dimensions.
+Real fixtures cover August 2024 and January 2025 plus their previous months.
+Tests cover formats, forecast vintages, run-time boundaries, filters, signed
+limits, missing historical fields and cache rebuilding. Regional tests also
+cover physical/FCAS values and multipart archives. Both tables have twelve
+targets per entity per run, so dedicated tests replace the single-timestamp
+boundary helper.
 
 ## Parked tables
 

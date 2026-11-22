@@ -1,4 +1,4 @@
-"""Regional P5MIN prices retain every forecast run and its target intervals.
+"""Regional P5MIN forecasts retain every run and its target intervals.
 
 Real AEMO fixtures cover the August 2024 filename change and a year boundary.
 Unlike dispatch, there are twelve target intervals per region per run, so the
@@ -18,6 +18,7 @@ from nemosis import (
     processing_info_maps,
 )
 from nemosis.write_file_names import write_p5min_file_names
+from nemosis.custom_errors import UserInputError
 
 TABLE = "P5MIN_REGIONSOLUTION"
 KEY = ["RUN_DATETIME", "INTERVAL_DATETIME", "REGIONID"]
@@ -98,6 +99,67 @@ def test_all_columns_csv(nemosis_fixture):
     assert "TOTALDEMAND" in data
 
 
+@pytest.mark.parametrize("fformat", ["csv", "parquet", "feather"])
+def test_physical_and_fcas_forecasts(nemosis_fixture, fformat):
+    data = fetch(
+        nemosis_fixture,
+        datetime(2024, 7, 1),
+        datetime(2024, 7, 1, 0, 5),
+        fformat=fformat,
+        filter_cols=["REGIONID", "INTERVENTION"],
+        filter_values=(["NSW1"], [0]),
+    )
+    assert_forecast_runs(
+        data, datetime(2024, 7, 1), datetime(2024, 7, 1, 0, 5), {"NSW1"}
+    )
+    first = data.loc[data.INTERVAL_DATETIME == datetime(2024, 7, 1, 0, 5)].iloc[0]
+    # Original AEMO values exercise supply, renewables and forecast FCAS prices.
+    for column, expected in {
+        "TOTALDEMAND": 8298.26,
+        "AVAILABLEGENERATION": 13033.832,
+        "DISPATCHABLEGENERATION": 8066.25,
+        "DEMANDFORECAST": -37,
+        "NETINTERCHANGE": -272.01,
+        "UIGF": 732.83337,
+        "SS_SOLAR_UIGF": 0,
+        "SS_WIND_UIGF": 732.83337,
+        "SEMISCHEDULE_CLEAREDMW": 732.832,
+        "RAISE6SECRRP": 1.11,
+        "RAISE60SECRRP": 0.39,
+        "RAISE5MINRRP": 0.39,
+        "RAISEREGRRP": 10.98,
+    }.items():
+        assert pd.api.types.is_numeric_dtype(data[column])
+        assert first[column] == pytest.approx(expected)
+    assert data.TOTALDEMAND.nunique() > 1  # Preserve the forecast path.
+    assert pd.api.types.is_datetime64_any_dtype(data.LASTCHANGED)
+    # These columns are absent from this source vintage; never fabricate zeroes.
+    assert "RAISE1SECRRP" not in data
+    assert "SS_SOLAR_AVAILABILITY" not in data
+
+
+@pytest.mark.parametrize("fformat", ["parquet", "feather"])
+def test_rebuild_upgrades_price_only_cache(nemosis_fixture, fformat):
+    start, end = datetime(2024, 8, 2), datetime(2024, 8, 2, 0, 5)
+    original_columns = KEY + ["INTERVENTION", "RRP", "ROP", "LASTCHANGED"]
+    cache_compiler(
+        start, end, TABLE, str(nemosis_fixture),
+        select_columns=original_columns, fformat=fformat, rebuild=True,
+    )
+    with pytest.raises(UserInputError, match="TOTALDEMAND"):
+        fetch(
+            nemosis_fixture, start, end, fformat=fformat,
+            select_columns=KEY + ["TOTALDEMAND", "RAISE1SECRRP"],
+        )
+    cache_compiler(
+        start, end, TABLE, str(nemosis_fixture), fformat=fformat, rebuild=True,
+    )
+    data = fetch(nemosis_fixture, start, end, fformat=fformat)
+    assert set(data.columns) == set(defaults.table_columns[TABLE])
+    assert data.TOTALDEMAND.notna().all()
+    assert data.RAISE1SECRRP.notna().all()
+
+
 def test_cache_reuse_and_rebuild(nemosis_fixture, monkeypatch):
     start, end = datetime(2024, 8, 2), datetime(2024, 8, 2, 1)
     original = fetch(nemosis_fixture, start, end)
@@ -124,7 +186,11 @@ def test_cache_reuse_and_rebuild(nemosis_fixture, monkeypatch):
     stored = pd.read_parquet(cached[0])
     assert pd.api.types.is_datetime64_any_dtype(stored.INTERVAL_DATETIME)
     assert pd.api.types.is_numeric_dtype(stored.RRP)
-    pd.testing.assert_frame_equal(original, fetch(nemosis_fixture, start, end))
+    # Typed caches infer numerics over the full month, so an integer-only query
+    # may become float when other targets in the month contain fractions.
+    pd.testing.assert_frame_equal(
+        original, fetch(nemosis_fixture, start, end), check_dtype=False,
+    )
 
 
 def test_multipart_archives_are_concatenated(tmp_path, monkeypatch):

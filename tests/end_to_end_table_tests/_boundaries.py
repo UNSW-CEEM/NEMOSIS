@@ -71,6 +71,7 @@ _HELPER_DOES_NOT_COVER = {
     "BIDPEROFFER_D",
     "MNSP_PEROFFER",
     "P5MIN_REGIONSOLUTION",  # Twelve target intervals per region per run.
+    "P5MIN_INTERCONNECTORSOLN",  # Twelve targets per interconnector per run.
 }
 
 FLAVOURS = ("at", "before")
