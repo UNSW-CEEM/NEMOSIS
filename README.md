@@ -109,6 +109,7 @@ raw_data_cache = 'C:/Users/your_data_storage'
 
 price_data = dynamic_data_compiler(start_time, end_time, table, raw_data_cache)
 ```
+For DISPATCHPRICE, a short query can trigger a full monthly archive download. The returned DataFrame contains only rows within the requested time range.
 
 Using the default settings of `dynamic_data_compiler` will download zip archives from AEMO's NEMWeb portal and save them to the `raw_data_cache` directory. It will then extract each CSV, create a parquet file version (parquet has excellent compression and good interop with downstream tools), and delete the extracted CSV. The downloaded zip is retained by default so that subsequent runs that need to rebuild the parquet (e.g. to add columns or switch format) do not have to re-download from AEMO. Subsequent `dynamic_data_compiler` calls will check if any data in `raw_data_cache` matches the query and load it from there. This means that subsequent `dynamic_data_compiler` calls will be faster so long as the cached data is available. See [Caching options](#caching-options) below to tune what stays on disk.
 
